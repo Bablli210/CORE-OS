@@ -3272,6 +3272,26 @@ export type Database = {
         Args: { p_lead_id: string; p_membership_id?: string; p_reason?: string }
         Returns: string
       }
+      fn_branch_coaches: {
+        Args: { p_branch_id: string }
+        Returns: {
+          active_clients: number
+          capacity: number
+          full_name: string
+          gender: string
+          membership_id: string
+          specialties: string[]
+        }[]
+      }
+      fn_can_edit_deal: {
+        Args: { p_deal: Database["public"]["Tables"]["deals"]["Row"] }
+        Returns: boolean
+      }
+      fn_can_pay_deal: {
+        Args: { p_deal: Database["public"]["Tables"]["deals"]["Row"] }
+        Returns: boolean
+      }
+      fn_can_see_deal: { Args: { p_deal_id: string }; Returns: boolean }
       fn_can_see_lead: { Args: { p_lead_id: string }; Returns: boolean }
       fn_cancel_deal: {
         Args: { p_deal_id: string; p_reason: string }
@@ -3305,6 +3325,10 @@ export type Database = {
           unpaid: boolean
         }[]
       }
+      fn_commission_report: {
+        Args: { p_branch_id?: string; p_month: string }
+        Returns: Json
+      }
       fn_complete_follow_up: {
         Args: {
           p_follow_up_id: string
@@ -3319,6 +3343,10 @@ export type Database = {
       }
       fn_convert_lead: {
         Args: { p_deal_id: string; p_lead_id: string }
+        Returns: string
+      }
+      fn_create_deal: {
+        Args: { p_client_id?: string; p_lead_id?: string }
         Returns: string
       }
       fn_create_lead: {
@@ -3546,6 +3574,25 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      fn_deal: { Args: { p_deal_id: string }; Returns: Json }
+      fn_deal_approval_preview: { Args: { p_deal_id: string }; Returns: Json }
+      fn_deal_catalog: {
+        Args: { p_branch_id: string }
+        Returns: {
+          branch_id: string
+          code: string
+          duration_days: number
+          expiry_days: number
+          id: string
+          name: string
+          net_per_session_piastres: number
+          per_session_piastres: number
+          price_piastres: number
+          session_count: number
+          sort_order: number
+          type: Database["public"]["Enums"]["product_type"]
+        }[]
+      }
       fn_decide_approval: {
         Args: { p_approval_id: string; p_approve: boolean; p_note?: string }
         Returns: undefined
@@ -3637,6 +3684,10 @@ export type Database = {
         Returns: number
       }
       fn_membership_name: { Args: { p_membership_id: string }; Returns: string }
+      fn_money_summary: {
+        Args: { p_branch_id?: string; p_month: string }
+        Returns: Json
+      }
       fn_nightly: { Args: never; Returns: Json }
       fn_normalize_phone: { Args: { p: string }; Returns: string }
       fn_notify: {
@@ -3762,6 +3813,10 @@ export type Database = {
         }
         Returns: string
       }
+      fn_request_payment_void: {
+        Args: { p_payment_id: string; p_reason: string }
+        Returns: string
+      }
       fn_restore_credit: {
         Args: { p_reason: string; p_session_id: string }
         Returns: undefined
@@ -3771,6 +3826,29 @@ export type Database = {
         Returns: undefined
       }
       fn_round_robin_next: { Args: { p_branch_id: string }; Returns: string }
+      fn_sales_approvals: { Args: { p_branch_id: string }; Returns: Json }
+      fn_sales_client: { Args: { p_client_id: string }; Returns: Json }
+      fn_sales_deals: {
+        Args: {
+          p_branch_id: string
+          p_search?: string
+          p_status?: Database["public"]["Enums"]["deal_status"]
+        }
+        Returns: {
+          client_id: string
+          created_at: string
+          first_paid_at: string
+          id: string
+          is_renewal: boolean
+          lead_id: string
+          name: string
+          paid_piastres: number
+          phone: string
+          rep_name: string
+          status: Database["public"]["Enums"]["deal_status"]
+          total_piastres: number
+        }[]
+      }
       fn_sales_lead: { Args: { p_lead_id: string }; Returns: Json }
       fn_sales_leads: {
         Args: {
@@ -3837,6 +3915,22 @@ export type Database = {
         }[]
       }
       fn_sales_today: { Args: { p_branch_id: string }; Returns: Json }
+      fn_save_bundle_items: {
+        Args: { p_bundle_id: string; p_items: Json }
+        Returns: undefined
+      }
+      fn_save_deal_draft: {
+        Args: {
+          p_deal_id: string
+          p_discount_fixed_piastres?: number
+          p_discount_pct?: number
+          p_installments_count?: number
+          p_items: Json
+          p_notes?: string
+          p_payment_plan?: Database["public"]["Enums"]["payment_plan"]
+        }
+        Returns: Json
+      }
       fn_save_membership: {
         Args: {
           p_branch_id: string
@@ -3847,6 +3941,23 @@ export type Database = {
           p_profile_id: string
           p_role: Database["public"]["Enums"]["app_role"]
           p_specialties?: string[]
+        }
+        Returns: string
+      }
+      fn_save_product: {
+        Args: {
+          p_branch_id: string
+          p_code: string
+          p_duration_days?: number
+          p_expiry_days?: number
+          p_id: string
+          p_is_active?: boolean
+          p_name: string
+          p_price_piastres: number
+          p_session_count?: number
+          p_session_minutes?: number
+          p_sort_order?: number
+          p_type: Database["public"]["Enums"]["product_type"]
         }
         Returns: string
       }

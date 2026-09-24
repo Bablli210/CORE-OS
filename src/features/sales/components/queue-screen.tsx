@@ -15,6 +15,7 @@ import { formatDateTime, shortDuration } from "@/lib/format";
 import { t } from "@/lib/i18n";
 import { useQueue } from "../hooks/use-sales";
 import { FlagBanner } from "./flag-banner";
+import { ApprovalsSection } from "./approvals-section";
 import { ReviewItem } from "./review-item";
 
 function Section({ id, title, count, children, action }: { id: string; title: string; count: number; children: React.ReactNode; action?: React.ReactNode }) {
@@ -69,9 +70,7 @@ export function QueueScreen() {
       <Section id="review" title={t("queue.review")} count={data.review.length}>
         <ul className="grid gap-2">{data.review.map((l) => <ReviewItem key={l.id} lead={l} />)}</ul>
       </Section>
-      <Section id="approvals" title={t("queue.approvals")} count={data.approvals_pending}>
-        <p className="text-sm text-muted-foreground">{t("queue.approvalsM3")}</p>
-      </Section>
+      <ApprovalsSection branchId={branchId} />
       <Section id="sla" title={t("queue.sla")} count={data.sla_breaches.length}>
         <ul className="grid gap-2">
           {data.sla_breaches.map((l) => (

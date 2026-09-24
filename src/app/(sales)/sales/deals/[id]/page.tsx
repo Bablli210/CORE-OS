@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
-import { ScreenPlaceholder } from "@/components/screen-placeholder";
+import { DealScreen } from "@/features/deals/components/deal-screen";
 import { t } from "@/lib/i18n";
 
 export const metadata: Metadata = { title: t("screen.sales.deal.title") };
 
-export default function Page() {
-  return <ScreenPlaceholder screen="sales.deal" />;
+export default async function DealPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  return <DealScreen id={id} />;
 }

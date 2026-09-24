@@ -7,7 +7,7 @@ import { ErrorState, LoadingList, PageHeader } from "@/components/states";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { daysSince, formatDateTime, formatEGP } from "@/lib/format";
-import { t } from "@/lib/i18n";
+import { t, type MessageKey } from "@/lib/i18n";
 import { useLead } from "../hooks/use-leads";
 import { interestLabel, lostReasonLabel } from "../labels";
 import { ContactButtons } from "./contact-buttons";
@@ -50,6 +50,9 @@ export function LeadDetailScreen({ id }: { id: string }) {
         </CardContent>
       </Card>
 
+      {lead.converted_client_id ? (
+        <Link href={`/sales/clients/${lead.converted_client_id}`} className={buttonVariants({ variant: "outline" })}>{t("leads.openClient")}</Link>
+      ) : null}
       {open ? (
         <div className="flex flex-wrap gap-2">
           <Link href={`/sales/deals/new?lead=${lead.id}`} className={buttonVariants({ variant: "outline" })}><FileText aria-hidden />{t("leads.createQuote")}</Link>
@@ -87,7 +90,7 @@ export function LeadDetailScreen({ id }: { id: string }) {
           ) : (
             <ul className="grid gap-2">
               {lead.deals.map((d) => (
-                <li key={d.id} className="flex justify-between text-sm"><span>{formatDateTime(d.created_at)} · {d.status}</span><span>{formatEGP(d.total_piastres)}</span></li>
+                <li key={d.id}><Link href={`/sales/deals/${d.id}`} className="flex justify-between text-sm underline-offset-4 hover:underline"><span>{formatDateTime(d.created_at)} · {t(`deal.status.${d.status}` as MessageKey)}</span><span>{formatEGP(d.total_piastres)}</span></Link></li>
               ))}
             </ul>
           )}

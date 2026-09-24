@@ -1,9 +1,15 @@
 import type { Metadata } from "next";
-import { ScreenPlaceholder } from "@/components/screen-placeholder";
+import { PageHeader } from "@/components/states";
+import { MoneyScreen } from "@/features/admin/components/money-screen";
 import { t } from "@/lib/i18n";
 
 export const metadata: Metadata = { title: t("screen.admin.money.title") };
 
-export default function Page() {
-  return <ScreenPlaceholder screen="admin.money" />;
+export default function MoneyPage() {
+  return (
+    <>
+      <PageHeader title={t("screen.admin.money.title")} description={t("screen.admin.money.job")} />
+      <MoneyScreen />
+    </>
+  );
 }

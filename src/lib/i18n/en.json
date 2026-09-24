@@ -1,0 +1,5 @@
+{
+  "app.name": "GymOS",
+  "app.tagline": "Internal operating system for the gym",
+  "scaffold.status": "Scaffold ready. Milestone M1 (auth, roles, shell) comes next."
+}

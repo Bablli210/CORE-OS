@@ -1,0 +1,160 @@
+/*
+ * GymOS design tokens — the ONLY place colours, spacing, radius, type and motion are defined.
+ * Neutral palette until branding (docs/05 "After M8: branding" replaces the values here and nothing else).
+ *
+ * Layers:
+ *   1. Primitives  (--neutral-*, --red-*, …)  raw values; never referenced by components.
+ *   2. Semantic    (--background, --primary, --success, …)  what components use, via Tailwind utilities
+ *                  generated in globals.css (bg-background, text-muted-foreground, border-border, …).
+ *                  Names follow shadcn/ui so generated components work unchanged.
+ *   3. Scale       (--space-*, --radius / --rounded-*, --font-family-*)  spacing / shape / type.
+ *
+ * Rules: components use semantic utilities only (lint blocks hex and Tailwind palette colours).
+ * Layout must survive RTL: use logical utilities (ps-, pe-, ms-, me-, start-, end-).
+ */
+
+:root {
+  /* ---------------------------------------------------------------- 1. primitives (oklch) */
+  --neutral-0: oklch(1 0 0);
+  --neutral-50: oklch(0.985 0 0);
+  --neutral-100: oklch(0.97 0 0);
+  --neutral-200: oklch(0.922 0 0);
+  --neutral-300: oklch(0.87 0 0);
+  --neutral-400: oklch(0.708 0 0);
+  --neutral-500: oklch(0.556 0 0);
+  --neutral-600: oklch(0.439 0 0);
+  --neutral-700: oklch(0.371 0 0);
+  --neutral-800: oklch(0.269 0 0);
+  --neutral-900: oklch(0.205 0 0);
+  --neutral-950: oklch(0.145 0 0);
+
+  --red-500: oklch(0.577 0.245 27.325);
+  --red-400: oklch(0.704 0.191 22.216);
+  --amber-500: oklch(0.769 0.188 70.08);
+  --amber-400: oklch(0.828 0.189 84.429);
+  --green-600: oklch(0.627 0.194 149.214);
+  --green-500: oklch(0.723 0.219 149.579);
+  --blue-600: oklch(0.546 0.245 262.881);
+  --blue-500: oklch(0.623 0.214 259.815);
+
+  /* ---------------------------------------------------------------- 2. semantic — light */
+  --background: var(--neutral-0);
+  --foreground: var(--neutral-950);
+  --card: var(--neutral-0);
+  --card-foreground: var(--neutral-950);
+  --popover: var(--neutral-0);
+  --popover-foreground: var(--neutral-950);
+  --primary: var(--neutral-900);
+  --primary-foreground: var(--neutral-50);
+  --secondary: var(--neutral-100);
+  --secondary-foreground: var(--neutral-900);
+  --muted: var(--neutral-100);
+  --muted-foreground: var(--neutral-500);
+  --accent: var(--neutral-100);
+  --accent-foreground: var(--neutral-900);
+  --destructive: var(--red-500);
+  --destructive-foreground: var(--neutral-0);
+  --border: var(--neutral-200);
+  --input: var(--neutral-200);
+  --ring: var(--neutral-400);
+
+  /* status: unpaid sessions, at-risk badge, SLA breach, approvals */
+  --success: var(--green-600);
+  --success-foreground: var(--neutral-0);
+  --warning: var(--amber-500);
+  --warning-foreground: var(--neutral-950);
+  --info: var(--blue-600);
+  --info-foreground: var(--neutral-0);
+
+  /* charts (Recharts reads these via var()) — neutral ramp until branding */
+  --chart-1: var(--neutral-900);
+  --chart-2: var(--neutral-700);
+  --chart-3: var(--neutral-500);
+  --chart-4: var(--neutral-400);
+  --chart-5: var(--neutral-300);
+
+  /* app shell */
+  --sidebar: var(--neutral-50);
+  --sidebar-foreground: var(--neutral-950);
+  --sidebar-primary: var(--neutral-900);
+  --sidebar-primary-foreground: var(--neutral-50);
+  --sidebar-accent: var(--neutral-100);
+  --sidebar-accent-foreground: var(--neutral-900);
+  --sidebar-border: var(--neutral-200);
+  --sidebar-ring: var(--neutral-400);
+
+  /* ---------------------------------------------------------------- 3. scale */
+  /* spacing: Tailwind's whole spacing scale (p-4, gap-2, …) is multiples of --space-unit */
+  --space-unit: 0.25rem;
+  --space-1: calc(var(--space-unit) * 1);   /* 4px */
+  --space-2: calc(var(--space-unit) * 2);   /* 8px */
+  --space-3: calc(var(--space-unit) * 3);   /* 12px */
+  --space-4: calc(var(--space-unit) * 4);   /* 16px — mobile page gutter */
+  --space-6: calc(var(--space-unit) * 6);   /* 24px */
+  --space-8: calc(var(--space-unit) * 8);   /* 32px */
+  --space-12: calc(var(--space-unit) * 12); /* 48px */
+  --tap-target: 2.75rem;                    /* 44px minimum touch target (one-handed use at 390px) */
+  --bottom-bar-height: 4rem;
+
+  /* radius */
+  --radius: 0.625rem;
+  --rounded-sm: calc(var(--radius) - 4px);
+  --rounded-md: calc(var(--radius) - 2px);
+  --rounded-lg: var(--radius);
+  --rounded-xl: calc(var(--radius) + 4px);
+  --rounded-full: 9999px;
+
+  /* type */
+  --font-family-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", "Noto Sans Arabic", sans-serif;
+  --font-family-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  /* motion */
+  --duration-fast: 120ms;
+  --duration-base: 200ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+}
+
+/* ---------------------------------------------------------------- 2. semantic — dark */
+.dark {
+  --background: var(--neutral-950);
+  --foreground: var(--neutral-50);
+  --card: var(--neutral-900);
+  --card-foreground: var(--neutral-50);
+  --popover: var(--neutral-900);
+  --popover-foreground: var(--neutral-50);
+  --primary: var(--neutral-200);
+  --primary-foreground: var(--neutral-900);
+  --secondary: var(--neutral-800);
+  --secondary-foreground: var(--neutral-50);
+  --muted: var(--neutral-800);
+  --muted-foreground: var(--neutral-400);
+  --accent: var(--neutral-800);
+  --accent-foreground: var(--neutral-50);
+  --destructive: var(--red-400);
+  --destructive-foreground: var(--neutral-950);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: var(--neutral-500);
+
+  --success: var(--green-500);
+  --success-foreground: var(--neutral-950);
+  --warning: var(--amber-400);
+  --warning-foreground: var(--neutral-950);
+  --info: var(--blue-500);
+  --info-foreground: var(--neutral-950);
+
+  --chart-1: var(--neutral-100);
+  --chart-2: var(--neutral-300);
+  --chart-3: var(--neutral-400);
+  --chart-4: var(--neutral-500);
+  --chart-5: var(--neutral-600);
+
+  --sidebar: var(--neutral-900);
+  --sidebar-foreground: var(--neutral-50);
+  --sidebar-primary: var(--neutral-50);
+  --sidebar-primary-foreground: var(--neutral-900);
+  --sidebar-accent: var(--neutral-800);
+  --sidebar-accent-foreground: var(--neutral-50);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: var(--neutral-500);
+}

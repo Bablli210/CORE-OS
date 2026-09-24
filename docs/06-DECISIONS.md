@@ -60,3 +60,9 @@ Confirmed: PT commission tiers are counted per calendar month; opening hours 06:
 - `@tanstack/react-query`, `@tanstack/react-table` — server state and tables.
 - `zod`, `react-hook-form` — every form.
 - `idb-keyval` — offline queue for the client workout logger (M5).
+- `@supabase/supabase-js` — the client `@supabase/ssr` wraps; also the admin API in `scripts/seed-auth.ts` and Edge Functions.
+- `@hookform/resolvers` — connects zod schemas to react-hook-form.
+- `clsx`, `tailwind-merge`, `class-variance-authority`, `lucide-react`, `tw-animate-css` — what shadcn/ui components import (`cn()`, variants, icons, animations).
+- `vitest`, `@vitejs/plugin-react`, `jsdom`, `@testing-library/react`, `@testing-library/dom`, `@testing-library/jest-dom` — unit and component tests.
+- `@playwright/test` — e2e tests at 390px and 1280px against the seed.
+- `tsx` — runs TypeScript scripts (`pnpm seed:auth`) without a build step.

@@ -834,16 +834,16 @@ $$;
 create or replace function fn_setting(k text) returns jsonb language sql stable security definer set search_path = public as $$
   select value from settings where key = k
 $$;
-create or replace function fn_setting_int(k text, d int) returns int language sql stable as $$
+create or replace function fn_setting_int(k text, d int) returns int language sql stable set search_path = public as $$
   select coalesce((fn_setting(k))::text::int, d)
 $$;
-create or replace function fn_setting_bool(k text, d boolean) returns boolean language sql stable as $$
+create or replace function fn_setting_bool(k text, d boolean) returns boolean language sql stable set search_path = public as $$
   select coalesce((fn_setting(k))::text::boolean, d)
 $$;
-create or replace function fn_setting_text(k text, d text) returns text language sql stable as $$
+create or replace function fn_setting_text(k text, d text) returns text language sql stable set search_path = public as $$
   select coalesce(fn_setting(k) #>> '{}', d)
 $$;
-create or replace function fn_setting_num(k text, d numeric) returns numeric language sql stable as $$
+create or replace function fn_setting_num(k text, d numeric) returns numeric language sql stable set search_path = public as $$
   select coalesce((fn_setting(k))::text::numeric, d)
 $$;
 

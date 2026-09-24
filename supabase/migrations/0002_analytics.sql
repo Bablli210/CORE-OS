@@ -45,7 +45,7 @@ create unique index on mv_daily_branch (branch_id, day);
 -- commission helpers
 -- =====================================================================
 -- PT tier: the rate for a given number of sessions burned in the period (settings: commission.pt_tiers)
-create or replace function fn_pt_commission_pct(p_sessions int) returns numeric language sql stable as $$
+create or replace function fn_pt_commission_pct(p_sessions int) returns numeric language sql stable set search_path = public as $$
   select coalesce((
     select (t->>'pct')::numeric from jsonb_array_elements(coalesce(fn_setting('commission.pt_tiers'), '[]'::jsonb)) with ordinality as x(t, i)
     where (t->>'up_to') is null or p_sessions <= (t->>'up_to')::int

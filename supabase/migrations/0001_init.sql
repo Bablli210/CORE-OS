@@ -1065,7 +1065,7 @@ begin
   if not (is_top_management() or has_role('sales_manager', v_lead.branch_id) or has_role('front_desk', v_lead.branch_id) or v_lead.owner_membership_id in (select my_membership_ids())) then
     raise exception 'not allowed' using errcode = 'insufficient_privilege';
   end if;
-  v_token := translate(encode(gen_random_bytes(24), 'base64'), '+/=', '-_');
+  v_token := translate(encode(extensions.gen_random_bytes(24), 'base64'), '+/=', '-_');
   update leads set onboarding_token = v_token, onboarding_token_expires_at = now() + interval '7 days' where id = p_lead_id;
   perform fn_emit_event('lead.onboarding_sent', 'leads', p_lead_id, v_lead.branch_id, '{}');
   return v_token;

@@ -4,23 +4,30 @@ Living log. Claude Code updates this at the end of every milestone step. Newest 
 
 ## Current milestone
 
-M1 — Foundation. Kickoff done (scaffold, local database, types, seed logins); the M1 build itself (docs/05 "M1 — Foundation") has not started.
+M1 — Foundation: **built, awaiting review.** Do not start M2 until M1 is reviewed.
 
-M1 build order (from the M1 prompt), each step committed as `M1: …`:
-- [ ] Supabase client helpers `src/lib/supabase/{server,client,middleware}.ts` and `useMe()` (profile + memberships + active role + branch ids)
-- [ ] `/login`: staff email + password, client phone + OTP; route by role (client → `/c`, coach/head_coach → `/coach`, sales roles → `/sales`, top_management → `/admin`); role switcher for multi-role users
-- [ ] `AppShell` with role-specific nav (bottom tabs on mobile, side nav on desktop) and placeholder pages for every route in docs/04
-- [ ] `/notifications` with mark-as-read; bell badge via Realtime on the user's own `notifications` rows
-- [ ] `/admin/people` (list, invite staff by email via server action, edit memberships, deactivate; show the auto-created coach membership for head coaches)
-- [ ] `/admin/settings` (every `settings` row grouped by prefix, typed inline editors, table editor for `commission.pt_tiers`)
-- [ ] `PhoneInput` (country picker, default +20, stores E.164 via `libphonenumber-js`)
-- [ ] Playwright: one login test per role on seed data; all M1 acceptance boxes in docs/05
+Acceptance (docs/05 M1) — each box is covered by an automated test (e2e at 390px and 1280px unless noted):
+- [x] All six seed staff log in and land on the correct home (`e2e/auth.spec.ts`, one test per role)
+- [x] Karim switches between branch A and B; the choice is remembered across reloads (`auth.spec.ts`)
+- [x] Ahmed sees the Coach tabs and Team; as plain coach Team disappears; a Team link switches him back (`auth.spec.ts`)
+- [x] Hassan logs in with phone OTP and sees `/c` with his name and sessions left with Mahmoud (`auth.spec.ts`)
+- [x] Bell updates live when a notification is inserted via SQL; opening it marks it read (`notifications.spec.ts`)
+- [x] `/admin/people` creates a branch-B sales rep who accepts the invite email, sets a password and logs in (`admin-people.spec.ts`)
+- [x] Settings edit persists and `fn_setting_int('attendance.edit_window_hours', 24)` reflects it (`admin-settings.spec.ts`; also SQL test A2)
+- [x] `01011112222` stores `+201011112222`; Saudi with the picker stores `+966…` (`src/components/phone-input.test.tsx`, `src/lib/phone.test.ts`; the +20 case also in the invite e2e)
+- [x] `pnpm typecheck && pnpm lint && pnpm test` pass; `scripts/test-db.sh` passes (rule, admin and security suites)
 
-M1 acceptance (docs/05): all six seed staff land on the right home · Karim switches branch A/B · Ahmed sees Coach tabs + Team · Hassan logs in by OTP and sees `/c` with his balance · bell updates live · `/admin/people` creates a branch-B rep who can log in · settings edit persists and `fn_setting_int` reflects it · `01011112222` → `+201011112222`, Saudi → `+966…` · `pnpm typecheck && pnpm lint && pnpm test` pass.
-
-Local logins after `supabase db reset && pnpm seed:auth`: staff `*@gymos.local` / `gymos-dev`; clients by phone (`+201110000001` = Hassan Ibrahim) with OTP `123456`.
+How to run: `supabase start && supabase db reset && pnpm seed:auth && pnpm env:local && pnpm dev`. E2E: `pnpm test:e2e` (builds and starts the app; run on a freshly reset + seeded database).
+Local logins: staff `*@gymos.local` / `gymos-dev`; clients by phone (`01110000001` = Hassan Ibrahim) with OTP `123456`.
 
 ## Decisions made during the build
+
+- 2026-09-24 (M1) — **Staff invite uses the service role in a server action.** docs/05 M1 asks for "admin API via a server action"; CLAUDE.md rule 2 limits the service role to Edge Functions listed in docs/03 §9. Resolved by keeping the service role to the Auth admin API only (invite, and rollback of a failed invite), after an `is_top_management()` check with the caller's session; the profile and role are written by RPC as the caller. Listed in docs/03 §9. Alternative if you prefer the letter of rule 2: an `invite-staff` Edge Function (needs the edge-runtime container locally).
+- 2026-09-24 (M1) — **Admin writes go through RPCs** (definition of done: "writes only through RPC"): `0004_m1_admin.sql` adds `fn_update_setting` (keeps the JSON type; validates commission tiers), `fn_create_staff_profile`, `fn_save_membership`, `fn_set_profile_active`, `fn_mark_notifications_read`; each emits an event (`setting.updated`, `staff.created`, `membership.saved`, `profile.activation_changed`). Also adds `notifications` to the Realtime publication. Tests: `supabase/tests/002_admin.sql`.
+- 2026-09-24 (M1) — **Security: internal functions locked down (`0005_internal_functions.sql`).** 0001 granted EXECUTE on every function to `authenticated`, so any signed-in user could call internal helpers over the API — e.g. `fn_issue_credits` to give themselves sessions, `fn_notify` to message anyone, `fn_convert_lead`. EXECUTE is revoked on the internal helpers and jobs; the entry points still reach them (they run as the owner). `fn_end_freeze` stays callable but now checks sales manager / top management. Tests: `supabase/tests/003_security.sql`. docs/03 §9 updated.
+- 2026-09-24 (M1) — **Active role.** The acted-as membership (role + branch) is remembered in an httpOnly cookie (`gymos_ctx`) set by `/context/[membershipId]`; default is the broadest role (head coach before coach, so Team shows). Each area (`/c`, `/coach`, `/sales`, `/admin`) resolves its own context; a role-limited page (Team, Queue) switches to the matching membership instead of refusing.
+- 2026-09-24 (M1) — **Navigation.** Coach tabs follow docs/04 (Today · Clients · Programs · Numbers, + Team); "My week" is a secondary item in the desktop side nav and linked from Today, since docs/04 doesn't give it a tab. Added `/coach/programs`, `/sales/leads` and `/sales/deals` placeholders because docs/04 names those tabs. Front desk gets Today · New lead · Deals · Check-in. More than 5 tabs → the 5th slot is "More" (sales manager, top management on mobile).
+- 2026-09-24 (M1) — **Local auth config.** Public sign-up off (`[auth] enable_signup = false`); `[auth.email] enable_signup` must stay true because the CLI maps it to "email provider enabled". Invites use a token-hash template (`supabase/templates/invite.html` → `/auth/confirm`) so the server verifies them; apply the same template on the hosted project. Site URL `http://localhost:3000`. Local rate limits raised for repeated e2e runs.
 
 - 2026-09-24 — **Postgres 17 search_path.** Supabase runs Postgres 17 (the spec was tested on 16). PG 17 builds and refreshes materialized views with `search_path = pg_catalog, pg_temp`, so `0002_analytics.sql` failed to apply. Added `set search_path = public` to `fn_setting_int/bool/text/num` (0001) and `fn_pt_commission_pct` (0002). Edited in place with approval: neither migration had been applied to any hosted database.
 - 2026-09-24 — **pgcrypto lives in `extensions` on Supabase.** `fn_issue_onboarding_token` now calls `extensions.gen_random_bytes` (0001:1068). Same reasoning as above.
@@ -32,6 +39,10 @@ Local logins after `supabase db reset && pnpm seed:auth`: staff `*@gymos.local` 
 
 ## Deferred
 
+- M1: the live bell subscribes to rows addressed to the profile; client rows queued on `client_id` before provisioning show in the list but don't push live (provision-client backfills `recipient_profile_id`, M3).
+- M1: editing a person's name/phone and resending an invite are not in the People screen yet (not in the M1 list); invite again after deleting nothing — an existing email is refused with a clear message.
+- M1: `/checkin` is a signed-in placeholder in the sales area (kiosk mode is M4).
+- M1: `libphonenumber-js` metadata adds ~140 kB to pages with a phone field (login, people); revisit with the PWA budget in M5/M8.
 - Doc inconsistencies found at kickoff, not yet resolved in `docs/` (decide, then propagate):
   - CLAUDE.md rule 6 says `fn_convert_lead` creates the `auth.users` row; docs/03 §9 and the SQL have `provision-client` do it.
   - "Nothing is ever deleted" vs `fn_upsert_schedule_slot` / `fn_end_schedule_slot` deleting future *booked* sessions.
@@ -44,4 +55,5 @@ Local logins after `supabase db reset && pnpm seed:auth`: staff `*@gymos.local` 
 
 ## Shipped
 
+- 2026-09-24 — **M1 Foundation.** Supabase helpers (`src/lib/supabase/{client,server,middleware,admin}.ts`), session middleware, `getMe()` / `useMe()` (profile, memberships, active role + branch, branch ids). `/login` (member phone + OTP, staff email + password), role routing from `/`, `/auth/confirm` + `/welcome` for invites, `/no-access`. `AppShell` (header with branch, role switcher, live bell, sign out; side nav ≥ md, bottom tabs + More below md) and a placeholder for every docs/04 route (title, job, milestone, onward link). `/notifications` with mark-as-read and deep links. `/c` shows the member's name, sessions left per coach and membership end. `/admin/people` (search, role filter, table/cards, invite, add/edit/deactivate roles, auto coach role for head coaches). `/admin/settings` (grouped, typed editors, commission tier table). `PhoneInput` (+20 default, E.164). UI primitives in `src/components/ui` (shadcn-style, tokens only). Migrations 0004 (admin RPCs, Realtime) and 0005 (security). Tests: 188 SQL assertions, Vitest units + PhoneInput component test, Playwright e2e for every acceptance box at 390px and 1280px.
 - 2026-09-24 — **M1 kickoff.** Next.js 15 (App Router, TS strict), Tailwind v4, shadcn/ui config, TanStack Query provider, react-hook-form + zod, `@supabase/ssr`, Vitest, Playwright (390px + 1280px), pnpm. `src/styles/tokens.css` (neutral colour/spacing/radius/type/motion). `t()` with en/ar catalogs and RTL `dir()`. Folder layout per CLAUDE.md. Local Supabase: 0001 + 0002 + 0003 apply, seed loads, `scripts/test-db.sh` → 156 assertions, ALL RULE TESTS PASSED. `src/lib/database.types.ts` generated. `pnpm seed:auth` sets staff passwords and client phone login; verified staff password login, client OTP login and RLS scoping over the REST API.

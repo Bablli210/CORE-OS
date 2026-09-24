@@ -106,3 +106,16 @@ export async function createLeadInUi(page: Page, name: string, localPhone: strin
   await page.getByRole("button", { name: "Save lead" }).click();
   await expect(page.getByRole("status").filter({ hasText: `${name} saved` })).toBeVisible();
 }
+
+/** A reserved local test phone (+2010999000NN, OTP 123456 in supabase/config.toml) that no lead/client/profile uses yet. */
+export function freeTestPhone(): { local: string; e164: string } {
+  const used = new Set(sql("select phone from leads union select phone from clients union select coalesce(phone, '') from profiles").split("\n"));
+  for (let n = 1; n <= 60; n++) {
+    const e164 = `+2010999000${String(n).padStart(2, "0")}`;
+    if (!used.has(e164)) return { local: `0${e164.slice(3)}`, e164 };
+  }
+  throw new Error("no reserved test phone left: reset the database (supabase db reset && pnpm seed:auth)");
+}
+
+/** Same formatting as the app (src/lib/format.ts). */
+export const egp = (piastres: number) => new Intl.NumberFormat("en-EG", { style: "currency", currency: "EGP", maximumFractionDigits: 0 }).format(piastres / 100);

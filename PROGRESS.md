@@ -4,21 +4,33 @@ Living log. Claude Code updates this at the end of every milestone step. Newest 
 
 ## Current milestone
 
-M2 — Sales: **built, awaiting review.** Do not start M3 until M2 is reviewed. (M1 was built before it and is covered by the same test run.)
+M3 — Money: **built, awaiting review.** Do not start M4 until M3 is reviewed. (M1 and M2 are covered by the same test run.)
 
-Acceptance (docs/05 M2) — e2e at 390px and 1280px (the wizard at 360px), `e2e/sales.spec.ts` and `e2e/onboarding.spec.ts`:
-- [x] Mona types a duplicate phone → the existing lead shows (with a link to it), Save is disabled, no duplicate is created
-- [x] Front desk creates leads → they appear in Karim's queue; "Round robin all" gives them to Mona and Youssef alternately; with Youssef paused (Team) the next one goes to Mona
-- [x] The onboarding link opens with no login at 360px, survives a refresh mid-way (resumes at step 4, earlier answers kept), completes; Mona gets `lead.onboarded`; the lead shows Onboarded with a readable summary
-- [x] Moving a card to Lost without a reason is impossible (Mark lost disabled until a reason is picked; the DB also refuses)
-- [x] Today shows overdue follow-ups first; Done completes one in one tap
-- [x] Reassigning requires a reason and notifies both reps (`lead.assigned` to the new rep, `lead.reassigned` to the old)
-- [x] `pnpm typecheck && pnpm lint && pnpm test` and `scripts/test-db.sh` pass (215 SQL assertions; 004_sales adds 27)
+Acceptance (docs/05 M3). The SQL tests are in `supabase/tests/005_money.sql` (C1–C33). The e2e tests are in `e2e/money.spec.ts` and run at 390px and 1280px:
+- [x] A PT pack can't be submitted without a coach: the builder shows "Pick a coach", Submit is disabled, and the database refuses too (C5–C6). The picker shows Sara first for a lead who asked for a female morning trainer (C3, e2e).
+- [x] A list-price deal is approved as soon as it's submitted (C24, e2e).
+- [x] Mona's 20% discount shows "Needs approval" live in the builder and goes to Karim's Queue. Karim approves it (C7–C12, e2e).
+- [x] Mona records 50% in cash. The deal becomes `partially_paid`, the client is created, and "6 of 12 sessions released" shows **with Sara**. Sara gets the welcome-call task and Ahmed gets "client → Sara" (C13–C17, e2e, the pro-rata case).
+- [x] Recording more than the remaining amount is refused with "That's more than the remaining X EGP…" (C18, e2e).
+- [x] After full payment the client logs in with phone OTP and sees "12 sessions with Sara" and their membership end date (C19, e2e: the login uses a reserved test phone).
+- [x] Voiding a payment needs approval. Once Karim approves, unconsumed credits are refunded and the deal goes back to partially paid (C20–C23, e2e).
+- [x] Mona's expiry extension creates an approval, and Karim's applies at once. An expired pack comes back with its unused sessions (C28–C31, e2e).
+- [x] On `/admin/money`, liability = Σ remaining credits × value in the DB. The commission report shows net per session = gross × 0.86 (C27b–c, e2e compares against SQL).
+- [x] `pnpm typecheck && pnpm lint && pnpm test` pass (38 unit tests). `scripts/test-db.sh` passes (250 SQL assertions; 005_money adds 35). `pnpm test:e2e` passes (62 tests on a fresh reset and seed).
 
-How to run: `supabase start && supabase db reset && pnpm seed:auth && pnpm env:local && pnpm dev`. E2E: `pnpm test:e2e` on a freshly reset + seeded database (46 tests).
-Local logins: staff `*@gymos.local` / `gymos-dev`; clients by phone (`01110000001` = Hassan Ibrahim) with OTP `123456`.
+How to run: `supabase start -x studio,imgproxy,logflare,vector,supavisor && supabase db reset && pnpm seed:auth && pnpm env:local && pnpm dev`. The edge runtime now has to be running for `provision-client`. This sandbox couldn't pull its image from ghcr.io or Docker Hub, so it was pulled from `mirror.gcr.io/supabase/edge-runtime:v1.74.3` and retagged. A normal machine pulls it by itself.
+Local logins: staff `*@gymos.local` / `gymos-dev`. Clients log in by phone (`01110000001` = Hassan Ibrahim) with OTP `123456`. Phones `+2010999000NN` (01–60) are reserved for clients the e2e tests create, and also accept `123456`.
 
 ## Decisions made during the build
+
+- 2026-09-24 (M3) — **Migration 0008_money.sql.** It adds the deal/approval/client read shapes and the draft, void and catalog writes. Every write emits an event (`deal.created`, `product.saved`, and the existing `approval.requested`). The read shapes are SECURITY DEFINER and mirror the `deals` RLS scope. anon has no access (the allowlist test still passes).
+- 2026-09-24 (M3) — **Money in the client.** The only conversion the client does is the rep's EGP input → piastres. Totals, discounts, per-session gross/net, remaining, the minimum first payment and "needs approval" all come from the database. `fn_save_deal_draft` prices through `fn_price_deal`, and `fn_deal_approval_preview` uses the same rules as `fn_submit_deal`. The builder autosaves (400 ms debounce) and always shows what the server returned.
+- 2026-09-24 (M3) — **Commission report source.** docs/05 names `fn_dashboard_coaches` / `fn_dashboard_reps` / `fn_dashboard_liability`. The money screen uses one top-management function, `fn_commission_report(month, branch?)`, instead. It reads the same `mv_coach_month` / `mv_rep_month` / `mv_liability` and adds per-session gross/net and the liability total in SQL, so the screen does no arithmetic.
+- 2026-09-24 (M3) — **Liability refresh.** `mv_liability` moved from the nightly refresh to the 5-minute refresh, because `/admin/money` shows it. The screen says it can lag up to 5 minutes.
+- 2026-09-24 (M3) — **provision-client.** It authorises with the caller's own JWT (`fn_sales_client`) before using the service role. It reuses an existing profile with the same phone, is idempotent and emits `client.provisioned`. The `recordPayment` server action calls it when the paid deal's client has no account. If it fails, the payment still stands and the sheet says the login couldn't be created. The function uses plain `fetch` with no imports so it runs offline. docs/03 §9 is updated.
+- 2026-09-24 (M3) — **Expiry extension screen.** docs/04 has no sales-side client screen, so `/sales/clients/[id]` was added. It shows packs (incl. expired ones), entitlements, deals, Extend (manager) and Request extension (rep). It opens from the lead detail and from a paid deal.
+- 2026-09-24 (M3) — **Branch prices.** A product row for a branch overrides the all-branches row with the same code, in that branch only (`fn_deal_catalog`). The products editor shows both.
+- 2026-09-24 (M3) — **Reserved test phones.** `supabase/config.toml` sets test OTP `123456` for `+201099900001–60` too, so e2e runs can log in as clients they created. No dependencies were added in M3.
 
 - 2026-09-24 (M2) — **Migration name.** The M2 prompt asks for `0003_sales_views.sql`; 0003–0005 already existed, so the sales read shapes are `0006_sales_views.sql`.
 - 2026-09-24 (M2) — **Read shapes are SECURITY DEFINER functions** that apply the same scope as the leads RLS policy (`fn_can_see_lead`), so screens never join leads with memberships/profiles on the client. Detail and Today/Queue return one JSON document each (one round trip per screen).
@@ -46,7 +58,10 @@ Local logins: staff `*@gymos.local` / `gymos-dev`; clients by phone (`0111000000
 
 ## Deferred
 
-- M2: approvals in the Queue show a count only; deciding them is M3 (deals, freezes, extensions). "Create quote" links to the M3 deal builder placeholder.
+- M3: bundles can be edited in the products editor but aren't offered in the deal builder. 0001's `fn_record_payment` doesn't expand a bundle into its items, so a sold bundle would issue nothing. Fix: a migration that expands bundles at pricing or payment time.
+- M3: cancelling a deal that has payments isn't possible (0001 refuses). Refunds (`refund` approval) have no screen yet. Voids cover a payment recorded by mistake.
+- M3: the `notify` Edge Function, which retries `provision-client` and delivers the WhatsApp welcome, is not built (the welcome sits `pending`). That is M7 (notifications).
+- M3: `/admin/money` has no CSV export and no month-over-month chart; neither is in the M3 list.
 - M2: editing a lead's editorial fields (name, email, tags, handle) has no screen yet; not in the M2 list.
 - M2: branches have no phone in the seed, so the expired-link screen can't offer the WhatsApp button yet (set `branches.phone`; the Branches admin screen is M6).
 - M2: drag-and-drop in the pipeline is not covered by e2e (the "Move to" menu is); Arabic strings (`ar.json`) are still empty — the wizard layout uses logical properties and is RTL-ready.
@@ -66,6 +81,15 @@ Local logins: staff `*@gymos.local` / `gymos-dev`; clients by phone (`0111000000
 
 ## Shipped
 
+- 2026-09-24 — **M3 Money.**
+  - `/sales/deals`: a list with status filter and search.
+  - `/sales/deals/new` → `/sales/deals/[id]`: the deal builder. It picks from the catalog with per-session gross/net, has a coach picker for PT packs (`fn_rank_coaches` suggestions + all branch coaches), discount % or EGP with a live "needs approval" indicator and its reasons, single or installments, notes, autosave and submit. It also shows the approved/paid view: payments with Void / Void pending / Voided, the record-payment sheet (method, reference, remaining, minimum first payment), "X of Y sessions released", the status timeline and cancel.
+  - The Queue approvals section decides discounts, installments, voids, freezes and expiry extensions, with the subject detail.
+  - `/sales/clients/[id]`: packs, expiry extension (manager applies, rep requests) and deals.
+  - `/admin/settings` Products tab: catalog editor with per-branch prices, expiry days and bundle items.
+  - `/admin/money`: month and branch filter; booked, collected, voided, by method and by type (pro-rata), unpaid sessions, the commission report for coaches (sessions burned, tier, per-session gross/net, commission) and reps, liability per branch and total, recent deals and payments.
+  - The `provision-client` Edge Function.
+  - Tests: 005_money.sql, unit tests for labels/EGP input, e2e for every M3 box.
 - 2026-09-24 — **M2 Sales.** `/sales` Today (flag banner live via Realtime, follow-ups overdue-first with one-tap Done, new leads with SLA countdown, today's onboardings; Call/WhatsApp open the app and the touch sheet), `/sales/leads/new` (30-second capture, live duplicate check, source, interests, note → send onboarding link on WhatsApp or fill together), `/sales/pipeline` (stage tabs on mobile, columns + drag on desktop, Move-to menu, lost-reason sheet), `/sales/leads` (search + stage filter), `/sales/leads/[id]` (stage/owner/SLA, onboarding summary + raw, touches, follow-ups, deals; log touch, resend link, mark lost, assign/reassign for the manager), `/onboard/[token]` public wizard (7 steps, saves each, resumes on refresh, 360px one-handed), `/sales/queue` (flags, unassigned + round robin all, review, SLA breaches, stale; approvals count), `/sales/team` (reps' month, open flags, rotation pause/resume), `/sales/numbers` (tiles from `fn_dashboard_reps`, leads by source, lost reasons). Migrations 0006 (sales read shapes, touch/follow-up RPCs, wizard state, anon allowlist) and 0007 (pg_cron). Tests: 004_sales.sql, unit tests for steps/moves/format, e2e for every M2 box.
 - 2026-09-24 — **M1 Foundation.** Supabase helpers (`src/lib/supabase/{client,server,middleware,admin}.ts`), session middleware, `getMe()` / `useMe()` (profile, memberships, active role + branch, branch ids). `/login` (member phone + OTP, staff email + password), role routing from `/`, `/auth/confirm` + `/welcome` for invites, `/no-access`. `AppShell` (header with branch, role switcher, live bell, sign out; side nav ≥ md, bottom tabs + More below md) and a placeholder for every docs/04 route (title, job, milestone, onward link). `/notifications` with mark-as-read and deep links. `/c` shows the member's name, sessions left per coach and membership end. `/admin/people` (search, role filter, table/cards, invite, add/edit/deactivate roles, auto coach role for head coaches). `/admin/settings` (grouped, typed editors, commission tier table). `PhoneInput` (+20 default, E.164). UI primitives in `src/components/ui` (shadcn-style, tokens only). Migrations 0004 (admin RPCs, Realtime) and 0005 (security). Tests: 188 SQL assertions, Vitest units + PhoneInput component test, Playwright e2e for every acceptance box at 390px and 1280px.
 - 2026-09-24 — **M1 kickoff.** Next.js 15 (App Router, TS strict), Tailwind v4, shadcn/ui config, TanStack Query provider, react-hook-form + zod, `@supabase/ssr`, Vitest, Playwright (390px + 1280px), pnpm. `src/styles/tokens.css` (neutral colour/spacing/radius/type/motion). `t()` with en/ar catalogs and RTL `dir()`. Folder layout per CLAUDE.md. Local Supabase: 0001 + 0002 + 0003 apply, seed loads, `scripts/test-db.sh` → 156 assertions, ALL RULE TESTS PASSED. `src/lib/database.types.ts` generated. `pnpm seed:auth` sets staff passwords and client phone login; verified staff password login, client OTP login and RLS scoping over the REST API.

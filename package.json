@@ -13,7 +13,8 @@
     "test:e2e": "playwright test",
     "test:db": "scripts/test-db.sh",
     "db:types": "supabase gen types typescript --local > src/lib/database.types.ts",
-    "seed:auth": "tsx scripts/seed-auth.ts"
+    "seed:auth": "tsx scripts/seed-auth.ts",
+    "env:local": "scripts/env-local.sh"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.9.1",
@@ -22,11 +23,13 @@
     "@tanstack/react-query": "^5.103.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "libphonenumber-js": "^1.13.14",
     "lucide-react": "^1.48.0",
     "next": "15.5.26",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "react-hook-form": "^7.88.0",
+    "server-only": "^0.0.1",
     "tailwind-merge": "^3.7.0",
     "zod": "^4.6.5"
   },

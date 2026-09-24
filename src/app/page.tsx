@@ -1,11 +1,10 @@
-import { t } from "@/lib/i18n";
+import { redirect } from "next/navigation";
+import { getMe, getSession } from "@/features/auth/me";
+import { homeFor } from "@/features/auth/roles";
 
-// Placeholder until M1 replaces it with role routing (docs/05-BUILD-PLAN.md).
-export default function Home() {
-  return (
-    <main className="mx-auto flex min-h-dvh max-w-md flex-col justify-center gap-4 px-4">
-      <h1 className="text-2xl font-semibold">{t("app.name")}</h1>
-      <p className="text-muted-foreground">{t("scaffold.status")}</p>
-    </main>
-  );
+/** Role routing: client → /c, coaches → /coach, sales roles → /sales, top management → /admin (last used role first). */
+export default async function Home() {
+  const me = await getMe();
+  if (me) redirect(homeFor(me.active));
+  redirect((await getSession()) ? "/no-access" : "/login");
 }

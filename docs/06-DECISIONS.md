@@ -66,3 +66,4 @@ Confirmed: PT commission tiers are counted per calendar month; opening hours 06:
 - `vitest`, `@vitejs/plugin-react`, `jsdom`, `@testing-library/react`, `@testing-library/dom`, `@testing-library/jest-dom` — unit and component tests.
 - `@playwright/test` — e2e tests at 390px and 1280px against the seed.
 - `tsx` — runs TypeScript scripts (`pnpm seed:auth`) without a build step.
+- `server-only` — makes importing the service-role module from browser code a build error.

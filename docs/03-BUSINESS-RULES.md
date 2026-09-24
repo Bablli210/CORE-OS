@@ -19,7 +19,7 @@ new ──contacted──▶ contacted ──onboarding done──▶ onboarded 
 ## 2. Onboarding wizard
 
 - `fn_issue_onboarding_token(lead_id)`: generates a token, sets expiry `now() + 7 days`, emits `lead.onboarding_sent`. Re-issuing invalidates the previous token.
-- `fn_submit_onboarding(token, step, answers jsonb, complete bool)`: callable by `anon`. Validates token and expiry, merges `answers` into `onboarding_responses` under the step key, bumps `onboarding_schema_version` to the current version constant (`1`). When `complete = true`, sets `onboarding_completed_at`, moves status `new/contacted → onboarded`, copies `instagram_handle` and consents, and emits `lead.onboarded`. Returns only `{ok, advisor, contact_by}` (advisor's first name and the SLA deadline for the "done" screen) or `{ok:false, reason}` to the anonymous caller. The onboarding link itself is sent by the rep from the app (WhatsApp deep link); leads have no account, so nothing is queued in `notifications` for them.
+- `fn_submit_onboarding(token, step, answers jsonb, complete bool)`: callable by `anon`. Validates token and expiry, merges `answers` into `onboarding_responses` under the step key, bumps `onboarding_schema_version` to the current version constant (`1`). When `complete = true`, sets `onboarding_completed_at`, moves status `new/contacted → onboarded`, copies `instagram_handle` and consents, and emits `lead.onboarded`. Returns only `{ok, advisor, contact_by}` (advisor's first name and the SLA deadline for the "done" screen) or `{ok:false, reason}` to the anonymous caller. `fn_onboarding_state(token)` (anon, 0006) returns what the token holder already entered (plus the lead's name, source and advisor's first name) so a refresh resumes at the first unsaved step; nothing else about the lead. The onboarding link itself is sent by the rep from the app (WhatsApp deep link); leads have no account, so nothing is queued in `notifications` for them.
 - Schema for `onboarding_responses` v1:
   ```json
   {
@@ -169,6 +169,8 @@ Edge Functions that run with the service role (bypass RLS), and why:
 - `whatsapp-webhook`: inbound delivery-status updates from the WhatsApp provider.
 - Server action `inviteStaff` (`src/features/admin/actions.ts`, M1; docs/05 M1 asks for "admin API via a server action"): uses the service role **only** for the Auth admin API (`inviteUserByEmail`, and `deleteUser` to roll back a failed invite), after checking `is_top_management()` with the caller's own session. The profile and role are written through `fn_create_staff_profile` / `fn_save_membership` as the caller. The client is built in `src/lib/supabase/admin.ts` (server-only, exposes `auth.admin` only).
 Nothing else may use the service role.
+
+`anon` can execute exactly `fn_submit_onboarding`, `fn_onboarding_state` and `fn_normalize_phone` (0006; tested in `supabase/tests/004_sales.sql`). New migrations must `revoke execute ... from public, anon` on the functions they create.
 
 Internal helpers are not callable over the API (0005): `fn_emit_event`, `fn_notify*`, `fn_round_robin_next`, `fn_convert_lead`, `fn_issue_credits`, `fn_set_primary_coach`, `fn_settle_unpaid_sessions`, `fn_consume_credit`, `fn_restore_credit`, `fn_apply_attendance`, `fn_flag_for_sales_internal`, `fn_apply_expiry_extension` and the jobs `fn_expire_credits`, `fn_compute_risk_scores`, `fn_mark_lapsed` have no EXECUTE for `anon`/`authenticated`; the checked entry points call them as the owner. `fn_end_freeze` stays callable for the sales manager of the client's branch and top management (and the nightly job).
 

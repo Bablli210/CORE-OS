@@ -4,7 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 import { useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { fetchNotifications, fetchUnreadCount, markRead, notificationKeys } from "../queries/notifications";
+import { fetchNotifications, fetchUnreadCount, LIVE_KEY, markRead, notificationKeys } from "../queries/notifications";
 
 export function useNotifications() {
   return useQuery({ queryKey: notificationKeys.list(), queryFn: fetchNotifications });
@@ -44,7 +44,10 @@ export function useNotificationsRealtime(userId: string) {
         .on(
           "postgres_changes",
           { event: "*", schema: "public", table: "notifications", filter: `recipient_profile_id=eq.${userId}` },
-          () => queryClient.invalidateQueries({ queryKey: notificationKeys.all }),
+          () => {
+            void queryClient.invalidateQueries({ queryKey: notificationKeys.all });
+            void queryClient.invalidateQueries({ queryKey: LIVE_KEY });
+          },
         )
         .subscribe();
     })();

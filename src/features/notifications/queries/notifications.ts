@@ -13,6 +13,9 @@ export type NotificationRow = {
   created_at: string;
 };
 
+/** Queries under this key (sales Today, Queue) refresh whenever one of the user's notifications changes. */
+export const LIVE_KEY = ["live"] as const;
+
 export const notificationKeys = {
   all: ["notifications"] as const,
   list: () => [...notificationKeys.all, "list"] as const,

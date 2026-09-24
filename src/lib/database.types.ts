@@ -3316,6 +3316,15 @@ export type Database = {
         }
         Returns: Json
       }
+      fn_create_staff_profile: {
+        Args: {
+          p_email: string
+          p_full_name: string
+          p_phone?: string
+          p_profile_id: string
+        }
+        Returns: string
+      }
       fn_credit_balance: {
         Args: { p_client_id: string; p_coach_membership_id?: string }
         Returns: number
@@ -3573,6 +3582,10 @@ export type Database = {
         Returns: string
       }
       fn_mark_lapsed: { Args: never; Returns: number }
+      fn_mark_notifications_read: {
+        Args: { p_ids?: string[] }
+        Returns: number
+      }
       fn_materialize_sessions: {
         Args: { p_coach_membership_id?: string; p_date?: string }
         Returns: number
@@ -3710,6 +3723,19 @@ export type Database = {
         Returns: undefined
       }
       fn_round_robin_next: { Args: { p_branch_id: string }; Returns: string }
+      fn_save_membership: {
+        Args: {
+          p_branch_id: string
+          p_capacity?: number
+          p_discount_allowance_pct?: number
+          p_is_active?: boolean
+          p_membership_id: string
+          p_profile_id: string
+          p_role: Database["public"]["Enums"]["app_role"]
+          p_specialties?: string[]
+        }
+        Returns: string
+      }
       fn_set_lead_stage: {
         Args: {
           p_lead_id: string
@@ -3725,6 +3751,10 @@ export type Database = {
           p_coach_membership_id: string
           p_reason: string
         }
+        Returns: undefined
+      }
+      fn_set_profile_active: {
+        Args: { p_active: boolean; p_profile_id: string }
         Returns: undefined
       }
       fn_set_rotation_paused: {
@@ -3794,6 +3824,22 @@ export type Database = {
         Returns: Json
       }
       fn_today_live: { Args: never; Returns: Json }
+      fn_update_setting: {
+        Args: { p_key: string; p_value: Json }
+        Returns: {
+          description: string | null
+          key: string
+          updated_at: string
+          updated_by: string | null
+          value: Json
+        }
+        SetofOptions: {
+          from: "*"
+          to: "settings"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       fn_upsert_schedule_slot: {
         Args: {
           p_client_id?: string

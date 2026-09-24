@@ -167,7 +167,10 @@ Edge Functions that run with the service role (bypass RLS), and why:
 - `provision-client`: creates the auth user + profile + client membership for a new client, sets `clients.profile_id`, backfills `notifications.recipient_profile_id` for rows queued on that `client_id`, and sends the welcome message with the app link (`client.created`). Invoked from the server action right after `fn_record_payment` returns a new `client_id`, and retried by `notify` if `profile_id` is still null.
 - `notify`: every 5 minutes (pg_cron → pg_net, or Supabase's scheduled function trigger), reads `notifications` with `status = pending`, delivers by channel (WhatsApp provider, Resend email, Web Push), marks sent/failed. In-app notifications need no delivery: the app subscribes to its own `notifications` rows with Realtime.
 - `whatsapp-webhook`: inbound delivery-status updates from the WhatsApp provider.
+- Server action `inviteStaff` (`src/features/admin/actions.ts`, M1; docs/05 M1 asks for "admin API via a server action"): uses the service role **only** for the Auth admin API (`inviteUserByEmail`, and `deleteUser` to roll back a failed invite), after checking `is_top_management()` with the caller's own session. The profile and role are written through `fn_create_staff_profile` / `fn_save_membership` as the caller. The client is built in `src/lib/supabase/admin.ts` (server-only, exposes `auth.admin` only).
 Nothing else may use the service role.
+
+Internal helpers are not callable over the API (0005): `fn_emit_event`, `fn_notify*`, `fn_round_robin_next`, `fn_convert_lead`, `fn_issue_credits`, `fn_set_primary_coach`, `fn_settle_unpaid_sessions`, `fn_consume_credit`, `fn_restore_credit`, `fn_apply_attendance`, `fn_flag_for_sales_internal`, `fn_apply_expiry_extension` and the jobs `fn_expire_credits`, `fn_compute_risk_scores`, `fn_mark_lapsed` have no EXECUTE for `anon`/`authenticated`; the checked entry points call them as the owner. `fn_end_freeze` stays callable for the sales manager of the client's branch and top management (and the nightly job).
 
 ## 10. Notifications (event → recipient → channel)
 

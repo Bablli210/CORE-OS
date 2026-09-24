@@ -4,23 +4,30 @@ Living log. Claude Code updates this at the end of every milestone step. Newest 
 
 ## Current milestone
 
-M1 — Foundation: **built, awaiting review.** Do not start M2 until M1 is reviewed.
+M2 — Sales: **built, awaiting review.** Do not start M3 until M2 is reviewed. (M1 was built before it and is covered by the same test run.)
 
-Acceptance (docs/05 M1) — each box is covered by an automated test (e2e at 390px and 1280px unless noted):
-- [x] All six seed staff log in and land on the correct home (`e2e/auth.spec.ts`, one test per role)
-- [x] Karim switches between branch A and B; the choice is remembered across reloads (`auth.spec.ts`)
-- [x] Ahmed sees the Coach tabs and Team; as plain coach Team disappears; a Team link switches him back (`auth.spec.ts`)
-- [x] Hassan logs in with phone OTP and sees `/c` with his name and sessions left with Mahmoud (`auth.spec.ts`)
-- [x] Bell updates live when a notification is inserted via SQL; opening it marks it read (`notifications.spec.ts`)
-- [x] `/admin/people` creates a branch-B sales rep who accepts the invite email, sets a password and logs in (`admin-people.spec.ts`)
-- [x] Settings edit persists and `fn_setting_int('attendance.edit_window_hours', 24)` reflects it (`admin-settings.spec.ts`; also SQL test A2)
-- [x] `01011112222` stores `+201011112222`; Saudi with the picker stores `+966…` (`src/components/phone-input.test.tsx`, `src/lib/phone.test.ts`; the +20 case also in the invite e2e)
-- [x] `pnpm typecheck && pnpm lint && pnpm test` pass; `scripts/test-db.sh` passes (rule, admin and security suites)
+Acceptance (docs/05 M2) — e2e at 390px and 1280px (the wizard at 360px), `e2e/sales.spec.ts` and `e2e/onboarding.spec.ts`:
+- [x] Mona types a duplicate phone → the existing lead shows (with a link to it), Save is disabled, no duplicate is created
+- [x] Front desk creates leads → they appear in Karim's queue; "Round robin all" gives them to Mona and Youssef alternately; with Youssef paused (Team) the next one goes to Mona
+- [x] The onboarding link opens with no login at 360px, survives a refresh mid-way (resumes at step 4, earlier answers kept), completes; Mona gets `lead.onboarded`; the lead shows Onboarded with a readable summary
+- [x] Moving a card to Lost without a reason is impossible (Mark lost disabled until a reason is picked; the DB also refuses)
+- [x] Today shows overdue follow-ups first; Done completes one in one tap
+- [x] Reassigning requires a reason and notifies both reps (`lead.assigned` to the new rep, `lead.reassigned` to the old)
+- [x] `pnpm typecheck && pnpm lint && pnpm test` and `scripts/test-db.sh` pass (215 SQL assertions; 004_sales adds 27)
 
-How to run: `supabase start && supabase db reset && pnpm seed:auth && pnpm env:local && pnpm dev`. E2E: `pnpm test:e2e` (builds and starts the app; run on a freshly reset + seeded database).
+How to run: `supabase start && supabase db reset && pnpm seed:auth && pnpm env:local && pnpm dev`. E2E: `pnpm test:e2e` on a freshly reset + seeded database (46 tests).
 Local logins: staff `*@gymos.local` / `gymos-dev`; clients by phone (`01110000001` = Hassan Ibrahim) with OTP `123456`.
 
 ## Decisions made during the build
+
+- 2026-09-24 (M2) — **Migration name.** The M2 prompt asks for `0003_sales_views.sql`; 0003–0005 already existed, so the sales read shapes are `0006_sales_views.sql`.
+- 2026-09-24 (M2) — **Read shapes are SECURITY DEFINER functions** that apply the same scope as the leads RLS policy (`fn_can_see_lead`), so screens never join leads with memberships/profiles on the client. Detail and Today/Queue return one JSON document each (one round trip per screen).
+- 2026-09-24 (M2) — **Touches and follow-ups are written through RPCs** (`fn_log_touch`, `fn_add_follow_up`, `fn_complete_follow_up`), per "all writes go through fn_*"; each emits an event. The direct table grants from 0001 are still there (RLS-protected); the app doesn't use them.
+- 2026-09-24 (M2) — **Wizard resume.** `fn_onboarding_state(token)` (anon) returns only the token holder's own answers + name/source/advisor first name. The wizard saves each step on Continue and resumes at the first unsaved step; the current step's unsaved inputs are also kept in localStorage. 7 question screens + done (docs/01 ≤ 8): PT preferences are skipped when PT = "no". PAR-Q = the standard 7 questions.
+- 2026-09-24 (M2) — **anon function allowlist.** Functions created after 0001's one-time revoke (all of 0002, 0004's helpers…) were executable by `anon` through Supabase's default grants. 0006 resets anon to the wizard functions + `fn_normalize_phone` (tested). Default privileges are unchanged because the provided SQL tests create helpers and call them as anon; every new migration revokes anon on its own functions.
+- 2026-09-24 (M2) — **pg_cron installed (`0007_schedule_jobs.sql`).** 0002 only scheduled its jobs if pg_cron existed, so the dashboard views were never refreshed; Numbers/Team read `mv_rep_month`. Now the 5-minute refresh, hourly notifications and nightly job run locally too (same schedules as 0002). Numbers can lag up to 5 minutes; the screens say so.
+- 2026-09-24 (M2) — **Pipeline moves** use a "Move to…" menu on every card (keyboard and one-thumb friendly) plus drag-and-drop between columns on desktop. Mobile shows one stage per tab. Only forward moves and Lost are offered (the DB enforces it too).
+- 2026-09-24 (M2) — **Round robin all** assigns the unassigned leads one by one in arrival order (`fn_assign_lead(lead, null)` each), so the rotation advances per lead.
 
 - 2026-09-24 (M1) — **Staff invite uses the service role in a server action.** docs/05 M1 asks for "admin API via a server action"; CLAUDE.md rule 2 limits the service role to Edge Functions listed in docs/03 §9. Resolved by keeping the service role to the Auth admin API only (invite, and rollback of a failed invite), after an `is_top_management()` check with the caller's session; the profile and role are written by RPC as the caller. Listed in docs/03 §9. Alternative if you prefer the letter of rule 2: an `invite-staff` Edge Function (needs the edge-runtime container locally).
 - 2026-09-24 (M1) — **Admin writes go through RPCs** (definition of done: "writes only through RPC"): `0004_m1_admin.sql` adds `fn_update_setting` (keeps the JSON type; validates commission tiers), `fn_create_staff_profile`, `fn_save_membership`, `fn_set_profile_active`, `fn_mark_notifications_read`; each emits an event (`setting.updated`, `staff.created`, `membership.saved`, `profile.activation_changed`). Also adds `notifications` to the Realtime publication. Tests: `supabase/tests/002_admin.sql`.
@@ -39,6 +46,10 @@ Local logins: staff `*@gymos.local` / `gymos-dev`; clients by phone (`0111000000
 
 ## Deferred
 
+- M2: approvals in the Queue show a count only; deciding them is M3 (deals, freezes, extensions). "Create quote" links to the M3 deal builder placeholder.
+- M2: editing a lead's editorial fields (name, email, tags, handle) has no screen yet; not in the M2 list.
+- M2: branches have no phone in the seed, so the expired-link screen can't offer the WhatsApp button yet (set `branches.phone`; the Branches admin screen is M6).
+- M2: drag-and-drop in the pipeline is not covered by e2e (the "Move to" menu is); Arabic strings (`ar.json`) are still empty — the wizard layout uses logical properties and is RTL-ready.
 - M1: the live bell subscribes to rows addressed to the profile; client rows queued on `client_id` before provisioning show in the list but don't push live (provision-client backfills `recipient_profile_id`, M3).
 - M1: editing a person's name/phone and resending an invite are not in the People screen yet (not in the M1 list); invite again after deleting nothing — an existing email is refused with a clear message.
 - M1: `/checkin` is a signed-in placeholder in the sales area (kiosk mode is M4).
@@ -55,5 +66,6 @@ Local logins: staff `*@gymos.local` / `gymos-dev`; clients by phone (`0111000000
 
 ## Shipped
 
+- 2026-09-24 — **M2 Sales.** `/sales` Today (flag banner live via Realtime, follow-ups overdue-first with one-tap Done, new leads with SLA countdown, today's onboardings; Call/WhatsApp open the app and the touch sheet), `/sales/leads/new` (30-second capture, live duplicate check, source, interests, note → send onboarding link on WhatsApp or fill together), `/sales/pipeline` (stage tabs on mobile, columns + drag on desktop, Move-to menu, lost-reason sheet), `/sales/leads` (search + stage filter), `/sales/leads/[id]` (stage/owner/SLA, onboarding summary + raw, touches, follow-ups, deals; log touch, resend link, mark lost, assign/reassign for the manager), `/onboard/[token]` public wizard (7 steps, saves each, resumes on refresh, 360px one-handed), `/sales/queue` (flags, unassigned + round robin all, review, SLA breaches, stale; approvals count), `/sales/team` (reps' month, open flags, rotation pause/resume), `/sales/numbers` (tiles from `fn_dashboard_reps`, leads by source, lost reasons). Migrations 0006 (sales read shapes, touch/follow-up RPCs, wizard state, anon allowlist) and 0007 (pg_cron). Tests: 004_sales.sql, unit tests for steps/moves/format, e2e for every M2 box.
 - 2026-09-24 — **M1 Foundation.** Supabase helpers (`src/lib/supabase/{client,server,middleware,admin}.ts`), session middleware, `getMe()` / `useMe()` (profile, memberships, active role + branch, branch ids). `/login` (member phone + OTP, staff email + password), role routing from `/`, `/auth/confirm` + `/welcome` for invites, `/no-access`. `AppShell` (header with branch, role switcher, live bell, sign out; side nav ≥ md, bottom tabs + More below md) and a placeholder for every docs/04 route (title, job, milestone, onward link). `/notifications` with mark-as-read and deep links. `/c` shows the member's name, sessions left per coach and membership end. `/admin/people` (search, role filter, table/cards, invite, add/edit/deactivate roles, auto coach role for head coaches). `/admin/settings` (grouped, typed editors, commission tier table). `PhoneInput` (+20 default, E.164). UI primitives in `src/components/ui` (shadcn-style, tokens only). Migrations 0004 (admin RPCs, Realtime) and 0005 (security). Tests: 188 SQL assertions, Vitest units + PhoneInput component test, Playwright e2e for every acceptance box at 390px and 1280px.
 - 2026-09-24 — **M1 kickoff.** Next.js 15 (App Router, TS strict), Tailwind v4, shadcn/ui config, TanStack Query provider, react-hook-form + zod, `@supabase/ssr`, Vitest, Playwright (390px + 1280px), pnpm. `src/styles/tokens.css` (neutral colour/spacing/radius/type/motion). `t()` with en/ar catalogs and RTL `dir()`. Folder layout per CLAUDE.md. Local Supabase: 0001 + 0002 + 0003 apply, seed loads, `scripts/test-db.sh` → 156 assertions, ALL RULE TESTS PASSED. `src/lib/database.types.ts` generated. `pnpm seed:auth` sets staff passwords and client phone login; verified staff password login, client OTP login and RLS scoping over the REST API.

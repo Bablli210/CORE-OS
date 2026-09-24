@@ -28,7 +28,7 @@ test.describe("M1 login and role routing", () => {
     await switcher.selectOption({ label: "Sales manager · Branch A — New Cairo" });
     await expectContext(page, "Sales manager · Branch A — New Cairo");
     await openNav(page, "Queue");
-    await expect(page.getByRole("heading", { name: "Queue" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Queue", exact: true })).toBeVisible();
   });
 
   test("Ahmed sees the coach tabs and Team; as plain coach Team disappears and a direct link switches him back", async ({ page }) => {

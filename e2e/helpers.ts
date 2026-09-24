@@ -76,3 +76,33 @@ export async function latestEmailHtml(to: string): Promise<string> {
   }
   throw new Error(`no email for ${to}`);
 }
+
+export const MEMBERSHIP_IDS = {
+  mona: "a0000000-0000-0000-0000-000000000011",
+  youssef: "a0000000-0000-0000-0000-000000000012",
+} as const;
+export const BRANCH_A = "b0000000-0000-0000-0000-00000000000a";
+
+let phoneSeq = 0;
+/** A local Egyptian mobile number no test has used (010 + 8 digits from the clock). */
+export function uniqueLocalPhone(): string {
+  phoneSeq += 1;
+  return `010${String((Date.now() + phoneSeq * 7919) % 100_000_000).padStart(8, "0")}`;
+}
+export const toE164 = (local: string) => `+20${local.slice(1)}`;
+
+/** Test fixture: a lead owned by a rep, inserted directly (as the seed does). Returns its id. */
+export function insertLead(name: string, ownerMembershipId: string | null, localPhone = uniqueLocalPhone()): string {
+  const owner = ownerMembershipId ? `'${ownerMembershipId}'` : "null";
+  return sql(
+    `insert into leads(branch_id, full_name, phone, owner_membership_id, source_id, first_contact_due_at) values ('${BRANCH_A}', '${name}', '${toE164(localPhone)}', ${owner}, (select id from lead_sources where code = 'walk_in'), now() + interval '2 hours') returning id`,
+  ).split("\n")[0];
+}
+
+export async function createLeadInUi(page: Page, name: string, localPhone: string) {
+  await page.goto("/sales/leads/new");
+  await page.getByLabel("Full name").fill(name);
+  await page.getByRole("textbox", { name: "Phone number" }).fill(localPhone);
+  await page.getByRole("button", { name: "Save lead" }).click();
+  await expect(page.getByRole("status").filter({ hasText: `${name} saved` })).toBeVisible();
+}

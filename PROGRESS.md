@@ -4,24 +4,56 @@ Living log. Claude Code updates this at the end of every milestone step. Newest 
 
 ## Current milestone
 
-M3 — Money: **built, awaiting review.** Do not start M4 until M3 is reviewed. (M1 and M2 are covered by the same test run.)
+M4 — Coaching: **built, awaiting review.** Do not start M5 until M4 is reviewed. (M1–M3 are covered by the same test run.)
 
-Acceptance (docs/05 M3). The SQL tests are in `supabase/tests/005_money.sql` (C1–C33). The e2e tests are in `e2e/money.spec.ts` and run at 390px and 1280px:
-- [x] A PT pack can't be submitted without a coach: the builder shows "Pick a coach", Submit is disabled, and the database refuses too (C5–C6). The picker shows Sara first for a lead who asked for a female morning trainer (C3, e2e).
-- [x] A list-price deal is approved as soon as it's submitted (C24, e2e).
-- [x] Mona's 20% discount shows "Needs approval" live in the builder and goes to Karim's Queue. Karim approves it (C7–C12, e2e).
-- [x] Mona records 50% in cash. The deal becomes `partially_paid`, the client is created, and "6 of 12 sessions released" shows **with Sara**. Sara gets the welcome-call task and Ahmed gets "client → Sara" (C13–C17, e2e, the pro-rata case).
-- [x] Recording more than the remaining amount is refused with "That's more than the remaining X EGP…" (C18, e2e).
-- [x] After full payment the client logs in with phone OTP and sees "12 sessions with Sara" and their membership end date (C19, e2e: the login uses a reserved test phone).
-- [x] Voiding a payment needs approval. Once Karim approves, unconsumed credits are refunded and the deal goes back to partially paid (C20–C23, e2e).
-- [x] Mona's expiry extension creates an approval, and Karim's applies at once. An expired pack comes back with its unused sessions (C28–C31, e2e).
-- [x] On `/admin/money`, liability = Σ remaining credits × value in the DB. The commission report shows net per session = gross × 0.86 (C27b–c, e2e compares against SQL).
-- [x] `pnpm typecheck && pnpm lint && pnpm test` pass (38 unit tests). `scripts/test-db.sh` passes (250 SQL assertions; 005_money adds 35). `pnpm test:e2e` passes (62 tests on a fresh reset and seed).
+Acceptance (docs/05 M4). The SQL tests are in `supabase/tests/006_coaching.sql` (K1–K45). The e2e tests are in `e2e/coaching.spec.ts` and run at 390px and 1280px:
+- [x] Sara adds the M3 client at 08:00 Sat/Mon/Wed in two taps: "Add to my week" on the client, then tap the free Saturday 08:00 cell (client and preferred days preselected) and Save (e2e; K6–K7).
+- [x] An overlapping slot is refused with the day and the reason ("Sunday: that hour overlaps another slot"), and nothing of that request is kept (e2e; K8–K9).
+- [x] A slot for a client with no sessions left with Sara is refused with the reason (e2e; K10).
+- [x] Ahmed sees the slot on Sara's week from Team (e2e; K3–K4).
+- [x] Today shows the session with sessions left. Completed deducts one with Sara and the balance updates at once. Cancelled restores it. No-show records without deducting, and the client's adherence drops (100% → 0%) (e2e; K12–K18). See "the day in the test" below.
+- [x] A client with zero credits still shows on Today. Completed asks "Deliver anyway?", keeps the session unpaid, and Mona's Today shows the flag without a refresh (Realtime, asserted within 5 s) (e2e).
+- [x] Sara editing a 3-day-old outcome creates an approval, and her day marks it "Waiting for head coach". Ahmed approves it from Team, and the outcome and credit apply (e2e; K19–K23).
+- [x] Ahmed reassigns the client to Mahmoud with a reason. The sessions left move, Sara's slots for the client close, and both coaches are notified (e2e).
+- [x] Program builder: a 2 days × 4 exercises program from a template in well under 2 minutes (asserted), including an edit that survives a refresh. On Activate the client gets the push, sees it on `/c` and in notifications (e2e; K26–K33).
+- [x] Kiosk: Farida checks in by phone at either branch. Adel is admitted only at branch A; at branch B the screen says his PT sessions work at Branch A. A lapsed client (Heba) sees "No active membership", and Notify sales gives her rep Mona a FLAG task (e2e; K37–K45).
+- [x] Also required by the M4 prompt: one tap per outcome, optimistic with rollback on an RPC error, and a retry queue for bad signal. The e2e test takes the phone offline, taps No-show (shown at once, "Waiting for signal"), goes back online and sees it synced. Unit tests cover the optimistic maths, the queue and network-vs-database errors.
+- [x] `pnpm typecheck && pnpm lint && pnpm test` pass (59 unit tests). `scripts/test-db.sh` passes (six suites; 006_coaching adds 45 checks). `pnpm test:e2e` passes (78 tests on a fresh reset and seed, production build).
 
-How to run: `supabase start -x studio,imgproxy,logflare,vector,supavisor && supabase db reset && pnpm seed:auth && pnpm env:local && pnpm dev`. The edge runtime now has to be running for `provision-client`. This sandbox couldn't pull its image from ghcr.io or Docker Hub, so it was pulled from `mirror.gcr.io/supabase/edge-runtime:v1.74.3` and retagged. A normal machine pulls it by itself.
-Local logins: staff `*@gymos.local` / `gymos-dev`. Clients log in by phone (`01110000001` = Hassan Ibrahim) with OTP `123456`. Phones `+2010999000NN` (01–60) are reserved for clients the e2e tests create, and also accept `123456`.
+**The day in the test:** the database clock can't be moved to a Saturday. So the Today test adds a second slot for the client at 13:00 on the current weekday, through the same sheet, and works on that session. The Sat/Mon/Wed 08:00 slot itself is tested exactly as written.
+
+How to run: `supabase start -x studio,imgproxy,logflare,vector,supavisor && supabase db reset && pnpm seed:auth && pnpm env:local && pnpm dev`. The edge runtime must be running for client provisioning (M3). In this sandbox it didn't come back after a Docker daemon restart; `docker start supabase_edge_runtime_gymos` fixes it (check with `docker ps`).
+Local logins: staff `*@gymos.local` / `gymos-dev` (Sara = `coach2.a`, Ahmed = `headcoach.a`, front desk B = `desk.b`). Clients log in by phone (`01110000001` = Hassan Ibrahim) with OTP `123456`.
 
 ## Decisions made during the build
+
+- 2026-09-25 (M4) — **Migration 0009_coaching.sql.**
+  - Read shapes: week, day, clients, client, program, templates, Team.
+  - Writes as RPCs: weekly slots, working hours, notes, programs, templates, kiosk.
+  - New events: `availability.updated`, `client.note_added`, `program.created`, `template.saved`.
+  - anon still has no access (the allowlist test passes). Dates are Cairo dates, never the server's `current_date`.
+- 2026-09-25 (M4) — **Several days at once.** `fn_add_weekly_slots` adds one slot on several weekdays in one transaction: all or nothing, and the refused weekday is named (DETAIL carries it). The sheet preselects the tapped day plus the client's onboarding days (`pt_prefs.days`). That is what makes "08:00 Sat/Mon/Wed in two taps" possible.
+- 2026-09-25 (M4) — **Recurring week.** Any weekday of the week on screen can be tapped. A new slot starts on the later of today and the week's Saturday, so tapping an earlier day of this week starts it next week. Moving, skipping and ending slots use the 0001 functions.
+- 2026-09-25 (M4) — **Today.** `fn_coach_today` materializes the day first (today or later) and returns everything one tap needs. `?date=` pages through days; outcomes can be recorded for today and earlier. A zero-credit Completed asks first ("Deliver anyway?").
+- 2026-09-25 (M4) — **Bad signal.**
+  - A tap updates the row at once (the same credit arithmetic as `fn_record_attendance`).
+  - If the database refuses, the row rolls back and the reason shows.
+  - If the request can't reach the server, the tap is kept in localStorage and resent when the phone is back online, every 15 s, and on the next open.
+  - A late edit shows as "Waiting for head coach".
+  - localStorage rather than IndexedDB: `idb-keyval` is planned for M5's workout logger and the queue is tiny. No new dependency.
+- 2026-09-25 (M4) — **Live adherence on the coach's screens.** `/coach/clients` and the client page compute 30-day adherence live (`fn_coach_clients` / `fn_coach_client`, same formula as `mv_client_adherence`). So a new client appears the moment a pack is sold (the docs/04 empty-state promise) and a no-show counts at once, including one recorded earlier the same day. docs/04 names `fn_dashboard_adherence` for this list; Team's branch-wide adherence list still uses it (the materialized view, 5-minute refresh).
+- 2026-09-25 (M4) — **Programs.**
+  - Written through RPCs. `fn_save_program` autosaves the draft (400 ms debounce, plus a save when the tab is hidden).
+  - An active program is never rewritten, because clients log against it: "Edit as new version" makes a draft copy, and activating it archives the old one.
+  - Builder state is the route (`?program=`, `?day=`, `?view=preview`, `?add=1`) plus the saved draft, so a refresh lands in the same place (e2e).
+  - The schema has no week on `program_days`: weeks is the program's length and the days repeat weekly. "Copy last week" is therefore "Copy this day"; supersets are group letters.
+- 2026-09-25 (M4) — **Starter templates.** Two gym-wide templates ("Full body — 2 days", "Upper / lower — 4 days") ship in 0009. They name their exercises, and names are resolved when read, because the exercise library is seeded after migrations. seed.sql is unchanged.
+- 2026-09-25 (M4) — **Kiosk.**
+  - `/checkin` looks members up by phone (`fn_kiosk_check_in`, visit method `phone`).
+  - "Notify sales" uses `fn_kiosk_notify_sales`, so reception at either branch can flag the client's rep (`fn_flag_for_sales` only allows the home branch's staff).
+  - The screen resets itself after 12 s. It keeps the app shell (front desk account).
+- 2026-09-25 (M4) — **Coach context.** Coaching screens act through the person's coach membership in the active branch (a head coach has one), or `?coach=` when the head coach opens a coach from Team (the database checks the scope). `/coach/programs` lists the templates; `/c` now shows the client's active program ("client sees it"). Workout logging is M5.
+- 2026-09-25 (M4) — **Late attendance edits (flagged).** docs/03 §6 says "the first write and edits within 24 h are applied at once". But 0001's `fn_record_attendance` and the provided test `001_rules.sql` (10a) send any write after 24 h, including the first, to the head coach. The code and the provided test were kept, since test files aren't edited without approval. Decide which is right, then update docs/03 or add a migration.
 
 - 2026-09-24 (M3) — **Migration 0008_money.sql.** It adds the deal/approval/client read shapes and the draft, void and catalog writes. Every write emits an event (`deal.created`, `product.saved`, and the existing `approval.requested`). The read shapes are SECURITY DEFINER and mirror the `deals` RLS scope. anon has no access (the allowlist test still passes).
 - 2026-09-24 (M3) — **Money in the client.** The only conversion the client does is the rep's EGP input → piastres. Totals, discounts, per-session gross/net, remaining, the minimum first payment and "needs approval" all come from the database. `fn_save_deal_draft` prices through `fn_price_deal`, and `fn_deal_approval_preview` uses the same rules as `fn_submit_deal`. The builder autosaves (400 ms debounce) and always shows what the server returned.
@@ -58,6 +90,15 @@ Local logins: staff `*@gymos.local` / `gymos-dev`. Clients log in by phone (`011
 
 ## Deferred
 
+- M4: only attendance taps survive no signal. Other writes need a connection, and the Today page must have loaded once (offline shell and service worker come with the M5 PWA).
+- M4: the kiosk has no QR scan and no chrome-less kiosk mode yet. QR check-in ("I'm here") is M5.
+- M4: program builder:
+  - no per-week progression ("copy last week"), because the schema has no week per day;
+  - exercises reorder with up/down buttons, not drag;
+  - the library is the 36 seeded exercises.
+- M4: the working-hours editor edits one block per day; the database accepts several.
+- M4: the Team heatmap reads `mv_heatmap`, which refreshes nightly (heavy refresh), so it is empty on a fresh reset until the nightly job runs.
+- M4: `/coach/numbers` is still the M6 placeholder. Nutritionists have no schedule screen (no coach membership).
 - M3: bundles can be edited in the products editor but aren't offered in the deal builder. 0001's `fn_record_payment` doesn't expand a bundle into its items, so a sold bundle would issue nothing. Fix: a migration that expands bundles at pricing or payment time.
 - M3: cancelling a deal that has payments isn't possible (0001 refuses). Refunds (`refund` approval) have no screen yet. Voids cover a payment recorded by mistake.
 - M3: the `notify` Edge Function, which retries `provision-client` and delivers the WhatsApp welcome, is not built (the welcome sits `pending`). That is M7 (notifications).
@@ -67,7 +108,6 @@ Local logins: staff `*@gymos.local` / `gymos-dev`. Clients log in by phone (`011
 - M2: drag-and-drop in the pipeline is not covered by e2e (the "Move to" menu is); Arabic strings (`ar.json`) are still empty — the wizard layout uses logical properties and is RTL-ready.
 - M1: the live bell subscribes to rows addressed to the profile; client rows queued on `client_id` before provisioning show in the list but don't push live (provision-client backfills `recipient_profile_id`, M3).
 - M1: editing a person's name/phone and resending an invite are not in the People screen yet (not in the M1 list); invite again after deleting nothing — an existing email is refused with a clear message.
-- M1: `/checkin` is a signed-in placeholder in the sales area (kiosk mode is M4).
 - M1: `libphonenumber-js` metadata adds ~140 kB to pages with a phone field (login, people); revisit with the PWA budget in M5/M8.
 - Doc inconsistencies found at kickoff, not yet resolved in `docs/` (decide, then propagate):
   - CLAUDE.md rule 6 says `fn_convert_lead` creates the `auth.users` row; docs/03 §9 and the SQL have `provision-client` do it.
@@ -81,6 +121,31 @@ Local logins: staff `*@gymos.local` / `gymos-dev`. Clients log in by phone (`011
 
 ## Shipped
 
+- 2026-09-25 — **M4 Coaching.**
+  - `/coach/schedule`:
+    - WeekGrid: 7 days on desktop, one day per tab on a phone, working hours shaded, free cells tappable.
+    - Slot sheet: client / class / blocked, several days at once, duration.
+    - Slot detail: move or change, skip a date, end.
+    - Working-hours editor; head coach can open any coach (`?coach=`).
+  - `/coach` Today:
+    - timeline with sessions, classes, blocked hours and free gaps;
+    - one-tap outcomes, optimistic with rollback, and the offline retry queue;
+    - zero-credit confirm, walk-in, follow-ups (welcome calls), day paging.
+  - `/coach/clients`: live adherence, at-risk and lowest adherence first, search.
+  - `/coach/clients/[id]`:
+    - header with sessions left per coach, injuries and unpaid;
+    - tabs in the URL: overview, sessions (plus one-off), program, logs, notes;
+    - Add to my week, Flag for sales.
+  - `/coach/clients/[id]/program`: builder from a template or blank, exercise library, preview, activate, save as template.
+  - `/coach/programs`: templates.
+  - `/coach/team`:
+    - late attendance edits to approve, waivers, decided edits, unpaid sessions;
+    - coaches with this month's numbers and their weeks;
+    - reassignment with ranked suggestions;
+    - lowest adherence; busy-hours heatmap.
+  - `/checkin` kiosk.
+  - `/c` shows the active program.
+  - Migration 0009. Tests: 006_coaching.sql, unit tests for week maths and the outcome queue, and e2e for every M4 box.
 - 2026-09-24 — **M3 Money.**
   - `/sales/deals`: a list with status filter and search.
   - `/sales/deals/new` → `/sales/deals/[id]`: the deal builder. It picks from the catalog with per-session gross/net, has a coach picker for PT packs (`fn_rank_coaches` suggestions + all branch coaches), discount % or EGP with a live "needs approval" indicator and its reasons, single or installments, notes, autosave and submit. It also shows the approved/paid view: payments with Void / Void pending / Voided, the record-payment sheet (method, reference, remaining, minimum first payment), "X of Y sessions released", the status timeline and cancel.

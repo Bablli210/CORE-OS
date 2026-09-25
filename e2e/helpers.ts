@@ -1,4 +1,7 @@
 import { execSync } from "node:child_process";
+import { mkdtempSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { expect, type Page } from "@playwright/test";
 
 /** Local stack coordinates, read from the running Supabase CLI (never hard-coded). */
@@ -21,6 +24,8 @@ export const STAFF = {
   headCoach: "headcoach.a@gymos.local",
   coach: "coach1.a@gymos.local",
   desk: "desk.a@gymos.local",
+  deskB: "desk.b@gymos.local",
+  sara: "coach2.a@gymos.local",
 } as const;
 export const PROFILE_IDS = { rep: "00000000-0000-0000-0000-000000000011" } as const;
 
@@ -119,3 +124,50 @@ export function freeTestPhone(): { local: string; e164: string } {
 
 /** Same formatting as the app (src/lib/format.ts). */
 export const egp = (piastres: number) => new Intl.NumberFormat("en-EG", { style: "currency", currency: "EGP", maximumFractionDigits: 0 }).format(piastres / 100);
+
+/** Runs a SQL script as one psql session (dollar quotes and several statements allowed); returns the last result. */
+export function sqlScript(script: string): string {
+  const file = join(mkdtempSync(join(tmpdir(), "gymos-e2e-")), "fixture.sql");
+  writeFileSync(file, script);
+  return execSync(`psql "${local.db}" -Atq -v ON_ERROR_STOP=1 -f "${file}"`, { encoding: "utf8" }).trim().split("\n").at(-1) ?? "";
+}
+
+export const COACH_IDS = { sara: "a0000000-0000-0000-0000-000000000023", mahmoud: "a0000000-0000-0000-0000-000000000022" } as const;
+const MONA_PROFILE = "00000000-0000-0000-0000-000000000011";
+
+/**
+ * Test fixture through the real RPCs (the M3 path): Mona sells a PT pack under a coach to a new onboarded lead, paid in full.
+ * Returns the new client's id. The lead asked for Sat/Mon/Wed mornings.
+ */
+export function sellPtPack(name: string, coachMembershipId: string, productCode = "PT8"): string {
+  return sqlScript(`
+create function pg_temp.sell() returns uuid language plpgsql as $f$
+declare v_lead uuid; v_deal uuid;
+begin
+  perform set_config('request.jwt.claim.sub', '${MONA_PROFILE}', true);
+  perform set_config('request.jwt.claims', '{"sub":"${MONA_PROFILE}","role":"authenticated"}', true);
+  insert into leads(branch_id, full_name, phone, owner_membership_id, status, onboarding_responses, first_contact_due_at)
+  values ('${BRANCH_A}', '${name}', '${toE164(uniqueLocalPhone())}', '${MEMBERSHIP_IDS.mona}', 'onboarded',
+          '{"pt_prefs":{"days":["sat","mon","wed"],"time":"morning"}}', now()) returning id into v_lead;
+  v_deal := fn_create_deal(v_lead);
+  perform fn_save_deal_draft(v_deal, jsonb_build_array(jsonb_build_object('product_id', (select id from products where code = '${productCode}' and branch_id is null), 'provider_membership_id', '${coachMembershipId}')));
+  perform fn_submit_deal(v_deal);
+  return (fn_record_payment(v_deal, (select total_piastres from deals where id = v_deal), 'cash')->>'client_id')::uuid;
+end $f$;
+select pg_temp.sell();`);
+}
+
+/** Runs SQL as a signed-in profile (fixture setup through the same RPCs the app calls). */
+export function sqlAs(profileId: string, statement: string): string {
+  return sqlScript(`
+select set_config('request.jwt.claim.sub', '${profileId}', false), set_config('request.jwt.claims', '{"sub":"${profileId}","role":"authenticated"}', false);
+${statement}`);
+}
+
+/** Today's date in Cairo (YYYY-MM-DD), and the weekday name the app shows. */
+export function cairoDate(offsetDays = 0): string {
+  const d = new Date(Date.now() + offsetDays * 86_400_000);
+  return new Intl.DateTimeFormat("en-CA", { timeZone: "Africa/Cairo", year: "numeric", month: "2-digit", day: "2-digit" }).format(d);
+}
+export const WEEKDAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"] as const;
+export const cairoWeekday = (iso = cairoDate()) => WEEKDAYS[new Date(`${iso}T00:00:00Z`).getUTCDay()];

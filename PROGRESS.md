@@ -4,28 +4,59 @@ Living log. Claude Code updates this at the end of every milestone step. Newest 
 
 ## Current milestone
 
-M4 — Coaching: **built, awaiting review.** Do not start M5 until M4 is reviewed. (M1–M3 are covered by the same test run.)
+M5 — Client app: **built, awaiting review.** Do not start M6 until M5 is reviewed. (M1–M4 are covered by the same test run.)
 
-Acceptance (docs/05 M4). The SQL tests are in `supabase/tests/006_coaching.sql` (K1–K45). The e2e tests are in `e2e/coaching.spec.ts` and run at 390px and 1280px:
-- [x] Sara adds the M3 client at 08:00 Sat/Mon/Wed in two taps: "Add to my week" on the client, then tap the free Saturday 08:00 cell (client and preferred days preselected) and Save (e2e; K6–K7).
-- [x] An overlapping slot is refused with the day and the reason ("Sunday: that hour overlaps another slot"), and nothing of that request is kept (e2e; K8–K9).
-- [x] A slot for a client with no sessions left with Sara is refused with the reason (e2e; K10).
-- [x] Ahmed sees the slot on Sara's week from Team (e2e; K3–K4).
-- [x] Today shows the session with sessions left. Completed deducts one with Sara and the balance updates at once. Cancelled restores it. No-show records without deducting, and the client's adherence drops (100% → 0%) (e2e; K12–K18). See "the day in the test" below.
-- [x] A client with zero credits still shows on Today. Completed asks "Deliver anyway?", keeps the session unpaid, and Mona's Today shows the flag without a refresh (Realtime, asserted within 5 s) (e2e).
-- [x] Sara editing a 3-day-old outcome creates an approval, and her day marks it "Waiting for head coach". Ahmed approves it from Team, and the outcome and credit apply (e2e; K19–K23).
-- [x] Ahmed reassigns the client to Mahmoud with a reason. The sessions left move, Sara's slots for the client close, and both coaches are notified (e2e).
-- [x] Program builder: a 2 days × 4 exercises program from a template in well under 2 minutes (asserted), including an edit that survives a refresh. On Activate the client gets the push, sees it on `/c` and in notifications (e2e; K26–K33).
-- [x] Kiosk: Farida checks in by phone at either branch. Adel is admitted only at branch A; at branch B the screen says his PT sessions work at Branch A. A lapsed client (Heba) sees "No active membership", and Notify sales gives her rep Mona a FLAG task (e2e; K37–K45).
-- [x] Also required by the M4 prompt: one tap per outcome, optimistic with rollback on an RPC error, and a retry queue for bad signal. The e2e test takes the phone offline, taps No-show (shown at once, "Waiting for signal"), goes back online and sees it synced. Unit tests cover the optimistic maths, the queue and network-vs-database errors.
-- [x] `pnpm typecheck && pnpm lint && pnpm test` pass (59 unit tests). `scripts/test-db.sh` passes (six suites; 006_coaching adds 45 checks). `pnpm test:e2e` passes (78 tests on a fresh reset and seed, production build).
+Acceptance (docs/05 M5). The SQL tests are in `supabase/tests/007_client.sql` (L1–L24). The e2e tests are in `e2e/client.spec.ts` and run at 390px and 1280px:
+- [x] Hassan logs a workout with airplane mode on: the browser goes offline, he logs two back-squat sets and taps Finish, and the screen says "Saved on this phone" while nothing reaches the server. Back online, it syncs once (the workout count goes up by exactly 1) and the PR badge is on the set that beat his history, not on the lighter one (e2e; L5–L7).
+- [x] Renew flags Mahmoud (his coach) and Mona (his rep), each with a notification, and Mona gets a FLAG task (e2e; L14–L15).
+- [x] The credits screen matches `fn_credit_balances` per coach and shows the next expiry date (e2e compares with SQL). There is no extend button; "Ask Mona on WhatsApp" is the only way (e2e; L13).
+- [x] PWA installable: Chrome reports no installability errors (manifest, icons, service worker). First load of `/login` on Lighthouse's throttled 4G (150 ms RTT, 1.6 Mbps) with a 4× slower CPU: **LCP 560 ms, load 1.7 s** (e2e, 390px; see "PWA checks" below).
+- [x] Also required by the M5 prompt:
+  - After one visit, the app shell and the logger reload with no signal (service worker + IndexedDB, e2e).
+  - Offline writes are queued in IndexedDB (`idb-keyval`) and replayed with idempotency keys (ids made on the phone). Unit tests cover the queue order, network vs database failures and duplicates; L6 shows a replay is a no-op.
+  - Members see their coach's weekly slots read-only, with no booking controls (e2e).
+  - One tap "I'm here" works within the hour of a session, and the kiosk's QR code of the day checks a member in from their phone camera (e2e; L18–L22).
+  - Progress shows PRs, the streak and body weight; the profile saves (e2e; L10–L11, L17).
+- [x] `pnpm typecheck && pnpm lint && pnpm test` pass (66 unit tests). `scripts/test-db.sh` passes (seven suites; 007_client adds 24 checks). `pnpm test:e2e` passes: 93 tests on a fresh reset and seed, production build (1 skipped: the PWA check runs once, on the phone profile).
 
-**The day in the test:** the database clock can't be moved to a Saturday. So the Today test adds a second slot for the client at 13:00 on the current weekday, through the same sheet, and works on that session. The Sat/Mon/Wed 08:00 slot itself is tested exactly as written.
+**PWA checks:** Lighthouse itself isn't installed in this sandbox. The e2e test uses Chrome's own installability check (`Page.getInstallabilityErrors`, on a normal non-incognito profile) and times the first load under Lighthouse's throttling settings. Worth confirming with a real Lighthouse run on the deployed site.
 
-How to run: `supabase start -x studio,imgproxy,logflare,vector,supavisor && supabase db reset && pnpm seed:auth && pnpm env:local && pnpm dev`. The edge runtime must be running for client provisioning (M3). In this sandbox it didn't come back after a Docker daemon restart; `docker start supabase_edge_runtime_gymos` fixes it (check with `docker ps`).
-Local logins: staff `*@gymos.local` / `gymos-dev` (Sara = `coach2.a`, Ahmed = `headcoach.a`, front desk B = `desk.b`). Clients log in by phone (`01110000001` = Hassan Ibrahim) with OTP `123456`.
+How to run: `supabase start -x studio,imgproxy,logflare,vector,supavisor && supabase db reset && pnpm seed:auth && pnpm env:local && pnpm dev`. The service worker exists only in a production build (`pnpm build && pnpm start`); `next dev` stays online-only. If client provisioning (M3) fails after a Docker restart, run `docker start supabase_edge_runtime_gymos`.
+Local logins: staff `*@gymos.local` / `gymos-dev`. Clients log in by phone with OTP `123456` (Hassan = `01110000001`, Farida = `01110000008`).
 
 ## Decisions made during the build
+
+- 2026-09-25 (M5) — **Migration 0010_client_app.sql.**
+  - Client read shapes: Today, training, progress, credits.
+  - `fn_update_my_profile`, self check-in, the kiosk QR code, and an `app_secrets` table for its key.
+  - Reads are RPCs as well, scoped to `my_client_id()`. New event: `client.profile_updated`.
+  - Renew and freeze use 0001's `fn_flag_for_sales` (`renewal_request`) and `fn_request_freeze` unchanged. anon still has no access.
+- 2026-09-25 (M5) — **Direct writes, idempotent.** Workouts, sets and body weight are written straight to their tables under RLS, as the prompt says. The rows' ids are made on the phone (`crypto.randomUUID`) and double as the idempotency keys, and each send is `INSERT … ON CONFLICT (id) DO NOTHING` (PostgREST `ignore-duplicates`). A replay after a lost response writes nothing twice. PRs stay with 0001's trigger (Epley), so the badge appears once the rows reach the server.
+- 2026-09-25 (M5) — **Offline outbox.**
+  - Every client write goes to the IndexedDB outbox first (`idb-keyval`), online or not.
+  - It is sent right away, on the browser's `online` event, every 15 s while anything waits, and on the next app open. Oldest first.
+  - A network failure stops the run; a database refusal parks the item with its reason, and the summary shows it.
+  - The workout in progress is also kept in IndexedDB, so a reload keeps the sets.
+  - Today and the logger read network-first with an IndexedDB copy as fallback, and the UI says when it is showing the copy.
+  - The logger updates its URL with `history.replaceState`, which needs no server round trip; `router.replace` failed without signal.
+  - The M4 coach attendance queue stays in localStorage (small, one key).
+- 2026-09-25 (M5) — **Service worker (Serwist).**
+  - Precaches the build; network-first for pages (so pages opened before work offline); `/offline` as the fallback for pages never opened.
+  - Built only for production.
+  - Sign-out clears the page caches and the cached data. The outbox is kept so a queued workout is never lost; it is sent the next time that member opens the app.
+  - Placeholder icons are rendered by `scripts/make-icons.mjs` (the neutral tokens' colours).
+- 2026-09-25 (M5) — **Manifest link in `<head>`.** Next 15 streams generated metadata into `<body>` for real browsers, and Chrome then ignores the manifest: the app wasn't installable. The root layout now writes the manifest link, theme colour and touch icon in `<head>` itself. The manifest colours are literals (a manifest can't reference CSS) kept in `src/lib/pwa.ts` next to the token names they copy.
+- 2026-09-25 (M5) — **"I'm here".**
+  - One tap works within ±1 hour of a booked session, at that session's branch.
+  - Otherwise the member scans the kiosk's QR code. It encodes `/c/here?b=<branch>&k=<code>`, and the code is an HMAC of branch and Cairo date, so a photo of it stops working the next day. Members scan with the phone's camera app; there is no in-app scanner.
+  - Admission is `fn_check_in`'s rule (visit method `qr`).
+  - Two new dependencies, each with a reason in docs/06: `qrcode` (+ `@types/qrcode`) and `serwist`.
+- 2026-09-25 (M5) — **What the member sees.**
+  - Today shows the next session (booked, or the next occurrence of a weekly slot), the suggested program day, sessions left per coach and the coach's weekly slots, read-only.
+  - The logger prefills each set from last time, else the program's target, and starts the rest timer when a set is marked done.
+  - Progress: streak (gym weeks with a workout or a visit), PRs by best estimated 1RM, the top set per session for one exercise, and body weight (line charts with a table view).
+  - Credits: per-coach balances and expiry, packs, memberships, payments, session ledger, Renew, Request freeze, and "Ask your advisor" instead of an extension.
+  - Profile: training preferences, consents, Instagram, language.
 
 - 2026-09-25 (M4) — **Migration 0009_coaching.sql.**
   - Read shapes: week, day, clients, client, program, templates, Team.
@@ -90,7 +121,12 @@ Local logins: staff `*@gymos.local` / `gymos-dev` (Sara = `coach2.a`, Ahmed = `h
 
 ## Deferred
 
-- M4: only attendance taps survive no signal. Other writes need a connection, and the Today page must have loaded once (offline shell and service worker come with the M5 PWA).
+- M5: Lighthouse wasn't run (not installable here); installability and first load were measured with Chrome DevTools in e2e. Run Lighthouse on the Vercel preview.
+- M5: offline covers the client app: Today, the logger, workouts and body weight. Credits, progress and profile need signal (they say so and offer Try again). Push notifications (Web Push) are the `notify` Edge Function, M7.
+- M5: no in-app QR scanner (the phone camera opens the link). A signed-out member who scans goes to login and then back to the check-in link.
+- M5: the language switch is saved, but Arabic strings (`ar.json`) are still empty.
+- M5: free workouts without a program, and editing a logged workout, aren't built.
+- M4: on the coach side only attendance taps survive no signal (localStorage queue). The M5 service worker now keeps pages opened before.
 - M4: the kiosk has no QR scan and no chrome-less kiosk mode yet. QR check-in ("I'm here") is M5.
 - M4: program builder:
   - no per-week progression ("copy last week"), because the schema has no week per day;
@@ -121,6 +157,16 @@ Local logins: staff `*@gymos.local` / `gymos-dev` (Sara = `coach2.a`, Ahmed = `h
 
 ## Shipped
 
+- 2026-09-25 — **M5 Client app.**
+  - `/c` Today: next session and "I'm here", today's workout, sessions left per coach, the coach's weekly slots (read-only), the program.
+  - `/c/workout` logger: day tabs, prefilled sets, last time, rest timer, IndexedDB draft, offline outbox, and a summary with PR badges after sync.
+  - `/c/progress`: streak, PRs, top-set and body-weight charts, add weight.
+  - `/c/credits`: balances and expiry per coach, packs, memberships, freezes, payments, ledger, Renew, Request freeze, Ask your advisor.
+  - `/c/profile`.
+  - `/c/here`: QR check-in.
+  - Kiosk QR on `/checkin`.
+  - PWA: manifest, icons, Serwist service worker, `/offline`.
+  - Migration 0010. Tests: 007_client.sql, unit tests for the outbox and the workout draft, e2e for every M5 box including offline-then-sync.
 - 2026-09-25 — **M4 Coaching.**
   - `/coach/schedule`:
     - WeekGrid: 7 days on desktop, one day per tab on a phone, working hours shaded, free cells tappable.

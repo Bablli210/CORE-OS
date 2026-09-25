@@ -67,3 +67,5 @@ Confirmed: PT commission tiers are counted per calendar month; opening hours 06:
 - `@playwright/test` — e2e tests at 390px and 1280px against the seed.
 - `tsx` — runs TypeScript scripts (`pnpm seed:auth`) without a build step.
 - `server-only` — makes importing the service-role module from browser code a build error.
+- `serwist` — the service-worker runtime `@serwist/next` builds `src/app/sw.ts` against (precache, runtime caching, offline fallback).
+- `qrcode` (+ `@types/qrcode`) — draws the kiosk's check-in QR code as SVG; loaded only on `/checkin`.

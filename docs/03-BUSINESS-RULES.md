@@ -172,6 +172,8 @@ Nothing else may use the service role.
 
 Reception kiosk (0009): `fn_kiosk_check_in(phone, branch)` finds the client by phone and calls `fn_check_in` (staff of that branch); `fn_kiosk_notify_sales(client, branch)` lets staff of the kiosk's branch raise the `kiosk_refused` flag for a client of either branch (`fn_flag_for_sales` alone only allows staff of the client's home branch).
 
+Client app (0010): members write their own `workout_logs`, `set_logs` and `body_metrics` straight to the tables under RLS (§7); every other client action is an RPC (`fn_update_my_profile`, `fn_client_check_in`, and 0001's `fn_flag_for_sales` / `fn_request_freeze`). Self check-in accepts the kiosk's QR code of the day — an HMAC of branch and Cairo date keyed by a secret in `app_secrets`, a table with RLS on and no grants, read only inside `fn_kiosk_code_for` — or one tap within an hour of a booked session.
+
 `anon` can execute exactly `fn_submit_onboarding`, `fn_onboarding_state` and `fn_normalize_phone` (0006; tested in `supabase/tests/004_sales.sql`). New migrations must `revoke execute ... from public, anon` on the functions they create.
 
 Internal helpers are not callable over the API (0005): `fn_emit_event`, `fn_notify*`, `fn_round_robin_next`, `fn_convert_lead`, `fn_issue_credits`, `fn_set_primary_coach`, `fn_settle_unpaid_sessions`, `fn_consume_credit`, `fn_restore_credit`, `fn_apply_attendance`, `fn_flag_for_sales_internal`, `fn_apply_expiry_extension` and the jobs `fn_expire_credits`, `fn_compute_risk_scores`, `fn_mark_lapsed` have no EXECUTE for `anon`/`authenticated`; the checked entry points call them as the owner. `fn_end_freeze` stays callable for the sales manager of the client's branch and top management (and the nightly job).

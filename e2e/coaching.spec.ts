@@ -213,7 +213,7 @@ test("program builder: 2 days × 4 exercises from a template in under 2 minutes,
   await loginClient(client, AYA.phone);
   await client.goto("/c");
   await expect(client.getByTestId("my-program")).toContainText(programName);
-  await expect(client.getByTestId("my-program")).toContainText("Goblet squat");
+  await expect(client.getByTestId("my-program")).toContainText("Day A — Full body");
   await client.goto("/notifications");
   await expect(client.getByText("Your new program is ready").first()).toBeVisible();
   await client.close();

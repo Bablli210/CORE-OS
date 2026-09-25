@@ -11,6 +11,7 @@ import { createClient } from "@/lib/supabase/client";
 import { formatDate, formatDateTime } from "@/lib/format";
 import { t } from "@/lib/i18n";
 import { coachingErrorKey } from "../errors";
+import { KioskQr } from "./kiosk-qr";
 
 type CheckIn = {
   ok: boolean;
@@ -71,6 +72,8 @@ export function KioskScreen() {
           </div>
           {check.isError ? <p role="alert" className="text-sm text-destructive">{t(coachingErrorKey(check.error))}</p> : null}
           <Button type="submit" size="block" className="min-h-14 text-base" disabled={!phone || check.isPending}>{t("kiosk.checkIn")}</Button>
+          <p className="text-center text-sm text-muted-foreground">{t("kiosk.or")}</p>
+          <KioskQr branch={branch} />
         </form>
       ) : r.ok ? (
         <section role="status" data-testid="kiosk-result" data-ok="true" className="grid justify-items-center gap-3 rounded-xl border border-success bg-success/10 p-6 text-center">

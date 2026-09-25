@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
-import { ScreenPlaceholder } from "@/components/screen-placeholder";
+import { CreditsScreen } from "@/features/training/components/credits-screen";
 import { t } from "@/lib/i18n";
 
-export const metadata: Metadata = { title: t("screen.c.credits.title") };
+export const metadata: Metadata = { title: t("credits.screenTitle") };
 
 export default function Page() {
-  return <ScreenPlaceholder screen="c.credits" />;
+  return <CreditsScreen />;
 }

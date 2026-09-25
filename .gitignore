@@ -30,3 +30,8 @@ supabase/.branches
 *.pem
 .DS_Store
 .vercel
+
+# service worker built by Serwist
+public/sw.js
+public/sw.js.map
+public/swe-worker-*.js

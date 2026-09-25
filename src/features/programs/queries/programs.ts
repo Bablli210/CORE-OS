@@ -1,6 +1,8 @@
 import { createClient } from "@/lib/supabase/client";
 
 export type ProgramExercise = {
+  /** program_exercises.id once saved (absent in a template). */
+  id?: string;
   exercise_id: string;
   exercise_name: string;
   muscle_group: string | null;

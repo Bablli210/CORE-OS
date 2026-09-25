@@ -1,6 +1,4 @@
 import Link from "next/link";
-import { LogOut } from "lucide-react";
-import { signOut } from "@/features/auth/actions";
 import type { Me } from "@/features/auth/me";
 import { MeProvider } from "@/features/auth/me-context";
 import { homeFor } from "@/features/auth/roles";
@@ -11,6 +9,7 @@ import { BottomNav } from "./bottom-nav";
 import { navFor } from "./nav";
 import { RoleSwitcher } from "./role-switcher";
 import { SideNav } from "./side-nav";
+import { SignOutButton } from "./sign-out-button";
 
 /** docs/04 `AppShell`: header (branch, role switcher, bell), side nav on desktop, bottom tabs on mobile. */
 export function AppShell({ me, children }: { me: Me; children: React.ReactNode }) {
@@ -28,15 +27,7 @@ export function AppShell({ me, children }: { me: Me; children: React.ReactNode }
           </Link>
           <RoleSwitcher />
           <NotificationBell userId={me.profile.id} />
-          <form action={signOut}>
-            <button
-              type="submit"
-              aria-label={t("shell.signOut")}
-              className="inline-flex size-tap items-center justify-center rounded-md hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            >
-              <LogOut aria-hidden className="size-5" />
-            </button>
-          </form>
+          <SignOutButton />
         </header>
         <div className="flex flex-1">
           <SideNav primary={primary} secondary={secondary} />

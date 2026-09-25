@@ -4,7 +4,8 @@ import type { Database } from "@/lib/database.types";
 import { publicEnv } from "@/lib/env";
 
 /** Routes reachable without a session. Everything else redirects to /login. */
-const PUBLIC_PATHS = ["/login", "/auth/", "/onboard/"];
+// /offline, the manifest and the service worker must load without a session (the PWA fetches them itself).
+const PUBLIC_PATHS = ["/login", "/auth/", "/onboard/", "/offline", "/manifest.webmanifest", "/sw.js"];
 
 export function isPublicPath(pathname: string) {
   return PUBLIC_PATHS.some((p) => (p.endsWith("/") ? pathname.startsWith(p) : pathname === p));

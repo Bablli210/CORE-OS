@@ -3226,6 +3226,15 @@ export type Database = {
       cairo_date: { Args: { t: string }; Returns: string }
       cairo_dow: { Args: { t: string }; Returns: number }
       cairo_hour: { Args: { t: string }; Returns: number }
+      fn_activate_program: { Args: { p_program_id: string }; Returns: Json }
+      fn_add_client_note: {
+        Args: {
+          p_body: string
+          p_client: string
+          p_visibility?: Database["public"]["Enums"]["note_visibility"]
+        }
+        Returns: string
+      }
       fn_add_follow_up: {
         Args: {
           p_assignee?: string
@@ -3245,6 +3254,19 @@ export type Database = {
           p_scheduled_at: string
         }
         Returns: string
+      }
+      fn_add_weekly_slots: {
+        Args: {
+          p_client_id?: string
+          p_coach: string
+          p_duration?: number
+          p_kind?: Database["public"]["Enums"]["slot_kind"]
+          p_label?: string
+          p_start_time: string
+          p_starts_on?: string
+          p_weekdays: number[]
+        }
+        Returns: string[]
       }
       fn_apply_attendance: {
         Args: {
@@ -3283,6 +3305,8 @@ export type Database = {
           specialties: string[]
         }[]
       }
+      fn_can_coach_client: { Args: { p_client: string }; Returns: boolean }
+      fn_can_edit_coach: { Args: { p_coach: string }; Returns: boolean }
       fn_can_edit_deal: {
         Args: { p_deal: Database["public"]["Tables"]["deals"]["Row"] }
         Returns: boolean
@@ -3291,6 +3315,7 @@ export type Database = {
         Args: { p_deal: Database["public"]["Tables"]["deals"]["Row"] }
         Returns: boolean
       }
+      fn_can_see_coach: { Args: { p_coach: string }; Returns: boolean }
       fn_can_see_deal: { Args: { p_deal_id: string }; Returns: boolean }
       fn_can_see_lead: { Args: { p_lead_id: string }; Returns: boolean }
       fn_cancel_deal: {
@@ -3309,6 +3334,27 @@ export type Database = {
         }
         Returns: Json
       }
+      fn_coach_client: { Args: { p_client: string }; Returns: Json }
+      fn_coach_clients: {
+        Args: { p_coach: string }
+        Returns: {
+          adherence_pct: number
+          at_risk: boolean
+          client_id: string
+          completed_30d: number
+          credits_left: number
+          full_name: string
+          injuries: string
+          last_visit_at: string
+          next_expiry: string
+          no_shows_30d: number
+          risk_score: number
+          scheduled_30d: number
+          status: Database["public"]["Enums"]["client_status"]
+          unpaid_sessions: number
+          weekly_slots: number
+        }[]
+      }
       fn_coach_day: {
         Args: { p_coach_membership_id: string; p_date?: string }
         Returns: {
@@ -3324,6 +3370,18 @@ export type Database = {
           status: Database["public"]["Enums"]["session_status"]
           unpaid: boolean
         }[]
+      }
+      fn_coach_team: {
+        Args: { p_branch: string; p_month: string }
+        Returns: Json
+      }
+      fn_coach_today: {
+        Args: { p_coach: string; p_date?: string }
+        Returns: Json
+      }
+      fn_coach_week: {
+        Args: { p_coach: string; p_week_start: string }
+        Returns: Json
       }
       fn_commission_report: {
         Args: { p_branch_id?: string; p_month: string }
@@ -3648,6 +3706,14 @@ export type Database = {
         Args: { p_lead_id: string }
         Returns: string
       }
+      fn_kiosk_check_in: {
+        Args: { p_branch: string; p_phone: string }
+        Returns: Json
+      }
+      fn_kiosk_notify_sales: {
+        Args: { p_branch: string; p_client_id: string }
+        Returns: Json
+      }
       fn_lead_breakdown: {
         Args: { p_branch_id: string; p_month: string }
         Returns: {
@@ -3687,6 +3753,11 @@ export type Database = {
       fn_money_summary: {
         Args: { p_branch_id?: string; p_month: string }
         Returns: Json
+      }
+      fn_my_coach_membership: { Args: { p_branch: string }; Returns: string }
+      fn_new_program_version: {
+        Args: { p_program_id: string }
+        Returns: string
       }
       fn_nightly: { Args: never; Returns: Json }
       fn_normalize_phone: { Args: { p: string }; Returns: string }
@@ -3760,6 +3831,8 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      fn_program: { Args: { p_program: string }; Returns: Json }
+      fn_program_templates: { Args: never; Returns: Json }
       fn_pt_commission_pct: { Args: { p_sessions: number }; Returns: number }
       fn_rank_coaches: {
         Args: { p_client_id?: string; p_lead_id?: string }
@@ -3817,6 +3890,7 @@ export type Database = {
         Args: { p_payment_id: string; p_reason: string }
         Returns: string
       }
+      fn_resolve_days: { Args: { p_days: Json }; Returns: Json }
       fn_restore_credit: {
         Args: { p_reason: string; p_session_id: string }
         Returns: undefined
@@ -3961,6 +4035,38 @@ export type Database = {
         }
         Returns: string
       }
+      fn_save_program: {
+        Args: {
+          p_client_id: string
+          p_days: Json
+          p_goal: string
+          p_name: string
+          p_program_id: string
+          p_weeks: number
+        }
+        Returns: Json
+      }
+      fn_save_template: {
+        Args: { p_days: Json; p_gym_wide?: boolean; p_name: string }
+        Returns: string
+      }
+      fn_schedulable_clients: {
+        Args: { p_coach: string }
+        Returns: {
+          client_id: string
+          credits_left: number
+          full_name: string
+          is_primary: boolean
+          next_expiry: string
+          pref_days: Json
+          pref_time: string
+          weekly_slots: number
+        }[]
+      }
+      fn_set_availability: {
+        Args: { p_coach: string; p_hours: Json }
+        Returns: undefined
+      }
       fn_set_lead_stage: {
         Args: {
           p_lead_id: string
@@ -4080,6 +4186,7 @@ export type Database = {
         }
         Returns: string
       }
+      fn_weekday_name: { Args: { d: number }; Returns: string }
       fn_within_opening_hours: {
         Args: { p_branch_id: string; p_t: string }
         Returns: string

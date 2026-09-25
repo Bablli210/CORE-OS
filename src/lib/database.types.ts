@@ -34,6 +34,21 @@ export type Database = {
   }
   public: {
     Tables: {
+      app_secrets: {
+        Row: {
+          key: string
+          value: string
+        }
+        Insert: {
+          key: string
+          value: string
+        }
+        Update: {
+          key?: string
+          value?: string
+        }
+        Relationships: []
+      }
       approvals: {
         Row: {
           branch_id: string | null
@@ -3334,6 +3349,14 @@ export type Database = {
         }
         Returns: Json
       }
+      fn_client_check_in: {
+        Args: { p_branch?: string; p_code?: string }
+        Returns: Json
+      }
+      fn_client_credits: { Args: never; Returns: Json }
+      fn_client_home: { Args: never; Returns: Json }
+      fn_client_progress: { Args: { p_exercise?: string }; Returns: Json }
+      fn_client_training: { Args: never; Returns: Json }
       fn_coach_client: { Args: { p_client: string }; Returns: Json }
       fn_coach_clients: {
         Args: { p_coach: string }
@@ -3655,6 +3678,7 @@ export type Database = {
         Args: { p_approval_id: string; p_approve: boolean; p_note?: string }
         Returns: undefined
       }
+      fn_e1rm: { Args: { p_reps: number; p_weight: number }; Returns: number }
       fn_emit_event: {
         Args: {
           p_branch_id: string
@@ -3709,6 +3733,11 @@ export type Database = {
       fn_kiosk_check_in: {
         Args: { p_branch: string; p_phone: string }
         Returns: Json
+      }
+      fn_kiosk_code: { Args: { p_branch: string }; Returns: string }
+      fn_kiosk_code_for: {
+        Args: { p_branch: string; p_day: string }
+        Returns: string
       }
       fn_kiosk_notify_sales: {
         Args: { p_branch: string; p_client_id: string }
@@ -3889,6 +3918,39 @@ export type Database = {
       fn_request_payment_void: {
         Args: { p_payment_id: string; p_reason: string }
         Returns: string
+      }
+      fn_require_client: {
+        Args: never
+        Returns: {
+          coach_membership_id: string | null
+          created_at: string
+          date_of_birth: string | null
+          email: string | null
+          full_name: string
+          gender: string | null
+          home_branch_id: string
+          id: string
+          injuries: string | null
+          instagram_handle: string | null
+          joined_at: string
+          last_visit_at: string | null
+          lead_id: string | null
+          nutritionist_membership_id: string | null
+          onboarding_responses: Json
+          phone: string
+          profile_id: string | null
+          rep_membership_id: string | null
+          risk_reasons: Json
+          risk_score: number
+          status: Database["public"]["Enums"]["client_status"]
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "clients"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       fn_resolve_days: { Args: { p_days: Json }; Returns: Json }
       fn_restore_credit: {
@@ -4155,6 +4217,16 @@ export type Database = {
         Returns: Json
       }
       fn_today_live: { Args: never; Returns: Json }
+      fn_update_my_profile: {
+        Args: {
+          p_consent_content?: boolean
+          p_consent_marketing?: boolean
+          p_instagram?: string
+          p_language?: string
+          p_pt_prefs?: Json
+        }
+        Returns: undefined
+      }
       fn_update_setting: {
         Args: { p_key: string; p_value: Json }
         Returns: {

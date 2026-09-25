@@ -101,6 +101,11 @@ async function main() {
   }
   console.log(`staff with password "${STAFF_PASSWORD}": ${staff.length}`);
   console.log(`clients with phone login (local OTP 123456): ${clients.length}`);
+
+  // The dashboards read materialized views that pg_cron refreshes every 5 minutes; fill them now so a freshly seeded
+  // demo shows its numbers straight away.
+  execFileSync("psql", [dbUrl, "-v", "ON_ERROR_STOP=1", "-At", "-c", "select fn_refresh_views(true)"], { encoding: "utf8" });
+  console.log("dashboards refreshed");
 }
 
 main().catch((err: unknown) => {

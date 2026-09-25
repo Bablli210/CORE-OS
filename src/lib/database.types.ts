@@ -107,6 +107,13 @@ export type Database = {
             foreignKeyName: "approvals_branch_id_fkey"
             columns: ["branch_id"]
             isOneToOne: false
+            referencedRelation: "mv_branch_month"
+            referencedColumns: ["branch_id"]
+          },
+          {
+            foreignKeyName: "approvals_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
             referencedRelation: "mv_daily_branch"
             referencedColumns: ["branch_id"]
           },
@@ -330,6 +337,20 @@ export type Database = {
             foreignKeyName: "client_notes_author_membership_id_fkey"
             columns: ["author_membership_id"]
             isOneToOne: false
+            referencedRelation: "mv_coach_week"
+            referencedColumns: ["membership_id"]
+          },
+          {
+            foreignKeyName: "client_notes_author_membership_id_fkey"
+            columns: ["author_membership_id"]
+            isOneToOne: false
+            referencedRelation: "mv_rep_extra"
+            referencedColumns: ["membership_id"]
+          },
+          {
+            foreignKeyName: "client_notes_author_membership_id_fkey"
+            columns: ["author_membership_id"]
+            isOneToOne: false
             referencedRelation: "mv_rep_month"
             referencedColumns: ["membership_id"]
           },
@@ -441,6 +462,20 @@ export type Database = {
             foreignKeyName: "clients_coach_membership_id_fkey"
             columns: ["coach_membership_id"]
             isOneToOne: false
+            referencedRelation: "mv_coach_week"
+            referencedColumns: ["membership_id"]
+          },
+          {
+            foreignKeyName: "clients_coach_membership_id_fkey"
+            columns: ["coach_membership_id"]
+            isOneToOne: false
+            referencedRelation: "mv_rep_extra"
+            referencedColumns: ["membership_id"]
+          },
+          {
+            foreignKeyName: "clients_coach_membership_id_fkey"
+            columns: ["coach_membership_id"]
+            isOneToOne: false
             referencedRelation: "mv_rep_month"
             referencedColumns: ["membership_id"]
           },
@@ -450,6 +485,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "branches"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clients_home_branch_id_fkey"
+            columns: ["home_branch_id"]
+            isOneToOne: false
+            referencedRelation: "mv_branch_month"
+            referencedColumns: ["branch_id"]
           },
           {
             foreignKeyName: "clients_home_branch_id_fkey"
@@ -490,6 +532,20 @@ export type Database = {
             foreignKeyName: "clients_nutritionist_membership_id_fkey"
             columns: ["nutritionist_membership_id"]
             isOneToOne: false
+            referencedRelation: "mv_coach_week"
+            referencedColumns: ["membership_id"]
+          },
+          {
+            foreignKeyName: "clients_nutritionist_membership_id_fkey"
+            columns: ["nutritionist_membership_id"]
+            isOneToOne: false
+            referencedRelation: "mv_rep_extra"
+            referencedColumns: ["membership_id"]
+          },
+          {
+            foreignKeyName: "clients_nutritionist_membership_id_fkey"
+            columns: ["nutritionist_membership_id"]
+            isOneToOne: false
             referencedRelation: "mv_rep_month"
             referencedColumns: ["membership_id"]
           },
@@ -512,6 +568,20 @@ export type Database = {
             columns: ["rep_membership_id"]
             isOneToOne: false
             referencedRelation: "mv_coach_month"
+            referencedColumns: ["membership_id"]
+          },
+          {
+            foreignKeyName: "clients_rep_membership_id_fkey"
+            columns: ["rep_membership_id"]
+            isOneToOne: false
+            referencedRelation: "mv_coach_week"
+            referencedColumns: ["membership_id"]
+          },
+          {
+            foreignKeyName: "clients_rep_membership_id_fkey"
+            columns: ["rep_membership_id"]
+            isOneToOne: false
+            referencedRelation: "mv_rep_extra"
             referencedColumns: ["membership_id"]
           },
           {
@@ -594,6 +664,20 @@ export type Database = {
             foreignKeyName: "coach_assignments_coach_membership_id_fkey"
             columns: ["coach_membership_id"]
             isOneToOne: false
+            referencedRelation: "mv_coach_week"
+            referencedColumns: ["membership_id"]
+          },
+          {
+            foreignKeyName: "coach_assignments_coach_membership_id_fkey"
+            columns: ["coach_membership_id"]
+            isOneToOne: false
+            referencedRelation: "mv_rep_extra"
+            referencedColumns: ["membership_id"]
+          },
+          {
+            foreignKeyName: "coach_assignments_coach_membership_id_fkey"
+            columns: ["coach_membership_id"]
+            isOneToOne: false
             referencedRelation: "mv_rep_month"
             referencedColumns: ["membership_id"]
           },
@@ -634,6 +718,20 @@ export type Database = {
             columns: ["membership_id"]
             isOneToOne: false
             referencedRelation: "mv_coach_month"
+            referencedColumns: ["membership_id"]
+          },
+          {
+            foreignKeyName: "coach_availability_membership_id_fkey"
+            columns: ["membership_id"]
+            isOneToOne: false
+            referencedRelation: "mv_coach_week"
+            referencedColumns: ["membership_id"]
+          },
+          {
+            foreignKeyName: "coach_availability_membership_id_fkey"
+            columns: ["membership_id"]
+            isOneToOne: false
+            referencedRelation: "mv_rep_extra"
             referencedColumns: ["membership_id"]
           },
           {
@@ -796,6 +894,20 @@ export type Database = {
             foreignKeyName: "credit_lots_coach_membership_id_fkey"
             columns: ["coach_membership_id"]
             isOneToOne: false
+            referencedRelation: "mv_coach_week"
+            referencedColumns: ["membership_id"]
+          },
+          {
+            foreignKeyName: "credit_lots_coach_membership_id_fkey"
+            columns: ["coach_membership_id"]
+            isOneToOne: false
+            referencedRelation: "mv_rep_extra"
+            referencedColumns: ["membership_id"]
+          },
+          {
+            foreignKeyName: "credit_lots_coach_membership_id_fkey"
+            columns: ["coach_membership_id"]
+            isOneToOne: false
             referencedRelation: "mv_rep_month"
             referencedColumns: ["membership_id"]
           },
@@ -881,6 +993,20 @@ export type Database = {
             columns: ["provider_membership_id"]
             isOneToOne: false
             referencedRelation: "mv_coach_month"
+            referencedColumns: ["membership_id"]
+          },
+          {
+            foreignKeyName: "deal_items_provider_membership_id_fkey"
+            columns: ["provider_membership_id"]
+            isOneToOne: false
+            referencedRelation: "mv_coach_week"
+            referencedColumns: ["membership_id"]
+          },
+          {
+            foreignKeyName: "deal_items_provider_membership_id_fkey"
+            columns: ["provider_membership_id"]
+            isOneToOne: false
+            referencedRelation: "mv_rep_extra"
             referencedColumns: ["membership_id"]
           },
           {
@@ -1000,6 +1126,13 @@ export type Database = {
             foreignKeyName: "deals_branch_id_fkey"
             columns: ["branch_id"]
             isOneToOne: false
+            referencedRelation: "mv_branch_month"
+            referencedColumns: ["branch_id"]
+          },
+          {
+            foreignKeyName: "deals_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
             referencedRelation: "mv_daily_branch"
             referencedColumns: ["branch_id"]
           },
@@ -1042,6 +1175,20 @@ export type Database = {
             foreignKeyName: "deals_closer_membership_id_fkey"
             columns: ["closer_membership_id"]
             isOneToOne: false
+            referencedRelation: "mv_coach_week"
+            referencedColumns: ["membership_id"]
+          },
+          {
+            foreignKeyName: "deals_closer_membership_id_fkey"
+            columns: ["closer_membership_id"]
+            isOneToOne: false
+            referencedRelation: "mv_rep_extra"
+            referencedColumns: ["membership_id"]
+          },
+          {
+            foreignKeyName: "deals_closer_membership_id_fkey"
+            columns: ["closer_membership_id"]
+            isOneToOne: false
             referencedRelation: "mv_rep_month"
             referencedColumns: ["membership_id"]
           },
@@ -1071,6 +1218,20 @@ export type Database = {
             columns: ["rep_membership_id"]
             isOneToOne: false
             referencedRelation: "mv_coach_month"
+            referencedColumns: ["membership_id"]
+          },
+          {
+            foreignKeyName: "deals_rep_membership_id_fkey"
+            columns: ["rep_membership_id"]
+            isOneToOne: false
+            referencedRelation: "mv_coach_week"
+            referencedColumns: ["membership_id"]
+          },
+          {
+            foreignKeyName: "deals_rep_membership_id_fkey"
+            columns: ["rep_membership_id"]
+            isOneToOne: false
+            referencedRelation: "mv_rep_extra"
             referencedColumns: ["membership_id"]
           },
           {
@@ -1277,6 +1438,20 @@ export type Database = {
             columns: ["assigned_to_membership_id"]
             isOneToOne: false
             referencedRelation: "mv_coach_month"
+            referencedColumns: ["membership_id"]
+          },
+          {
+            foreignKeyName: "follow_ups_assigned_to_membership_id_fkey"
+            columns: ["assigned_to_membership_id"]
+            isOneToOne: false
+            referencedRelation: "mv_coach_week"
+            referencedColumns: ["membership_id"]
+          },
+          {
+            foreignKeyName: "follow_ups_assigned_to_membership_id_fkey"
+            columns: ["assigned_to_membership_id"]
+            isOneToOne: false
+            referencedRelation: "mv_rep_extra"
             referencedColumns: ["membership_id"]
           },
           {
@@ -1517,6 +1692,13 @@ export type Database = {
             foreignKeyName: "leads_branch_id_fkey"
             columns: ["branch_id"]
             isOneToOne: false
+            referencedRelation: "mv_branch_month"
+            referencedColumns: ["branch_id"]
+          },
+          {
+            foreignKeyName: "leads_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
             referencedRelation: "mv_daily_branch"
             referencedColumns: ["branch_id"]
           },
@@ -1560,6 +1742,20 @@ export type Database = {
             columns: ["owner_membership_id"]
             isOneToOne: false
             referencedRelation: "mv_coach_month"
+            referencedColumns: ["membership_id"]
+          },
+          {
+            foreignKeyName: "leads_owner_membership_id_fkey"
+            columns: ["owner_membership_id"]
+            isOneToOne: false
+            referencedRelation: "mv_coach_week"
+            referencedColumns: ["membership_id"]
+          },
+          {
+            foreignKeyName: "leads_owner_membership_id_fkey"
+            columns: ["owner_membership_id"]
+            isOneToOne: false
+            referencedRelation: "mv_rep_extra"
             referencedColumns: ["membership_id"]
           },
           {
@@ -1643,6 +1839,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "branches"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "memberships_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "mv_branch_month"
+            referencedColumns: ["branch_id"]
           },
           {
             foreignKeyName: "memberships_branch_id_fkey"
@@ -1807,6 +2010,20 @@ export type Database = {
             foreignKeyName: "nutrition_plans_owner_membership_id_fkey"
             columns: ["owner_membership_id"]
             isOneToOne: false
+            referencedRelation: "mv_coach_week"
+            referencedColumns: ["membership_id"]
+          },
+          {
+            foreignKeyName: "nutrition_plans_owner_membership_id_fkey"
+            columns: ["owner_membership_id"]
+            isOneToOne: false
+            referencedRelation: "mv_rep_extra"
+            referencedColumns: ["membership_id"]
+          },
+          {
+            foreignKeyName: "nutrition_plans_owner_membership_id_fkey"
+            columns: ["owner_membership_id"]
+            isOneToOne: false
             referencedRelation: "mv_rep_month"
             referencedColumns: ["membership_id"]
           },
@@ -1922,6 +2139,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "branches"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "products_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "mv_branch_month"
+            referencedColumns: ["branch_id"]
           },
           {
             foreignKeyName: "products_branch_id_fkey"
@@ -2104,6 +2328,13 @@ export type Database = {
             foreignKeyName: "program_templates_branch_id_fkey"
             columns: ["branch_id"]
             isOneToOne: false
+            referencedRelation: "mv_branch_month"
+            referencedColumns: ["branch_id"]
+          },
+          {
+            foreignKeyName: "program_templates_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
             referencedRelation: "mv_daily_branch"
             referencedColumns: ["branch_id"]
           },
@@ -2126,6 +2357,20 @@ export type Database = {
             columns: ["owner_membership_id"]
             isOneToOne: false
             referencedRelation: "mv_coach_month"
+            referencedColumns: ["membership_id"]
+          },
+          {
+            foreignKeyName: "program_templates_owner_membership_id_fkey"
+            columns: ["owner_membership_id"]
+            isOneToOne: false
+            referencedRelation: "mv_coach_week"
+            referencedColumns: ["membership_id"]
+          },
+          {
+            foreignKeyName: "program_templates_owner_membership_id_fkey"
+            columns: ["owner_membership_id"]
+            isOneToOne: false
+            referencedRelation: "mv_rep_extra"
             referencedColumns: ["membership_id"]
           },
           {
@@ -2210,6 +2455,20 @@ export type Database = {
             foreignKeyName: "programs_coach_membership_id_fkey"
             columns: ["coach_membership_id"]
             isOneToOne: false
+            referencedRelation: "mv_coach_week"
+            referencedColumns: ["membership_id"]
+          },
+          {
+            foreignKeyName: "programs_coach_membership_id_fkey"
+            columns: ["coach_membership_id"]
+            isOneToOne: false
+            referencedRelation: "mv_rep_extra"
+            referencedColumns: ["membership_id"]
+          },
+          {
+            foreignKeyName: "programs_coach_membership_id_fkey"
+            columns: ["coach_membership_id"]
+            isOneToOne: false
             referencedRelation: "mv_rep_month"
             referencedColumns: ["membership_id"]
           },
@@ -2240,6 +2499,13 @@ export type Database = {
             foreignKeyName: "round_robin_state_branch_id_fkey"
             columns: ["branch_id"]
             isOneToOne: true
+            referencedRelation: "mv_branch_month"
+            referencedColumns: ["branch_id"]
+          },
+          {
+            foreignKeyName: "round_robin_state_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: true
             referencedRelation: "mv_daily_branch"
             referencedColumns: ["branch_id"]
           },
@@ -2262,6 +2528,20 @@ export type Database = {
             columns: ["last_membership_id"]
             isOneToOne: false
             referencedRelation: "mv_coach_month"
+            referencedColumns: ["membership_id"]
+          },
+          {
+            foreignKeyName: "round_robin_state_last_membership_id_fkey"
+            columns: ["last_membership_id"]
+            isOneToOne: false
+            referencedRelation: "mv_coach_week"
+            referencedColumns: ["membership_id"]
+          },
+          {
+            foreignKeyName: "round_robin_state_last_membership_id_fkey"
+            columns: ["last_membership_id"]
+            isOneToOne: false
+            referencedRelation: "mv_rep_extra"
             referencedColumns: ["membership_id"]
           },
           {
@@ -2379,6 +2659,13 @@ export type Database = {
             foreignKeyName: "schedule_slots_branch_id_fkey"
             columns: ["branch_id"]
             isOneToOne: false
+            referencedRelation: "mv_branch_month"
+            referencedColumns: ["branch_id"]
+          },
+          {
+            foreignKeyName: "schedule_slots_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
             referencedRelation: "mv_daily_branch"
             referencedColumns: ["branch_id"]
           },
@@ -2415,6 +2702,20 @@ export type Database = {
             columns: ["coach_membership_id"]
             isOneToOne: false
             referencedRelation: "mv_coach_month"
+            referencedColumns: ["membership_id"]
+          },
+          {
+            foreignKeyName: "schedule_slots_coach_membership_id_fkey"
+            columns: ["coach_membership_id"]
+            isOneToOne: false
+            referencedRelation: "mv_coach_week"
+            referencedColumns: ["membership_id"]
+          },
+          {
+            foreignKeyName: "schedule_slots_coach_membership_id_fkey"
+            columns: ["coach_membership_id"]
+            isOneToOne: false
+            referencedRelation: "mv_rep_extra"
             referencedColumns: ["membership_id"]
           },
           {
@@ -2518,6 +2819,13 @@ export type Database = {
             foreignKeyName: "sessions_branch_id_fkey"
             columns: ["branch_id"]
             isOneToOne: false
+            referencedRelation: "mv_branch_month"
+            referencedColumns: ["branch_id"]
+          },
+          {
+            foreignKeyName: "sessions_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
             referencedRelation: "mv_daily_branch"
             referencedColumns: ["branch_id"]
           },
@@ -2554,6 +2862,20 @@ export type Database = {
             columns: ["coach_membership_id"]
             isOneToOne: false
             referencedRelation: "mv_coach_month"
+            referencedColumns: ["membership_id"]
+          },
+          {
+            foreignKeyName: "sessions_coach_membership_id_fkey"
+            columns: ["coach_membership_id"]
+            isOneToOne: false
+            referencedRelation: "mv_coach_week"
+            referencedColumns: ["membership_id"]
+          },
+          {
+            foreignKeyName: "sessions_coach_membership_id_fkey"
+            columns: ["coach_membership_id"]
+            isOneToOne: false
+            referencedRelation: "mv_rep_extra"
             referencedColumns: ["membership_id"]
           },
           {
@@ -2823,6 +3145,13 @@ export type Database = {
             foreignKeyName: "visits_branch_id_fkey"
             columns: ["branch_id"]
             isOneToOne: false
+            referencedRelation: "mv_branch_month"
+            referencedColumns: ["branch_id"]
+          },
+          {
+            foreignKeyName: "visits_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
             referencedRelation: "mv_daily_branch"
             referencedColumns: ["branch_id"]
           },
@@ -2920,6 +3249,21 @@ export type Database = {
       }
     }
     Views: {
+      mv_branch_month: {
+        Row: {
+          booked: number | null
+          booked_deals: number | null
+          branch_id: string | null
+          collected_on_booked: number | null
+          leads: number | null
+          median_response_min: number | null
+          membership_collected: number | null
+          month: string | null
+          outstanding: number | null
+          sales_commission: number | null
+        }
+        Relationships: []
+      }
       mv_client_adherence: {
         Row: {
           adherence_pct: number | null
@@ -2959,6 +3303,20 @@ export type Database = {
             foreignKeyName: "clients_coach_membership_id_fkey"
             columns: ["coach_membership_id"]
             isOneToOne: false
+            referencedRelation: "mv_coach_week"
+            referencedColumns: ["membership_id"]
+          },
+          {
+            foreignKeyName: "clients_coach_membership_id_fkey"
+            columns: ["coach_membership_id"]
+            isOneToOne: false
+            referencedRelation: "mv_rep_extra"
+            referencedColumns: ["membership_id"]
+          },
+          {
+            foreignKeyName: "clients_coach_membership_id_fkey"
+            columns: ["coach_membership_id"]
+            isOneToOne: false
             referencedRelation: "mv_rep_month"
             referencedColumns: ["membership_id"]
           },
@@ -2968,6 +3326,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "branches"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clients_home_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "mv_branch_month"
+            referencedColumns: ["branch_id"]
           },
           {
             foreignKeyName: "clients_home_branch_id_fkey"
@@ -3022,6 +3387,54 @@ export type Database = {
             foreignKeyName: "memberships_branch_id_fkey"
             columns: ["branch_id"]
             isOneToOne: false
+            referencedRelation: "mv_branch_month"
+            referencedColumns: ["branch_id"]
+          },
+          {
+            foreignKeyName: "memberships_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "mv_daily_branch"
+            referencedColumns: ["branch_id"]
+          },
+          {
+            foreignKeyName: "memberships_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "mv_heatmap"
+            referencedColumns: ["branch_id"]
+          },
+        ]
+      }
+      mv_coach_week: {
+        Row: {
+          branch_id: string | null
+          credits_burned: number | null
+          full_name: string | null
+          membership_id: string | null
+          no_shows: number | null
+          sessions_completed: number | null
+          week_start: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "memberships_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "memberships_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "mv_branch_month"
+            referencedColumns: ["branch_id"]
+          },
+          {
+            foreignKeyName: "memberships_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
             referencedRelation: "mv_daily_branch"
             referencedColumns: ["branch_id"]
           },
@@ -3049,6 +3462,7 @@ export type Database = {
           revenue_booked: number | null
           revenue_collected: number | null
           revenue_delivered: number | null
+          revenue_delivered_net: number | null
           sessions_completed: number | null
           unique_visitors: number | null
           unpaid_sessions: number | null
@@ -3095,6 +3509,20 @@ export type Database = {
             foreignKeyName: "clients_coach_membership_id_fkey"
             columns: ["coach_membership_id"]
             isOneToOne: false
+            referencedRelation: "mv_coach_week"
+            referencedColumns: ["membership_id"]
+          },
+          {
+            foreignKeyName: "clients_coach_membership_id_fkey"
+            columns: ["coach_membership_id"]
+            isOneToOne: false
+            referencedRelation: "mv_rep_extra"
+            referencedColumns: ["membership_id"]
+          },
+          {
+            foreignKeyName: "clients_coach_membership_id_fkey"
+            columns: ["coach_membership_id"]
+            isOneToOne: false
             referencedRelation: "mv_rep_month"
             referencedColumns: ["membership_id"]
           },
@@ -3109,11 +3537,61 @@ export type Database = {
             foreignKeyName: "clients_home_branch_id_fkey"
             columns: ["branch_id"]
             isOneToOne: false
+            referencedRelation: "mv_branch_month"
+            referencedColumns: ["branch_id"]
+          },
+          {
+            foreignKeyName: "clients_home_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
             referencedRelation: "mv_daily_branch"
             referencedColumns: ["branch_id"]
           },
           {
             foreignKeyName: "clients_home_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "mv_heatmap"
+            referencedColumns: ["branch_id"]
+          },
+        ]
+      }
+      mv_rep_extra: {
+        Row: {
+          branch_id: string | null
+          discount_given_piastres: number | null
+          discounted_deals: number | null
+          extensions_requested: number | null
+          flags_handled: number | null
+          flags_median_hours: number | null
+          full_name: string | null
+          membership_id: string | null
+          month: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "memberships_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "memberships_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "mv_branch_month"
+            referencedColumns: ["branch_id"]
+          },
+          {
+            foreignKeyName: "memberships_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "mv_daily_branch"
+            referencedColumns: ["branch_id"]
+          },
+          {
+            foreignKeyName: "memberships_branch_id_fkey"
             columns: ["branch_id"]
             isOneToOne: false
             referencedRelation: "mv_heatmap"
@@ -3157,6 +3635,13 @@ export type Database = {
             foreignKeyName: "memberships_branch_id_fkey"
             columns: ["branch_id"]
             isOneToOne: false
+            referencedRelation: "mv_branch_month"
+            referencedColumns: ["branch_id"]
+          },
+          {
+            foreignKeyName: "memberships_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
             referencedRelation: "mv_daily_branch"
             referencedColumns: ["branch_id"]
           },
@@ -3191,6 +3676,13 @@ export type Database = {
             foreignKeyName: "clients_home_branch_id_fkey"
             columns: ["branch_id"]
             isOneToOne: false
+            referencedRelation: "mv_branch_month"
+            referencedColumns: ["branch_id"]
+          },
+          {
+            foreignKeyName: "clients_home_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
             referencedRelation: "mv_daily_branch"
             referencedColumns: ["branch_id"]
           },
@@ -3219,6 +3711,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "branches"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "leads_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "mv_branch_month"
+            referencedColumns: ["branch_id"]
           },
           {
             foreignKeyName: "leads_branch_id_fkey"
@@ -3308,6 +3807,18 @@ export type Database = {
       fn_assign_lead: {
         Args: { p_lead_id: string; p_membership_id?: string; p_reason?: string }
         Returns: string
+      }
+      fn_audit_explorer: {
+        Args: {
+          p_actor?: string
+          p_from?: string
+          p_limit?: number
+          p_search?: string
+          p_source?: string
+          p_table?: string
+          p_to?: string
+        }
+        Returns: Json
       }
       fn_branch_coaches: {
         Args: { p_branch_id: string }
@@ -3493,6 +4004,49 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      fn_dashboard_branch_month: {
+        Args: { p_month: string }
+        Returns: {
+          booked: number | null
+          booked_deals: number | null
+          branch_id: string | null
+          collected_on_booked: number | null
+          leads: number | null
+          median_response_min: number | null
+          membership_collected: number | null
+          month: string | null
+          outstanding: number | null
+          sales_commission: number | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "mv_branch_month"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      fn_dashboard_can: {
+        Args: { p_scope: string; p_screen: string }
+        Returns: boolean
+      }
+      fn_dashboard_coach_weeks: {
+        Args: { p_branch?: string }
+        Returns: {
+          branch_id: string | null
+          credits_burned: number | null
+          full_name: string | null
+          membership_id: string | null
+          no_shows: number | null
+          sessions_completed: number | null
+          week_start: string | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "mv_coach_week"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       fn_dashboard_coaches: {
         Args: { p_month: string }
         Returns: {
@@ -3542,6 +4096,7 @@ export type Database = {
           revenue_booked: number | null
           revenue_collected: number | null
           revenue_delivered: number | null
+          revenue_delivered_net: number | null
           sessions_completed: number | null
           unique_visitors: number | null
           unpaid_sessions: number | null
@@ -3584,6 +4139,26 @@ export type Database = {
         SetofOptions: {
           from: "*"
           to: "mv_liability"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      fn_dashboard_rep_extra: {
+        Args: { p_month: string }
+        Returns: {
+          branch_id: string | null
+          discount_given_piastres: number | null
+          discounted_deals: number | null
+          extensions_requested: number | null
+          flags_handled: number | null
+          flags_median_hours: number | null
+          full_name: string | null
+          membership_id: string | null
+          month: string | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "mv_rep_extra"
           isOneToOne: false
           isSetofReturn: true
         }
@@ -3638,6 +4213,15 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      fn_dashboard_rows: {
+        Args: {
+          p_extra?: Json
+          p_metric: string
+          p_month: string
+          p_scope?: string
+        }
+        Returns: Json
+      }
       fn_dashboard_sources: {
         Args: { p_month: string }
         Returns: {
@@ -3654,6 +4238,29 @@ export type Database = {
           isOneToOne: false
           isSetofReturn: true
         }
+      }
+      fn_dashboard_targets: {
+        Args: { p_all?: boolean; p_period: string }
+        Returns: Json
+      }
+      fn_dashboard_tiles: {
+        Args: { p_month: string; p_scope?: string; p_screen: string }
+        Returns: Json
+      }
+      fn_dashboard_weekly: {
+        Args: { p_weeks?: number }
+        Returns: {
+          branch_id: string
+          leads: number
+          new_clients: number
+          no_shows: number
+          revenue_booked: number
+          revenue_collected: number
+          revenue_delivered: number
+          sessions_completed: number
+          visits: number
+          week_start: string
+        }[]
       }
       fn_deal: { Args: { p_deal_id: string }; Returns: Json }
       fn_deal_approval_preview: { Args: { p_deal_id: string }; Returns: Json }
@@ -3759,6 +4366,13 @@ export type Database = {
         Args: { p_lead: Database["public"]["Tables"]["leads"]["Row"] }
         Returns: string
       }
+      fn_line_share: {
+        Args: {
+          p_deal: string
+          p_type: Database["public"]["Enums"]["product_type"]
+        }
+        Returns: number
+      }
       fn_log_touch: {
         Args: {
           p_client_id: string
@@ -3779,6 +4393,31 @@ export type Database = {
         Returns: number
       }
       fn_membership_name: { Args: { p_membership_id: string }; Returns: string }
+      fn_metric_rows: {
+        Args: {
+          p_extra?: Json
+          p_metric: string
+          p_month: string
+          p_scope: string
+        }
+        Returns: {
+          amount: number
+          at: string
+          detail: string
+          flag: boolean
+          label: string
+          row_id: string
+        }[]
+      }
+      fn_metric_total: {
+        Args: {
+          p_extra?: Json
+          p_metric: string
+          p_month: string
+          p_scope: string
+        }
+        Returns: number
+      }
       fn_money_summary: {
         Args: { p_branch_id?: string; p_month: string }
         Returns: Json
@@ -3863,6 +4502,7 @@ export type Database = {
       fn_program: { Args: { p_program: string }; Returns: Json }
       fn_program_templates: { Args: never; Returns: Json }
       fn_pt_commission_pct: { Args: { p_sessions: number }; Returns: number }
+      fn_pt_tier_meter: { Args: { p_sessions: number }; Returns: Json }
       fn_rank_coaches: {
         Args: { p_client_id?: string; p_lead_id?: string }
         Returns: {
@@ -4107,6 +4747,16 @@ export type Database = {
           p_weeks: number
         }
         Returns: Json
+      }
+      fn_save_target: {
+        Args: {
+          p_metric: string
+          p_period: string
+          p_scope_id: string
+          p_scope_type: Database["public"]["Enums"]["target_scope"]
+          p_value: number
+        }
+        Returns: undefined
       }
       fn_save_template: {
         Args: { p_days: Json; p_gym_wide?: boolean; p_name: string }

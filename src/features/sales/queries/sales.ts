@@ -48,19 +48,9 @@ export async function fetchTeam(branchId: string, month: string): Promise<TeamRo
   return unwrap(await createClient().rpc("fn_sales_team", { p_branch_id: branchId, p_month: month }));
 }
 
-export type Numbers = { rows: RepMonth[]; breakdown: BreakdownRow[]; target: number | null };
+export type Numbers = { breakdown: BreakdownRow[] };
 
-/** My month (rep) or the branch's reps (manager), from mv_rep_month via fn_dashboard_reps, plus source / lost reasons. */
-export async function fetchNumbers(branchId: string, month: string, membershipId: string): Promise<Numbers> {
-  const supabase = createClient();
-  const [rows, breakdown, target] = await Promise.all([
-    supabase.rpc("fn_dashboard_reps", { p_month: month }),
-    supabase.rpc("fn_lead_breakdown", { p_branch_id: branchId, p_month: month }),
-    supabase.from("targets").select("value").eq("period", month).eq("scope_type", "membership").eq("scope_id", membershipId).eq("metric", "won_revenue").maybeSingle(),
-  ]);
-  return {
-    rows: unwrap<RepMonth[]>(rows).filter((r) => r.branch_id === branchId),
-    breakdown: unwrap(breakdown),
-    target: target.data ? Number(target.data.value) : null,
-  };
+/** Leads by source and lost reasons for the month: my leads (rep) or the branch (manager). The tiles are fn_dashboard_tiles. */
+export async function fetchNumbers(branchId: string, month: string): Promise<Numbers> {
+  return { breakdown: unwrap(await createClient().rpc("fn_lead_breakdown", { p_branch_id: branchId, p_month: month })) };
 }

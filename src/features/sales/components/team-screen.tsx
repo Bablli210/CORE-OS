@@ -10,6 +10,7 @@ import { setRotationPaused } from "@/features/leads/queries/leads";
 import { salesErrorKey } from "@/features/leads/errors";
 import { cairoMonth, formatEGP } from "@/lib/format";
 import { t } from "@/lib/i18n";
+import { SalesInsights } from "@/features/analytics/components/sales-insights";
 import { useTeam } from "../hooks/use-sales";
 
 /** /sales/team (sales manager): each rep's month from mv_rep_month, open flags, overdue, rotation on/off. */
@@ -68,6 +69,7 @@ export function TeamScreen() {
           </li>
         ))}
       </ul>
+      <SalesInsights branch={branchId} month={month} />
     </div>
   );
 }

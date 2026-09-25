@@ -11,6 +11,7 @@ import { t } from "@/lib/i18n";
 import { useBranchAdherence, useHeatmap, useTeam } from "../hooks/use-coaching";
 import { AuditPanel } from "./audit-panel";
 import { CoachesTable } from "./coaches-table";
+import { CoachWeeksChart } from "@/features/analytics/components/coach-weeks-chart";
 import { Heatmap } from "./heatmap";
 import { ReassignPanel } from "./reassign-panel";
 
@@ -41,6 +42,10 @@ export function TeamScreen() {
         <CardContent><CoachesTable coaches={team.data.coaches} /></CardContent>
       </Card>
       <Card>
+        <CardHeader><CardTitle>{t("coachTeam.perWeek")}</CardTitle><p className="text-sm text-muted-foreground">{t("team.refreshNote")}</p></CardHeader>
+        <CardContent><CoachWeeksChart branch={branch} /></CardContent>
+      </Card>
+      <Card>
         <CardHeader><CardTitle>{t("coachTeam.reassignTitle")}</CardTitle></CardHeader>
         <CardContent><ReassignPanel clients={team.data.clients} onDone={setNotice} /></CardContent>
       </Card>
@@ -64,7 +69,7 @@ export function TeamScreen() {
           <CardHeader><CardTitle>{t("coachTeam.heatmap")}</CardTitle><p className="text-sm text-muted-foreground">{t("coachTeam.heatmapNote")}</p></CardHeader>
           <CardContent>
             {heatmap.isError ? <p role="alert" className="text-sm text-destructive">{t("error.retryHint")}</p> : null}
-            <Heatmap rows={(heatmap.data ?? []).filter((r) => r.branch_id === branch)} />
+            <Heatmap rows={(heatmap.data ?? []).filter((r) => r.branch_id === branch)} branch={branch ?? ""} />
           </CardContent>
         </Card>
       </div>

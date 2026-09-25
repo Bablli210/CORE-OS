@@ -1,51 +1,56 @@
 "use client";
 
+import { useSearchParams } from "next/navigation";
 import { ErrorState, LoadingList } from "@/components/states";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { MonthPicker } from "@/features/analytics/components/month-picker";
+import { TargetBar } from "@/features/analytics/components/target-bar";
+import { TileGrid } from "@/features/analytics/components/tile-grid";
+import { useTargets, useTiles } from "@/features/analytics/hooks/use-analytics";
+import { useSetParams } from "@/features/analytics/hooks/use-set-params";
 import { useMe } from "@/features/auth/me-context";
 import { lostReasonLabel, sourceLabel, type LostReason } from "@/features/leads/labels";
-import { cairoMonth, formatEGP } from "@/lib/format";
-import { t } from "@/lib/i18n";
+import { cairoMonth } from "@/lib/format";
+import { t, type MessageKey } from "@/lib/i18n";
 import { useNumbers } from "../hooks/use-sales";
-import type { RepMonth } from "../queries/sales";
 
-function Tile({ label, value, sub }: { label: string; value: string; sub?: string }) {
-  return (
-    <div className="grid gap-1 rounded-lg border p-4" data-testid="stat-tile">
-      <span className="text-sm text-muted-foreground">{label}</span>
-      <span className="text-2xl font-semibold">{value}</span>
-      {sub ? <span className="text-xs text-muted-foreground">{sub}</span> : null}
-    </div>
-  );
-}
-
-/** /sales/numbers: this month's tiles from fn_dashboard_reps (mv_rep_month), leads by source and lost reasons. */
+/**
+ * /sales/numbers: a rep's month (won revenue vs target, leads, conversion, response, membership collected and
+ * commission, overdue, flags); the sales manager's branch. Tiles come from fn_dashboard_tiles and open their rows.
+ */
 export function NumbersScreen() {
   const me = useMe();
-  const month = cairoMonth();
-  const { data, isPending, isError, refetch } = useNumbers(me.active.branchId ?? "", month, me.active.id);
-  if (isPending) return <LoadingList label={t("common.loading")} />;
-  if (isError) return <ErrorState title={t("numbers.error")} body={t("error.retryHint")} action={<Button variant="outline" onClick={() => refetch()}>{t("common.retry")}</Button>} />;
-
-  // A rep sees their own row; the manager sees the branch total.
-  const sum = (k: keyof RepMonth) => data.rows.reduce((a, r) => a + Number(r[k] ?? 0), 0);
-  const leads = sum("leads");
-  const won = sum("won");
-  const medians = data.rows.map((r) => r.median_response_min).filter((v): v is number => v !== null);
-  const bySource = data.breakdown.filter((b) => b.dimension === "source");
-  const lost = data.breakdown.filter((b) => b.dimension === "lost_reason");
+  const params = useSearchParams();
+  const setParams = useSetParams();
+  const month = params.get("month") ?? cairoMonth();
+  const isRep = me.active.role === "sales_rep";
+  const screen = isRep ? "rep" : "sales";
+  const scope = isRep ? me.active.id : me.active.branchId;
+  const tiles = useTiles(screen, month, scope, !!scope);
+  const targets = useTargets(month);
+  const breakdown = useNumbers(me.active.branchId ?? "", month);
+  const mine = (targets.data ?? []).filter((x) => (isRep ? x.scope_id === me.active.id : x.scope_type === "branch" && x.scope_id === me.active.branchId));
+  const bySource = (breakdown.data?.breakdown ?? []).filter((b) => b.dimension === "source");
+  const lost = (breakdown.data?.breakdown ?? []).filter((b) => b.dimension === "lost_reason");
 
   return (
     <div className="grid gap-4">
-      <p className="text-sm text-muted-foreground">{t("numbers.month", { month })} · {t("team.refreshNote")}</p>
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
-        <Tile label={t("numbers.wonRevenue")} value={formatEGP(sum("won_revenue"))} sub={data.target ? t("numbers.ofTarget", { target: formatEGP(data.target) }) : undefined} />
-        <Tile label={t("numbers.leads")} value={String(leads)} />
-        <Tile label={t("numbers.conversion")} value={leads ? `${Math.round((100 * won) / leads)}%` : "—"} sub={t("numbers.wonOf", { won, leads })} />
-        <Tile label={t("numbers.response")} value={medians.length ? `${Math.round(medians.reduce((a, b) => a + b, 0) / medians.length)}m` : "—"} />
-        <Tile label={t("numbers.overdue")} value={String(sum("overdue_follow_ups_now"))} />
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <p className="text-sm text-muted-foreground">{t("numbers.refresh")}</p>
+        <MonthPicker value={month} onChange={(m) => setParams({ month: m })} />
       </div>
+      {tiles.isPending ? <LoadingList label={t("common.loading")} /> : tiles.isError || !tiles.data ? (
+        <ErrorState title={t("numbers.error")} body={t("error.retryHint")} action={<Button variant="outline" onClick={() => tiles.refetch()}>{t("common.retry")}</Button>} />
+      ) : <TileGrid tiles={tiles.data.tiles} month={month} scope={scope} />}
+      {mine.length ? (
+        <Card>
+          <CardHeader><CardTitle>{isRep ? t("target.yours") : t("target.branch")}</CardTitle></CardHeader>
+          <CardContent className="grid gap-3">
+            {mine.map((x) => <TargetBar key={x.metric} actual={Number(x.actual ?? 0)} target={Number(x.target)} unit={x.unit} label={t(`target.metric.${x.metric}` as MessageKey)} />)}
+          </CardContent>
+        </Card>
+      ) : null}
       <div className="grid gap-4 md:grid-cols-2">
         <Card>
           <CardHeader><CardTitle>{t("numbers.bySource")}</CardTitle></CardHeader>

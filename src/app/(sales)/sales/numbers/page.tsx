@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { PageHeader } from "@/components/states";
+import { Suspense } from "react";
+import { LoadingList, PageHeader } from "@/components/states";
 import { NumbersScreen } from "@/features/sales/components/numbers-screen";
 import { t } from "@/lib/i18n";
 
@@ -9,7 +10,9 @@ export default function Page() {
   return (
     <>
       <PageHeader title={t("screen.sales.numbers.title")} description={t("screen.sales.numbers.job")} />
-      <NumbersScreen />
+      <Suspense fallback={<LoadingList label={t("common.loading")} />}>
+        <NumbersScreen />
+      </Suspense>
     </>
   );
 }

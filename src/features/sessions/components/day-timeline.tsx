@@ -1,0 +1,50 @@
+"use client";
+
+import { t, type MessageKey } from "@/lib/i18n";
+import { formatTime } from "@/lib/format";
+import type { CoachDay, DaySession, Outcome } from "../queries/coach";
+import { cairoMinutes, freeGaps, fromMinutes, toMinutes } from "../week";
+import { SessionRow } from "./session-row";
+
+type Item =
+  | { kind: "session"; at: number; session: DaySession }
+  | { kind: "block"; at: number; label: string; time: string; blockKind: string }
+  | { kind: "gap"; at: number; end: number };
+
+/** The day as a timeline: sessions, classes and blocked hours, and the free gaps inside working hours. */
+export function DayTimeline({ day, canRecord, queuedIds, onOutcome }: { day: CoachDay; canRecord: boolean; queuedIds: Set<string>; onOutcome: (s: DaySession, o: Outcome) => void }) {
+  const busy = [
+    ...day.sessions.filter((s) => s.status !== "cancelled").map((s) => ({ start: cairoMinutes(s.starts_at), end: cairoMinutes(s.starts_at) + s.duration_minutes })),
+    ...day.blocks.map((b) => ({ start: cairoMinutes(b.starts_at), end: cairoMinutes(b.starts_at) + b.duration_minutes })),
+  ];
+  const working = day.availability.map((a) => ({ start: toMinutes(a.start_time), end: toMinutes(a.end_time) }));
+  const items: Item[] = [
+    ...day.sessions.map((s) => ({ kind: "session" as const, at: cairoMinutes(s.starts_at), session: s })),
+    ...day.blocks.map((b) => ({
+      kind: "block" as const,
+      at: cairoMinutes(b.starts_at),
+      label: b.label || t(`schedule.kind.${b.kind}` as MessageKey),
+      time: `${formatTime(b.starts_at)} · ${t("schedule.minutes", { n: b.duration_minutes })}`,
+      blockKind: b.kind,
+    })),
+    ...freeGaps(working, busy, 60).map((g) => ({ kind: "gap" as const, at: g.start, end: g.end })),
+  ].sort((a, b) => a.at - b.at || (a.kind === "gap" ? 1 : -1));
+
+  return (
+    <ol className="grid gap-2" aria-label={t("today.timeline")}>
+      {items.map((it) =>
+        it.kind === "session" ? (
+          <SessionRow key={it.session.id} session={it.session} canRecord={canRecord} queued={queuedIds.has(it.session.id)} onOutcome={onOutcome} />
+        ) : it.kind === "block" ? (
+          <li key={`b-${it.at}-${it.label}`} className="rounded-lg border border-dashed bg-muted/50 p-3 text-sm">
+            <span className="font-medium">{it.label}</span> <span className="text-muted-foreground">{it.time}</span>
+          </li>
+        ) : (
+          <li key={`g-${it.at}`} className="rounded-lg px-3 py-1 text-xs text-muted-foreground">
+            {t("today.free", { from: fromMinutes(it.at), to: fromMinutes(it.end) })}
+          </li>
+        ),
+      )}
+    </ol>
+  );
+}

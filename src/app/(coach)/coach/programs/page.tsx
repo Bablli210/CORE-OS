@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
-import { ScreenPlaceholder } from "@/components/screen-placeholder";
+import { TemplatesScreen } from "@/features/programs/components/templates-screen";
 import { t } from "@/lib/i18n";
 
-export const metadata: Metadata = { title: t("screen.coach.programs.title") };
+export const metadata: Metadata = { title: t("templates.title") };
 
 export default function Page() {
-  return <ScreenPlaceholder screen="coach.programs" />;
+  return <TemplatesScreen />;
 }

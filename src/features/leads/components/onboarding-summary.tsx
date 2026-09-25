@@ -22,12 +22,13 @@ function optionLabel(v: string) {
 }
 
 /** Readable summary of the wizard answers (docs/03 §2 schema v1), with the raw JSON one tap away. */
-export function OnboardingSummary({ responses, completedAt }: { responses: Responses; completedAt: string | null }) {
+/** `completedAt` undefined (a client's copy of the answers) hides the completed/partial line. */
+export function OnboardingSummary({ responses, completedAt }: { responses: Responses; completedAt?: string | null }) {
   const sections = SECTIONS.filter((s) => responses[s] && Object.keys(responses[s]).length);
   if (!sections.length) return <p className="text-sm text-muted-foreground">{t("onboardSummary.none")}</p>;
   return (
     <div className="grid gap-4" data-testid="onboarding-summary">
-      {completedAt ? <p className="text-sm text-muted-foreground">{t("onboardSummary.completed", { date: formatDate(completedAt) })}</p> : <p className="text-sm text-warning-foreground">{t("onboardSummary.partial")}</p>}
+      {completedAt === undefined ? null : completedAt ? <p className="text-sm text-muted-foreground">{t("onboardSummary.completed", { date: formatDate(completedAt) })}</p> : <p className="text-sm text-warning-foreground">{t("onboardSummary.partial")}</p>}
       <dl className="grid gap-4 md:grid-cols-2">
         {sections.map((s) => (
           <div key={s} className="grid gap-1 rounded-md border p-3">

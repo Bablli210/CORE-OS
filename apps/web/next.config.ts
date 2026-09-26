@@ -1,5 +1,6 @@
 import withSerwistInit from "@serwist/next";
 import type { NextConfig } from "next";
+import path from "node:path";
 
 // PWA (docs/05 M5): Serwist builds src/app/sw.ts into public/sw.js and registers it. Off in `next dev` so
 // development always hits the network; `pnpm build && pnpm start` (and the e2e suite) run with it.
@@ -9,6 +10,7 @@ const withSerwist = withSerwistInit({
   disable: process.env.NODE_ENV !== "production",
 });
 
-const nextConfig: NextConfig = {};
+// pnpm workspace (M8): trace files from the repo root so shared packages are included in the server build.
+const nextConfig: NextConfig = { outputFileTracingRoot: path.join(__dirname, "../..") };
 
 export default withSerwist(nextConfig);

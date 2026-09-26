@@ -41,7 +41,6 @@ const eslintConfig = [
       "test-results/**",
       "next-env.d.ts",
       "src/lib/database.types.ts",
-      "supabase/functions/**",
       "public/sw.js",
       "public/swe-worker-*.js",
     ],

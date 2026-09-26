@@ -1,4 +1,4 @@
-// Renders the PWA icons (public/icons/*.png) with the installed Chromium. Neutral placeholder until branding:
+// Renders the PWA icons (apps/web/public/icons/*.png) with the installed Chromium. Neutral placeholder until branding:
 // the tokens' --primary (neutral-900) background and --background (neutral-0) letter. Run: node scripts/make-icons.mjs
 import { chromium } from "@playwright/test";
 
@@ -18,6 +18,6 @@ for (const i of icons) {
   await page.setContent(`<html><body style="margin:0;background:transparent">
     <div style="width:${i.size}px;height:${i.size}px;background:${BG};border-radius:${i.radius * i.size}px;display:grid;place-items:center;
       font:700 ${Math.round(i.size * i.scale)}px/1 system-ui,sans-serif;color:${FG}">G</div></body></html>`);
-  await page.screenshot({ path: `public/icons/${i.file}`, omitBackground: true });
+  await page.screenshot({ path: `apps/web/public/icons/${i.file}`, omitBackground: true });
 }
 await browser.close();

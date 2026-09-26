@@ -21,7 +21,7 @@ export default defineConfig({
     { name: "desktop-1280", use: { ...devices["Desktop Chrome"], viewport: { width: 1280, height: 800 } } },
   ],
   webServer: {
-    command: process.env.E2E_DEV ? "pnpm dev" : "pnpm build && pnpm start",
+    command: process.env.E2E_DEV ? "pnpm --filter @gymos/web dev" : "pnpm --filter @gymos/web build && pnpm --filter @gymos/web start",
     url: "http://localhost:3000",
     reuseExistingServer: !process.env.CI,
     timeout: 300_000,

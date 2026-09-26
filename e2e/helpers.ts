@@ -122,7 +122,7 @@ export function freeTestPhone(): { local: string; e164: string } {
   throw new Error("no reserved test phone left: reset the database (supabase db reset && pnpm seed:auth)");
 }
 
-/** Same formatting as the app (src/lib/format.ts). */
+/** Same formatting as the app (apps/web/src/lib/format.ts). */
 export const egp = (piastres: number) => new Intl.NumberFormat("en-EG", { style: "currency", currency: "EGP", maximumFractionDigits: 0 }).format(piastres / 100);
 
 /** Runs a SQL script as one psql session (dollar quotes and several statements allowed); returns the last result. */

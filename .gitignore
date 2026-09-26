@@ -32,6 +32,6 @@ supabase/.branches
 .vercel
 
 # service worker built by Serwist
-public/sw.js
-public/sw.js.map
-public/swe-worker-*.js
+**/public/sw.js
+**/public/sw.js.map
+**/public/swe-worker-*.js

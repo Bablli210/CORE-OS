@@ -1,12 +1,6 @@
-import react from "@vitejs/plugin-react";
 import { defineConfig } from "vitest/config";
 
+// Root tests: the Edge Functions' shared code (plain TypeScript, no Deno globals). The apps and packages run their own.
 export default defineConfig({
-  plugins: [react()],
-  resolve: { tsconfigPaths: true },
-  test: {
-    environment: "jsdom",
-    setupFiles: ["./vitest.setup.ts"],
-    include: ["src/**/*.test.{ts,tsx}", "supabase/functions/_shared/**/*.test.ts"],
-  },
+  test: { environment: "node", include: ["supabase/functions/_shared/**/*.test.ts"] },
 });

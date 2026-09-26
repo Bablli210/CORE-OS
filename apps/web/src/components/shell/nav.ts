@@ -1,5 +1,5 @@
-import type { AppRole } from "@/features/auth/roles";
-import type { MessageKey } from "@/lib/i18n";
+import type { AppRole } from "@gymos/api/auth/roles";
+import type { MessageKey } from "@gymos/i18n";
 
 export type NavIcon =
   | "today"

@@ -1,9 +1,9 @@
 import { ChevronRight, Radio } from "lucide-react";
 import Link from "next/link";
-import { t, type MessageKey } from "@/lib/i18n";
+import { t, type MessageKey } from "@gymos/i18n";
 import { cn } from "@/lib/utils";
 import { formatMetric, progressPct } from "../format";
-import type { Tile } from "../queries/analytics";
+import type { Tile } from "@gymos/api/analytics/analytics";
 import { TargetBar } from "./target-bar";
 
 /**

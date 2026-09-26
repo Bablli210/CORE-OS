@@ -2,9 +2,9 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Select } from "@/components/ui/input";
-import { t } from "@/lib/i18n";
+import { t } from "@gymos/i18n";
 import { cn } from "@/lib/utils";
-import { useBranchCoaches, useRankedCoaches } from "../hooks/use-deals";
+import { useBranchCoaches, useRankedCoaches } from "@gymos/api/deals/use-deals";
 
 /**
  * docs/04: a PT line needs a coach. fn_rank_coaches suggestions first (why: gender preference, time, specialties, load),

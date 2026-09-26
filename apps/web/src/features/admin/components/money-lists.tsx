@@ -1,9 +1,9 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { dealStatusLabel, methodLabel, productTypeLabel, type DealStatus } from "@/features/deals/labels";
-import { formatDate, formatDateTime, formatEGP } from "@/lib/format";
-import { t } from "@/lib/i18n";
-import type { CommissionReport, MoneySummary } from "../queries/money";
+import { dealStatusLabel, methodLabel, productTypeLabel, type DealStatus } from "@gymos/api/deals/labels";
+import { formatDate, formatDateTime, formatEGP } from "@gymos/api/format";
+import { t } from "@gymos/i18n";
+import type { CommissionReport, MoneySummary } from "@gymos/api/admin/money";
 
 function Breakdown({ title, entries, label }: { title: string; entries: Record<string, number>; label: (k: string) => string }) {
   const rows = Object.entries(entries);

@@ -1,5 +1,5 @@
-import { formatEGP } from "@/lib/format";
-import type { Unit } from "./queries/analytics";
+import { formatEGP } from "@gymos/api/format";
+import type { Unit } from "@gymos/api/analytics/analytics";
 
 const compact = new Intl.NumberFormat("en", { notation: "compact", maximumFractionDigits: 1 });
 const whole = new Intl.NumberFormat("en");

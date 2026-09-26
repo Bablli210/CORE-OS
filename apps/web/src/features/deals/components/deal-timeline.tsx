@@ -1,7 +1,7 @@
-import { formatDateTime } from "@/lib/format";
-import { t } from "@/lib/i18n";
-import { eventLabel } from "../labels";
-import type { Deal } from "../queries/deals";
+import { formatDateTime } from "@gymos/api/format";
+import { t } from "@gymos/i18n";
+import { eventLabel } from "@gymos/api/deals/labels";
+import type { Deal } from "@gymos/api/deals/deals";
 
 export function DealTimeline({ events }: { events: Deal["timeline"] }) {
   if (!events.length) return <p className="text-sm text-muted-foreground">{t("deal.noEvents")}</p>;

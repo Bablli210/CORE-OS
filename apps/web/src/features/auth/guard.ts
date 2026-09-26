@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { getMe, getSession, preferredMembershipId, type Me } from "./me";
-import { AREA_HOME, homeFor, resolveContext, type AppRole, type Area } from "./roles";
+import { AREA_HOME, homeFor, resolveContext, type AppRole, type Area } from "@gymos/api/auth/roles";
 
 /**
  * For layouts/pages of an area: returns the session acting in that area, or redirects —

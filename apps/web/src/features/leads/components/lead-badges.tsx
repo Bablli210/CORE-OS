@@ -1,8 +1,8 @@
 import { Badge } from "@/components/ui/badge";
-import { shortDuration } from "@/lib/format";
-import { t } from "@/lib/i18n";
-import { stageLabel, type LeadStatus } from "../labels";
-import type { SlaState } from "../queries/leads";
+import { shortDuration } from "@gymos/api/format";
+import { t } from "@gymos/i18n";
+import { stageLabel, type LeadStatus } from "@gymos/api/leads/labels";
+import type { SlaState } from "@gymos/api/leads/leads";
 
 export function StageBadge({ status }: { status: LeadStatus }) {
   const variant = status === "won" ? "success" : status === "lost" ? "destructive" : "outline";

@@ -7,10 +7,10 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input, Select } from "@/components/ui/input";
-import { formatDate } from "@/lib/format";
-import { t } from "@/lib/i18n";
-import { useOutbox } from "../hooks/use-outbox";
-import { useHome, useProgress } from "../hooks/use-client";
+import { formatDate } from "@gymos/api/format";
+import { t } from "@gymos/i18n";
+import { useOutbox } from "@gymos/api/training/use-outbox";
+import { useHome, useProgress } from "@gymos/api/training/use-client";
 import { TrendChart } from "./trend-chart";
 
 /** /c/progress — see that it's working (docs/04): streak, PRs, one exercise's top set over time, body weight (+ add). */

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { NewDeal } from "@/features/deals/components/new-deal";
-import { t } from "@/lib/i18n";
+import { t } from "@gymos/i18n";
 
 export const metadata: Metadata = { title: t("screen.sales.dealNew.title") };
 

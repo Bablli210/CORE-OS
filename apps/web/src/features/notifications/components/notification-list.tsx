@@ -5,11 +5,11 @@ import { BellOff } from "lucide-react";
 import { EmptyState, ErrorState, LoadingList } from "@/components/states";
 import { Button } from "@/components/ui/button";
 import { useMe } from "@/features/auth/me-context";
-import { homeFor } from "@/features/auth/roles";
-import { t } from "@/lib/i18n";
+import { homeFor } from "@gymos/api/auth/roles";
+import { t } from "@gymos/i18n";
 import { cn } from "@/lib/utils";
-import { useMarkRead, useNotifications } from "../hooks/use-notifications";
-import { notificationHref, type NotificationRow } from "../queries/notifications";
+import { useMarkRead, useNotifications } from "@gymos/api/notifications/use-notifications";
+import { notificationHref, type NotificationRow } from "@gymos/api/notifications/notifications";
 
 const timeFormat = new Intl.DateTimeFormat("en-GB", { dateStyle: "medium", timeStyle: "short", timeZone: "Africa/Cairo" });
 

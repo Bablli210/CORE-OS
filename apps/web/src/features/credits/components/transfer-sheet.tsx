@@ -6,10 +6,10 @@ import { Textarea } from "@/components/ui/input";
 import { Field } from "@/components/ui/label";
 import { PhoneInput } from "@/components/phone-input";
 import { Sheet } from "@/components/ui/sheet";
-import { dealErrorKey } from "@/features/deals/errors";
-import { useMoneyMutation } from "@/features/deals/hooks/use-deals";
-import { t } from "@/lib/i18n";
-import { findByPhone, requestTransfer, type Lot, type PhoneMatch } from "../queries/sales-client";
+import { dealErrorKey } from "@gymos/api/deals/errors";
+import { useMoneyMutation } from "@gymos/api/deals/use-deals";
+import { t } from "@gymos/i18n";
+import { findByPhone, requestTransfer, type Lot, type PhoneMatch } from "@gymos/api/credits/sales-client";
 
 /**
  * Move a pack's remaining sessions to another client (same coach). Pick the client by phone, give the reason; the sales

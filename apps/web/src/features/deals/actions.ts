@@ -1,8 +1,8 @@
 "use server";
 
-import type { MessageKey } from "@/lib/i18n";
+import type { MessageKey } from "@gymos/i18n";
 import { createClient } from "@/lib/supabase/server";
-import type { PaymentMethod } from "./labels";
+import type { PaymentMethod } from "@gymos/api/deals/labels";
 
 export type PaymentResult = {
   error?: MessageKey;

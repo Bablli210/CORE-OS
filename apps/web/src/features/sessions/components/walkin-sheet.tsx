@@ -5,10 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/input";
 import { Field } from "@/components/ui/label";
 import { Sheet } from "@/components/ui/sheet";
-import { t } from "@/lib/i18n";
-import { coachingErrorKey } from "../errors";
+import { t } from "@gymos/i18n";
+import { coachingErrorKey } from "@gymos/api/sessions/errors";
 import { useCoachMutation, useSchedulable } from "../hooks/use-coach";
-import { startWalkIn } from "../queries/coach";
+import { startWalkIn } from "@gymos/api/sessions/coach";
 
 /** A client turns up outside their slot: record a completed session now (fn_start_walkin_session; same credit rules). */
 export function WalkInSheet({ coach, onClose, onDone }: { coach: string; onClose: () => void; onDone: (name: string) => void }) {

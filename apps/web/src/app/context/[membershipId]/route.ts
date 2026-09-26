@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { getSession } from "@/features/auth/me";
-import { CONTEXT_COOKIE, homeFor } from "@/features/auth/roles";
+import { CONTEXT_COOKIE, homeFor } from "@gymos/api/auth/roles";
 
 /** Role switcher target: remembers the chosen membership and opens its home (or ?next= inside the app). */
 export async function GET(request: NextRequest, { params }: { params: Promise<{ membershipId: string }> }) {

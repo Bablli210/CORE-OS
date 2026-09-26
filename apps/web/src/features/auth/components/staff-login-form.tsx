@@ -6,9 +6,9 @@ import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Field } from "@/components/ui/label";
-import { t, type MessageKey } from "@/lib/i18n";
+import { t, type MessageKey } from "@gymos/i18n";
 import { signInStaff } from "../actions";
-import { staffLoginSchema, type StaffLogin } from "../schemas/login";
+import { staffLoginSchema, type StaffLogin } from "@gymos/api/auth/login-schema";
 
 export function StaffLoginForm({ next }: { next?: string }) {
   const [pending, startTransition] = useTransition();

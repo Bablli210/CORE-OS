@@ -1,7 +1,7 @@
 import Link from "next/link";
-import { formatEGP } from "@/lib/format";
-import { t } from "@/lib/i18n";
-import { rowsHref, type Tile } from "../../queries/analytics";
+import { formatEGP } from "@gymos/api/format";
+import { t } from "@gymos/i18n";
+import { rowsHref, type Tile } from "@gymos/api/analytics/analytics";
 
 /**
  * The month's money, reconciled: booked − collected on those deals = outstanding; deferred = the liability view

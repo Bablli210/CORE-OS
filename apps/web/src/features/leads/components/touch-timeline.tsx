@@ -1,7 +1,7 @@
-import { formatDateTime } from "@/lib/format";
-import { t } from "@/lib/i18n";
-import { touchLabel } from "../labels";
-import type { LeadDetail } from "../queries/leads";
+import { formatDateTime } from "@gymos/api/format";
+import { t } from "@gymos/i18n";
+import { touchLabel } from "@gymos/api/leads/labels";
+import type { LeadDetail } from "@gymos/api/leads/leads";
 
 export function TouchTimeline({ touches }: { touches: LeadDetail["touches"] }) {
   if (!touches.length) return <p className="text-sm text-muted-foreground">{t("touch.none")}</p>;

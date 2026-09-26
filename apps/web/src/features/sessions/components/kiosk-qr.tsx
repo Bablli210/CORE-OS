@@ -3,7 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 import QRCode from "qrcode";
 import { createClient } from "@/lib/supabase/client";
-import { t } from "@/lib/i18n";
+import { t } from "@gymos/i18n";
 
 async function kioskQr(branch: string): Promise<{ url: string; svg: string }> {
   const { data, error } = await createClient().rpc("fn_kiosk_code", { p_branch: branch });

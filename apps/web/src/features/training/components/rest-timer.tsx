@@ -3,7 +3,7 @@
 import { Timer } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { t } from "@/lib/i18n";
+import { t } from "@gymos/i18n";
 
 /** Counts down the rest after a set (from the program's rest). Sits in the logger's bottom bar above Finish; Skip or +15 s. */
 export function RestTimer({ until, onDone, onAdd }: { until: number; onDone: () => void; onAdd: (seconds: number) => void }) {

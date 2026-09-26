@@ -2,10 +2,10 @@
 
 import Link from "next/link";
 import { useMe } from "@/features/auth/me-context";
-import { t, type MessageKey } from "@/lib/i18n";
+import { t, type MessageKey } from "@gymos/i18n";
 import { formatMetric } from "../../format";
-import { useTiles } from "../../hooks/use-analytics";
-import { rowsHref, type Tile } from "../../queries/analytics";
+import { useTiles } from "@gymos/api/analytics/use-analytics";
+import { rowsHref, type Tile } from "@gymos/api/analytics/analytics";
 
 /**
  * Branch A vs B vs all, one row per admin tile (fn_dashboard_tiles 'admin' per branch). Every figure is a link to its rows

@@ -7,10 +7,10 @@ import { EmptyState, ErrorState, LoadingList } from "@/components/states";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input, Select } from "@/components/ui/input";
 import { useMe } from "@/features/auth/me-context";
-import { daysSince } from "@/lib/format";
-import { t } from "@/lib/i18n";
-import { useLeads } from "../hooks/use-leads";
-import { stageLabel, type LeadStatus } from "../labels";
+import { daysSince } from "@gymos/api/format";
+import { t } from "@gymos/i18n";
+import { useLeads } from "@gymos/api/leads/use-leads";
+import { stageLabel, type LeadStatus } from "@gymos/api/leads/labels";
 import { SlaBadge, StageBadge } from "./lead-badges";
 
 const FILTERS: LeadStatus[] = ["new", "contacted", "onboarded", "quoted", "won", "lost"];

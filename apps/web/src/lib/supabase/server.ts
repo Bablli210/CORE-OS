@@ -1,6 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
-import type { Database } from "@/lib/database.types";
+import type { Database } from "@gymos/api/database.types";
 import { publicEnv } from "@/lib/env";
 
 /**

@@ -1,9 +1,9 @@
 "use client";
 
 import { useMe } from "@/features/auth/me-context";
-import { t, type MessageKey } from "@/lib/i18n";
-import { useWeekly } from "../../hooks/use-analytics";
-import type { Unit, Weekly } from "../../queries/analytics";
+import { t, type MessageKey } from "@gymos/i18n";
+import { useWeekly } from "@gymos/api/analytics/use-analytics";
+import type { Unit, Weekly } from "@gymos/api/analytics/analytics";
 import { MultiLineChart } from "../multi-line-chart";
 
 const CHARTS: { key: keyof Weekly; title: MessageKey; unit: Unit }[] = [

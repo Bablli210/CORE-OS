@@ -5,11 +5,11 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Field } from "@/components/ui/label";
-import { coachingErrorKey } from "@/features/sessions/errors";
-import { t } from "@/lib/i18n";
+import { coachingErrorKey } from "@gymos/api/sessions/errors";
+import { t } from "@gymos/i18n";
 import { cn } from "@/lib/utils";
-import { useTemplates } from "../hooks/use-program-draft";
-import { saveProgram, type ProgramDay } from "../queries/programs";
+import { useTemplates } from "@/features/programs/hooks/use-program-draft";
+import { saveProgram, type ProgramDay } from "@gymos/api/programs/programs";
 
 /** First step: name and length, then start from a template (days and exercises filled in) or from a blank day. */
 export function ProgramStart({ clientId, clientName, onCreated }: { clientId: string; clientName: string; onCreated: (programId: string) => void }) {

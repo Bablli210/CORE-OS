@@ -4,8 +4,8 @@ import { ClipboardList } from "lucide-react";
 import { EmptyState, ErrorState, LoadingList, PageHeader } from "@/components/states";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { t } from "@/lib/i18n";
-import { useTemplates } from "../hooks/use-program-draft";
+import { t } from "@gymos/i18n";
+import { useTemplates } from "@/features/programs/hooks/use-program-draft";
 import { ProgramPreview } from "./program-preview";
 
 /** /coach/programs — the templates a coach can start from (gym-wide and their own). Programs are built on a client's page. */

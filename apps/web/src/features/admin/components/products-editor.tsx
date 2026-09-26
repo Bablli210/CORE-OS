@@ -8,10 +8,10 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Sheet } from "@/components/ui/sheet";
 import { useMe } from "@/features/auth/me-context";
-import { PRODUCT_TYPES, productTypeLabel } from "@/features/deals/labels";
-import { formatEGP } from "@/lib/format";
-import { t } from "@/lib/i18n";
-import { fetchProducts, productKeys, type Product, type ProductDraft } from "../queries/products";
+import { PRODUCT_TYPES, productTypeLabel } from "@gymos/api/deals/labels";
+import { formatEGP } from "@gymos/api/format";
+import { t } from "@gymos/i18n";
+import { fetchProducts, productKeys, type Product, type ProductDraft } from "@gymos/api/admin/products";
 import { ProductForm } from "./product-form";
 
 /** docs/04 /admin/settings products editor: catalog by type, per-branch prices, pack expiry days, bundles. */

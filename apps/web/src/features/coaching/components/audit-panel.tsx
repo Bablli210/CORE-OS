@@ -2,11 +2,11 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { coachingErrorKey } from "@/features/sessions/errors";
-import { formatDateTime } from "@/lib/format";
-import { t, type MessageKey } from "@/lib/i18n";
-import { useCoachingMutation } from "../hooks/use-coaching";
-import { decideApproval, type Team } from "../queries/coaching";
+import { coachingErrorKey } from "@gymos/api/sessions/errors";
+import { formatDateTime } from "@gymos/api/format";
+import { t, type MessageKey } from "@gymos/i18n";
+import { useCoachingMutation } from "@gymos/api/coaching/use-coaching";
+import { decideApproval, type Team } from "@gymos/api/coaching/coaching";
 
 const outcome = (s: string) => t(`session.status.${s}` as MessageKey);
 

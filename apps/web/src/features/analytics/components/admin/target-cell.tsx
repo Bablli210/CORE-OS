@@ -4,8 +4,8 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Check } from "lucide-react";
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
-import { t } from "@/lib/i18n";
-import { analyticsKeys, saveTarget, type TargetRow } from "../../queries/analytics";
+import { t } from "@gymos/i18n";
+import { analyticsKeys, saveTarget, type TargetRow } from "@gymos/api/analytics/analytics";
 
 /**
  * One inline target: EGP for money (stored in piastres), a count otherwise. Saves on blur or Enter through

@@ -1,10 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { daysSince, formatDateTime } from "@/lib/format";
-import { t } from "@/lib/i18n";
-import { allowedMoves, stageLabel, type OpenStage } from "../labels";
-import type { LeadRow } from "../queries/leads";
+import { daysSince, formatDateTime } from "@gymos/api/format";
+import { t } from "@gymos/i18n";
+import { allowedMoves, stageLabel, type OpenStage } from "@gymos/api/leads/labels";
+import type { LeadRow } from "@gymos/api/leads/leads";
 import { SlaBadge } from "./lead-badges";
 
 /** Pipeline card: name, source, days in stage, next follow-up, SLA; "Move to" for keyboard/touch, draggable on desktop. */

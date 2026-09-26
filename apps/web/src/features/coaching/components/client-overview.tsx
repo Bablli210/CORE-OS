@@ -1,9 +1,9 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { OnboardingSummary } from "@/features/leads/components/onboarding-summary";
-import type { Json } from "@/lib/database.types";
-import { formatDate, formatDateTime } from "@/lib/format";
-import { t, type MessageKey } from "@/lib/i18n";
-import type { CoachClient } from "../queries/coaching";
+import type { Json } from "@gymos/api/database.types";
+import { formatDate, formatDateTime } from "@gymos/api/format";
+import { t, type MessageKey } from "@gymos/i18n";
+import type { CoachClient } from "@gymos/api/coaching/coaching";
 
 /** Overview: adherence, weekly slots and next session, then the onboarding answers (goals, preferences, health). */
 export function OverviewTab({ client: c }: { client: CoachClient }) {

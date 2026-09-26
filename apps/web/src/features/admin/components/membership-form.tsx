@@ -6,10 +6,10 @@ import { Input, Select } from "@/components/ui/input";
 import { Field } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { useMe } from "@/features/auth/me-context";
-import { t, type MessageKey } from "@/lib/i18n";
-import { useSaveMembership } from "../hooks/use-people";
-import { peopleErrorKey, type PersonMembership } from "../queries/people";
-import { COACHING_ROLES, DISCOUNT_ROLES, membershipSchema, STAFF_ROLES, type MembershipInput } from "../schemas/people";
+import { t, type MessageKey } from "@gymos/i18n";
+import { useSaveMembership } from "@gymos/api/admin/use-people";
+import { peopleErrorKey, type PersonMembership } from "@gymos/api/admin/people";
+import { COACHING_ROLES, DISCOUNT_ROLES, membershipSchema, STAFF_ROLES, type MembershipInput } from "@gymos/api/admin/people-schema";
 
 type FormValues = Omit<MembershipInput, "specialties" | "capacity"> & { specialties: string; capacity: string };
 

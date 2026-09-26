@@ -1,0 +1,32 @@
+{
+  "name": "@gymos/api",
+  "version": "0.1.0",
+  "private": true,
+  "description": "The GymOS data layer shared by the web and mobile apps: Supabase client registry, database types, every RPC query, the query hooks, zod schemas and the platform-neutral offline logic.",
+  "scripts": {
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@gymos/i18n": "workspace:*",
+    "libphonenumber-js": "^1.13.14",
+    "zod": "^4.6.5"
+  },
+  "peerDependencies": {
+    "@supabase/supabase-js": "^2",
+    "@tanstack/react-query": "^5",
+    "react": "^19"
+  },
+  "devDependencies": {
+    "@supabase/supabase-js": "^2.117.1",
+    "@tanstack/react-query": "^5.103.2",
+    "@types/react": "^19",
+    "@types/node": "^20",
+    "eslint": "^9",
+    "typescript-eslint": "^8",
+    "react": "19.1.0",
+    "typescript": "^5",
+    "vitest": "^5.0.1"
+  }
+}

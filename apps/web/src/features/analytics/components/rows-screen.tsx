@@ -5,10 +5,10 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { EmptyState, ErrorState, LoadingList, PageHeader } from "@/components/states";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { cairoMonth, formatDateTime } from "@/lib/format";
-import { t, type MessageKey } from "@/lib/i18n";
+import { cairoMonth, formatDateTime } from "@gymos/api/format";
+import { t, type MessageKey } from "@gymos/i18n";
 import { formatMetric, rowAmountUnit, rowsUnit } from "../format";
-import { useRows } from "../hooks/use-analytics";
+import { useRows } from "@gymos/api/analytics/use-analytics";
 
 /**
  * /numbers/rows — the rows behind a tile (docs/05 M6: every tile clicks through). The footer's count / total is computed

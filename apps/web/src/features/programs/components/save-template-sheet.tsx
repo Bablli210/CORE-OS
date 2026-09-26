@@ -7,9 +7,9 @@ import { Input } from "@/components/ui/input";
 import { Field } from "@/components/ui/label";
 import { Sheet } from "@/components/ui/sheet";
 import { Switch } from "@/components/ui/switch";
-import { coachingErrorKey } from "@/features/sessions/errors";
-import { t } from "@/lib/i18n";
-import { programKeys, saveTemplate, type ProgramDay } from "../queries/programs";
+import { coachingErrorKey } from "@gymos/api/sessions/errors";
+import { t } from "@gymos/i18n";
+import { programKeys, saveTemplate, type ProgramDay } from "@gymos/api/programs/programs";
 
 /** "Save as template": for me, or gym-wide (head coach). */
 export function SaveTemplateSheet({ days, defaultName, canGymWide, onClose, onDone }: { days: ProgramDay[]; defaultName: string; canGymWide: boolean; onClose: () => void; onDone: () => void }) {

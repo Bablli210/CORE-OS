@@ -1,6 +1,6 @@
-import type { Json } from "@/lib/database.types";
-import { t, type MessageKey } from "@/lib/i18n";
-import { formatDate } from "@/lib/format";
+import type { Json } from "@gymos/api/database.types";
+import { t, type MessageKey } from "@gymos/i18n";
+import { formatDate } from "@gymos/api/format";
 
 type Responses = Record<string, Record<string, Json>>;
 

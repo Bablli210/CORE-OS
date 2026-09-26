@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Wizard } from "@/features/onboarding/components/wizard";
-import { t } from "@/lib/i18n";
+import { t } from "@gymos/i18n";
 
 export const metadata: Metadata = { title: t("wizard.title"), robots: { index: false } };
 export const viewport: Viewport = { width: "device-width", initialScale: 1, viewportFit: "cover" };

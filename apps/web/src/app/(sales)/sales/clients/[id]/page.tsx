@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { SalesClientScreen } from "@/features/credits/components/sales-client";
-import { t } from "@/lib/i18n";
+import { t } from "@gymos/i18n";
 
 export const metadata: Metadata = { title: t("client.title") };
 

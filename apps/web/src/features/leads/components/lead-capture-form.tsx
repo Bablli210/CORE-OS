@@ -9,12 +9,12 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { Input, Select, Textarea } from "@/components/ui/input";
 import { Field } from "@/components/ui/label";
 import { useMe } from "@/features/auth/me-context";
-import { t } from "@/lib/i18n";
-import { isE164 } from "@/lib/phone";
-import { useSalesMutation } from "../hooks/use-leads";
-import { INTERESTS, interestLabel, SOURCES, sourceLabel } from "../labels";
-import { createLead, findByPhone } from "../queries/leads";
-import { salesErrorKey } from "../errors";
+import { t } from "@gymos/i18n";
+import { isE164 } from "@gymos/api/phone";
+import { useSalesMutation } from "@gymos/api/leads/use-leads";
+import { INTERESTS, interestLabel, SOURCES, sourceLabel } from "@gymos/api/leads/labels";
+import { createLead, findByPhone } from "@gymos/api/leads/leads";
+import { salesErrorKey } from "@gymos/api/leads/errors";
 import { DuplicateNotice } from "./duplicate-notice";
 import { OnboardingShare } from "./onboarding-share";
 

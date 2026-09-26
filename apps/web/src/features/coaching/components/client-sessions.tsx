@@ -6,14 +6,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Field } from "@/components/ui/label";
 import { Sheet } from "@/components/ui/sheet";
-import { coachingErrorKey } from "@/features/sessions/errors";
+import { coachingErrorKey } from "@gymos/api/sessions/errors";
 import { useOwnCoachMembership } from "@/features/sessions/hooks/use-coach";
-import { addSession } from "@/features/sessions/queries/coach";
-import { cairoInstant, cairoToday } from "@/features/sessions/week";
-import { formatDateTime } from "@/lib/format";
-import { t, type MessageKey } from "@/lib/i18n";
-import { useCoachingMutation } from "../hooks/use-coaching";
-import type { CoachClient } from "../queries/coaching";
+import { addSession } from "@gymos/api/sessions/coach";
+import { cairoInstant, cairoToday } from "@gymos/api/sessions/week";
+import { formatDateTime } from "@gymos/api/format";
+import { t, type MessageKey } from "@gymos/i18n";
+import { useCoachingMutation } from "@gymos/api/coaching/use-coaching";
+import type { CoachClient } from "@gymos/api/coaching/coaching";
 
 /** Sessions: history with outcomes (unpaid marked), and a one-off outside the weekly schedule (fn_add_session). */
 export function SessionsTab({ client: c, onNotice }: { client: CoachClient; onNotice: (m: string) => void }) {

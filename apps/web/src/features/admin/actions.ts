@@ -1,10 +1,10 @@
 "use server";
 
-import type { MessageKey } from "@/lib/i18n";
+import type { MessageKey } from "@gymos/i18n";
 import { publicEnv } from "@/lib/env";
 import { createAdminAuthClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
-import { inviteSchema, type InviteInput } from "./schemas/people";
+import { inviteSchema, type InviteInput } from "@gymos/api/admin/people-schema";
 
 export type InviteResult = { error?: MessageKey; profileId?: string };
 

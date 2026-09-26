@@ -9,10 +9,10 @@ import { Button } from "@/components/ui/button";
 import { Input, Select } from "@/components/ui/input";
 import { Field } from "@/components/ui/label";
 import { useMe } from "@/features/auth/me-context";
-import { t, type MessageKey } from "@/lib/i18n";
+import { t, type MessageKey } from "@gymos/i18n";
 import { inviteStaff } from "../actions";
-import { peopleKeys } from "../queries/people";
-import { inviteSchema, STAFF_ROLES, type InviteInput } from "../schemas/people";
+import { peopleKeys } from "@gymos/api/admin/people";
+import { inviteSchema, STAFF_ROLES, type InviteInput } from "@gymos/api/admin/people-schema";
 
 /** Invite a staff member by email with their first role; they set a password from the email link. */
 export function InviteForm({ onDone }: { onDone: () => void }) {

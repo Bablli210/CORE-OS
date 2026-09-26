@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { PageHeader } from "@/components/states";
 import { LeadsList } from "@/features/leads/components/leads-list";
-import { t } from "@/lib/i18n";
+import { t } from "@gymos/i18n";
 
 export const metadata: Metadata = { title: t("screen.sales.leads.title") };
 

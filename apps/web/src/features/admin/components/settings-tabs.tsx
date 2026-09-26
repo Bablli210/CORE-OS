@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { t } from "@/lib/i18n";
+import { t } from "@gymos/i18n";
 import { cn } from "@/lib/utils";
 import { ProductsEditor } from "./products-editor";
 import { SettingsScreen } from "./settings-screen";

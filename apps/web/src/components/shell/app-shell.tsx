@@ -1,9 +1,9 @@
 import Link from "next/link";
 import type { Me } from "@/features/auth/me";
 import { MeProvider } from "@/features/auth/me-context";
-import { homeFor } from "@/features/auth/roles";
+import { homeFor } from "@gymos/api/auth/roles";
 import { NotificationBell } from "@/features/notifications/components/notification-bell";
-import { t, type MessageKey } from "@/lib/i18n";
+import { t, type MessageKey } from "@gymos/i18n";
 import { cn } from "@/lib/utils";
 import { BottomNav } from "./bottom-nav";
 import { navFor } from "./nav";

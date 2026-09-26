@@ -12,7 +12,7 @@
     "test:e2e": "playwright test",
     "test:db": "scripts/test-db.sh",
     "verify:jobs": "scripts/verify-jobs.sh",
-    "db:types": "supabase gen types typescript --local > apps/web/src/lib/database.types.ts",
+    "db:types": "supabase gen types typescript --local > packages/api/database.types.ts",
     "seed:auth": "tsx scripts/seed-auth.ts",
     "env:local": "scripts/env-local.sh"
   },

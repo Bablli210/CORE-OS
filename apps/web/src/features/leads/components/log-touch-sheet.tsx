@@ -5,11 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Select, Textarea } from "@/components/ui/input";
 import { Field } from "@/components/ui/label";
 import { Sheet } from "@/components/ui/sheet";
-import { t } from "@/lib/i18n";
-import { useSalesMutation } from "../hooks/use-leads";
-import { TOUCH_TYPES, touchLabel, type TouchType } from "../labels";
-import { logTouch } from "../queries/leads";
-import { salesErrorKey } from "../errors";
+import { t } from "@gymos/i18n";
+import { useSalesMutation } from "@gymos/api/leads/use-leads";
+import { TOUCH_TYPES, touchLabel, type TouchType } from "@gymos/api/leads/labels";
+import { logTouch } from "@gymos/api/leads/leads";
+import { salesErrorKey } from "@gymos/api/leads/errors";
 
 /** Two taps to log a call / WhatsApp / visit on a lead or client (fn_log_touch). */
 export function LogTouchSheet({

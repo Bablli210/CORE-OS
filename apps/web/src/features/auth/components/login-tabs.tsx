@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { t } from "@/lib/i18n";
+import { t } from "@gymos/i18n";
 import { cn } from "@/lib/utils";
 import { ClientLoginForm } from "./client-login-form";
 import { StaffLoginForm } from "./staff-login-form";

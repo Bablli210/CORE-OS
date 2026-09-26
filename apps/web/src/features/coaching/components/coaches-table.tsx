@@ -3,10 +3,10 @@
 import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
 import { useWeek } from "@/features/sessions/hooks/use-coach";
-import { cairoToday, WEEK_ORDER, weekStart } from "@/features/sessions/week";
-import { formatEGP } from "@/lib/format";
-import { t, type MessageKey } from "@/lib/i18n";
-import type { Team } from "../queries/coaching";
+import { cairoToday, WEEK_ORDER, weekStart } from "@gymos/api/sessions/week";
+import { formatEGP } from "@gymos/api/format";
+import { t, type MessageKey } from "@gymos/i18n";
+import type { Team } from "@gymos/api/coaching/coaching";
 
 /** One line per coach: this week at a glance (client slots per day) and the link to open their week. */
 function WeekStrip({ coach }: { coach: string }) {

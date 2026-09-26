@@ -4,9 +4,9 @@ import Link from "next/link";
 import { ErrorState, LoadingList, PageHeader } from "@/components/states";
 import { buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { t } from "@/lib/i18n";
-import { useDeal } from "../hooks/use-deals";
-import { dealStatusLabel } from "../labels";
+import { t } from "@gymos/i18n";
+import { useDeal } from "@gymos/api/deals/use-deals";
+import { dealStatusLabel } from "@gymos/api/deals/labels";
 import { DealBuilder } from "./deal-builder";
 import { DealView } from "./deal-view";
 

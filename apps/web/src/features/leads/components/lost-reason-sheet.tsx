@@ -5,11 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/input";
 import { Field } from "@/components/ui/label";
 import { Sheet } from "@/components/ui/sheet";
-import { t } from "@/lib/i18n";
-import { useSalesMutation } from "../hooks/use-leads";
-import { LOST_REASONS, lostReasonLabel, type LostReason } from "../labels";
-import { setLeadStage } from "../queries/leads";
-import { salesErrorKey } from "../errors";
+import { t } from "@gymos/i18n";
+import { useSalesMutation } from "@gymos/api/leads/use-leads";
+import { LOST_REASONS, lostReasonLabel, type LostReason } from "@gymos/api/leads/labels";
+import { setLeadStage } from "@gymos/api/leads/leads";
+import { salesErrorKey } from "@gymos/api/leads/errors";
 
 /** Marking a lead lost needs a reason from the fixed list (docs/03 §1); Confirm stays disabled until one is picked. */
 export function LostReasonSheet({ open, onClose, lead }: { open: boolean; onClose: () => void; lead: { id: string; name: string } }) {

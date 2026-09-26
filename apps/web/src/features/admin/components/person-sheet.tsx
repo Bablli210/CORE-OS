@@ -5,9 +5,9 @@ import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useMe } from "@/features/auth/me-context";
-import { t } from "@/lib/i18n";
-import { useSetPersonActive } from "../hooks/use-people";
-import { peopleErrorKey, type Person } from "../queries/people";
+import { t } from "@gymos/i18n";
+import { useSetPersonActive } from "@gymos/api/admin/use-people";
+import { peopleErrorKey, type Person } from "@gymos/api/admin/people";
 import { MembershipForm } from "./membership-form";
 import { isAutoCoach, roleLabel } from "./role-badges";
 

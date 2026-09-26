@@ -1,6 +1,6 @@
-import { t } from "@/lib/i18n";
+import { t } from "@gymos/i18n";
 import { cn } from "@/lib/utils";
-import type { TierMeter as Meter } from "../queries/analytics";
+import type { TierMeter as Meter } from "@gymos/api/analytics/analytics";
 
 /**
  * The PT commission tier meter (docs/04 /coach/numbers): sessions burned this month against the tier bands

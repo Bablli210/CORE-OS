@@ -5,10 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Select, Textarea } from "@/components/ui/input";
 import { Field } from "@/components/ui/label";
 import { Sheet } from "@/components/ui/sheet";
-import { t } from "@/lib/i18n";
-import { useReps, useSalesMutation } from "../hooks/use-leads";
-import { assignLead } from "../queries/leads";
-import { salesErrorKey } from "../errors";
+import { t } from "@gymos/i18n";
+import { useReps, useSalesMutation } from "@gymos/api/leads/use-leads";
+import { assignLead } from "@gymos/api/leads/leads";
+import { salesErrorKey } from "@gymos/api/leads/errors";
 
 /** Sales manager: assign or reassign a lead. Reassigning needs a reason; both reps are notified (fn_assign_lead). */
 export function ReassignSheet({ open, onClose, lead }: { open: boolean; onClose: () => void; lead: { id: string; name: string; branchId: string; ownerId: string | null } }) {

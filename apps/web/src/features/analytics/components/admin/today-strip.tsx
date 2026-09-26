@@ -1,11 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { cairoToday } from "@/features/sessions/week";
-import { formatEGP } from "@/lib/format";
-import { t, type MessageKey } from "@/lib/i18n";
-import { useTodayLive } from "../../hooks/use-today-live";
-import type { TodayLive } from "../../queries/analytics";
+import { cairoToday } from "@gymos/api/sessions/week";
+import { formatEGP } from "@gymos/api/format";
+import { t, type MessageKey } from "@gymos/i18n";
+import { useTodayLive } from "@gymos/api/analytics/use-today-live";
+import type { TodayLive } from "@gymos/api/analytics/analytics";
 
 const ITEMS: { key: keyof TodayLive; label: MessageKey; money?: boolean; href?: string; table?: string }[] = [
   { key: "visits", label: "live.visits", table: "visit" },

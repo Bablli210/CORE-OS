@@ -1,4 +1,4 @@
-import type { MessageKey } from "@/lib/i18n";
+import type { MessageKey } from "@gymos/i18n";
 
 export type ScreenInfo = { title: MessageKey; job: MessageKey; milestone: string; action: { href: string; label: MessageKey } };
 

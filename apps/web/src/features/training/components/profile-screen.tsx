@@ -9,10 +9,10 @@ import { Input, Select } from "@/components/ui/input";
 import { Field } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { DayChips } from "@/features/sessions/components/day-chips";
-import { prefWeekdays, WEEKDAY_CODES } from "@/features/sessions/week";
+import { prefWeekdays, WEEKDAY_CODES } from "@gymos/api/sessions/week";
 import { createClient } from "@/lib/supabase/client";
-import { t, type MessageKey } from "@/lib/i18n";
-import { clientKeys, updateProfile } from "../queries/client";
+import { t, type MessageKey } from "@gymos/i18n";
+import { clientKeys, updateProfile } from "@gymos/api/training/client";
 
 type Profile = {
   instagram_handle: string | null;

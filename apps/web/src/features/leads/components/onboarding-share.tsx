@@ -4,12 +4,12 @@ import { MessageCircle, Tablet } from "lucide-react";
 import { useState } from "react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { useMe } from "@/features/auth/me-context";
-import { whatsappLink } from "@/lib/contact-links";
-import { t } from "@/lib/i18n";
+import { whatsappLink } from "@gymos/api/contact-links";
+import { t } from "@gymos/i18n";
 import { cn } from "@/lib/utils";
-import { useSalesMutation } from "../hooks/use-leads";
-import { issueOnboardingToken } from "../queries/leads";
-import { salesErrorKey } from "../errors";
+import { useSalesMutation } from "@gymos/api/leads/use-leads";
+import { issueOnboardingToken } from "@gymos/api/leads/leads";
+import { salesErrorKey } from "@gymos/api/leads/errors";
 
 /**
  * Creates a fresh onboarding link (fn_issue_onboarding_token; the previous one stops working) and offers it as a

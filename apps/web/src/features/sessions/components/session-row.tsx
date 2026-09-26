@@ -3,10 +3,10 @@
 import { AlertTriangle, CloudOff, HeartPulse } from "lucide-react";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
-import { formatTime } from "@/lib/format";
-import { t, type MessageKey } from "@/lib/i18n";
+import { formatTime } from "@gymos/api/format";
+import { t, type MessageKey } from "@gymos/i18n";
 import { cn } from "@/lib/utils";
-import type { DaySession, Outcome } from "../queries/coach";
+import type { DaySession, Outcome } from "@gymos/api/sessions/coach";
 
 const OUTCOMES: Outcome[] = ["completed", "no_show", "cancelled"];
 

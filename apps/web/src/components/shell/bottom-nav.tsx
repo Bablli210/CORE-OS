@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { MoreHorizontal } from "lucide-react";
 import { useState } from "react";
 import { Sheet } from "@/components/ui/sheet";
-import { t } from "@/lib/i18n";
+import { t } from "@gymos/i18n";
 import { cn } from "@/lib/utils";
 import { activeHref, splitForBottomBar, type NavItem } from "./nav";
 import { NavIcon } from "./nav-icon";

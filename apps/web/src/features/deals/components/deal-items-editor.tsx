@@ -4,11 +4,11 @@ import { Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/input";
-import { formatEGP } from "@/lib/format";
-import { t } from "@/lib/i18n";
-import { useCatalog } from "../hooks/use-deals";
-import { productTypeLabel } from "../labels";
-import type { Deal, DraftItem } from "../queries/deals";
+import { formatEGP } from "@gymos/api/format";
+import { t } from "@gymos/i18n";
+import { useCatalog } from "@gymos/api/deals/use-deals";
+import { productTypeLabel } from "@gymos/api/deals/labels";
+import type { Deal, DraftItem } from "@gymos/api/deals/deals";
 import { CoachPicker } from "./coach-picker";
 
 /** Line items: pick products from the branch catalog; each PT pack names its coach. Prices shown are catalog prices. */

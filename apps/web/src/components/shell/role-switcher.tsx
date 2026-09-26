@@ -1,8 +1,8 @@
 "use client";
 
 import { useMe } from "@/features/auth/me-context";
-import { switcherOptions } from "@/features/auth/roles";
-import { t, type MessageKey } from "@/lib/i18n";
+import { switcherOptions } from "@gymos/api/auth/roles";
+import { t, type MessageKey } from "@gymos/i18n";
 
 /** Shown to people with more than one role or branch (Karim: sales manager A/B; Ahmed: head coach/coach). */
 export function RoleSwitcher() {

@@ -6,9 +6,9 @@ import { useMemo, useState } from "react";
 import { EmptyState, ErrorState, LoadingList } from "@/components/states";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { t } from "@/lib/i18n";
-import { fetchSettings, settingsKeys } from "../queries/settings";
-import { groupSettings } from "../settings-model";
+import { t } from "@gymos/i18n";
+import { fetchSettings, settingsKeys } from "@gymos/api/admin/settings";
+import { groupSettings } from "@gymos/api/admin/settings-model";
 import { SettingRow } from "./setting-row";
 
 /** /admin/settings: every `settings` key grouped by area, edited inline (feature flags live here, CLAUDE.md rule 9). */

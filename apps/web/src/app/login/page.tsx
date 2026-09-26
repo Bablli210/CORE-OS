@@ -3,8 +3,8 @@ import { redirect } from "next/navigation";
 import { AuthCard } from "@/features/auth/components/auth-card";
 import { LoginTabs } from "@/features/auth/components/login-tabs";
 import { getSession } from "@/features/auth/me";
-import { safeNext } from "@/features/auth/schemas/login";
-import { t } from "@/lib/i18n";
+import { safeNext } from "@gymos/api/auth/login-schema";
+import { t } from "@gymos/i18n";
 
 export const metadata: Metadata = { title: t("login.title") };
 

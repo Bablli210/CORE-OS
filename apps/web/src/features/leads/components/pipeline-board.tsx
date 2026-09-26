@@ -5,12 +5,12 @@ import { useState } from "react";
 import { EmptyState, ErrorState, LoadingList } from "@/components/states";
 import { Button } from "@/components/ui/button";
 import { useMe } from "@/features/auth/me-context";
-import { t } from "@/lib/i18n";
+import { t } from "@gymos/i18n";
 import { cn } from "@/lib/utils";
-import { useLeads, useSalesMutation } from "../hooks/use-leads";
-import { OPEN_STAGES, stageLabel, type OpenStage } from "../labels";
-import { setLeadStage, type LeadRow } from "../queries/leads";
-import { salesErrorKey } from "../errors";
+import { useLeads, useSalesMutation } from "@gymos/api/leads/use-leads";
+import { OPEN_STAGES, stageLabel, type OpenStage } from "@gymos/api/leads/labels";
+import { setLeadStage, type LeadRow } from "@gymos/api/leads/leads";
+import { salesErrorKey } from "@gymos/api/leads/errors";
 import { LeadCard } from "./lead-card";
 import { LostReasonSheet } from "./lost-reason-sheet";
 

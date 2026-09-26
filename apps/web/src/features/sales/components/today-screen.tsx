@@ -8,11 +8,11 @@ import { Button } from "@/components/ui/button";
 import { useMe } from "@/features/auth/me-context";
 import { SlaBadge } from "@/features/leads/components/lead-badges";
 import { ContactButtons } from "@/features/leads/components/contact-buttons";
-import { useSalesMutation } from "@/features/leads/hooks/use-leads";
-import { completeFollowUp } from "@/features/leads/queries/leads";
-import { formatTime, shortDuration } from "@/lib/format";
-import { t } from "@/lib/i18n";
-import { useToday } from "../hooks/use-sales";
+import { useSalesMutation } from "@gymos/api/leads/use-leads";
+import { completeFollowUp } from "@gymos/api/leads/leads";
+import { formatTime, shortDuration } from "@gymos/api/format";
+import { t } from "@gymos/i18n";
+import { useToday } from "@gymos/api/sales/use-sales";
 import { FlagBanner } from "./flag-banner";
 
 /** /sales Today: flags first, then follow-ups (overdue first), new leads awaiting first contact, today's onboardings. */

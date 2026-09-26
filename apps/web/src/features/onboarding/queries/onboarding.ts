@@ -1,5 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
-import type { Database } from "@/lib/database.types";
+import type { Database } from "@gymos/api/database.types";
 import { publicEnv } from "@/lib/env";
 import type { Answers, Responses } from "../steps";
 

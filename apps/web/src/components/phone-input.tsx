@@ -2,8 +2,8 @@
 
 import { useMemo, useState } from "react";
 import { inputClass } from "@/components/ui/input";
-import { t } from "@/lib/i18n";
-import { countryOptions, DEFAULT_COUNTRY, fromE164, toE164, type CountryCode } from "@/lib/phone";
+import { t } from "@gymos/i18n";
+import { countryOptions, DEFAULT_COUNTRY, fromE164, toE164, type CountryCode } from "@gymos/api/phone";
 import { cn } from "@/lib/utils";
 
 type PhoneInputProps = {

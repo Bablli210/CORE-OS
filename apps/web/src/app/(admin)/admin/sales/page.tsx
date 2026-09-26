@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { LoadingList } from "@/components/states";
 import { AdminSales } from "@/features/analytics/components/admin/admin-sales";
-import { t } from "@/lib/i18n";
+import { t } from "@gymos/i18n";
 
 export const metadata: Metadata = { title: t("screen.admin.sales.title") };
 

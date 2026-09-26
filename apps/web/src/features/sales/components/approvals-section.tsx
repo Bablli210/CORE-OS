@@ -5,12 +5,12 @@ import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { dealErrorKey } from "@/features/deals/errors";
-import { useMoneyMutation } from "@/features/deals/hooks/use-deals";
-import { approvalTypeLabel, methodLabel } from "@/features/deals/labels";
+import { dealErrorKey } from "@gymos/api/deals/errors";
+import { useMoneyMutation } from "@gymos/api/deals/use-deals";
+import { approvalTypeLabel, methodLabel } from "@gymos/api/deals/labels";
 import { createClient } from "@/lib/supabase/client";
-import { formatDate, formatDateTime, formatEGP } from "@/lib/format";
-import { t } from "@/lib/i18n";
+import { formatDate, formatDateTime, formatEGP } from "@gymos/api/format";
+import { t } from "@gymos/i18n";
 
 type Approval = {
   id: string;

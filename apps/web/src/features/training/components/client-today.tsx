@@ -7,12 +7,12 @@ import { EmptyState, ErrorState, LoadingList, PageHeader } from "@/components/st
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CreditSummary } from "@/features/credits/components/credit-summary";
-import { coachingErrorKey } from "@/features/sessions/errors";
-import { formatDate, formatDateTime } from "@/lib/format";
-import { t, type MessageKey } from "@/lib/i18n";
+import { coachingErrorKey } from "@gymos/api/sessions/errors";
+import { formatDate, formatDateTime } from "@gymos/api/format";
+import { t, type MessageKey } from "@gymos/i18n";
 import { cn } from "@/lib/utils";
-import { useHome } from "../hooks/use-client";
-import { checkIn, type CheckInResult } from "../queries/client";
+import { useHome } from "@gymos/api/training/use-client";
+import { checkIn, type CheckInResult } from "@gymos/api/training/client";
 
 /**
  * /c — the member's Today (docs/04): next session and "I'm here", today's workout, sessions left per coach, and the weekly

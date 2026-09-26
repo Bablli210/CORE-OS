@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
-import { areaForRole, CONTEXT_COOKIE, resolveContext, type Area, type AppRole, type MembershipContext } from "./roles";
+import { areaForRole, CONTEXT_COOKIE, resolveContext, type Area, type AppRole, type MembershipContext } from "@gymos/api/auth/roles";
 
 export type Branch = { id: string; code: string; name: string };
 

@@ -7,9 +7,9 @@ import { PhoneInput } from "@/components/phone-input";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Field } from "@/components/ui/label";
-import { t, type MessageKey } from "@/lib/i18n";
+import { t, type MessageKey } from "@gymos/i18n";
 import { requestClientOtp, verifyClientOtp } from "../actions";
-import { otpVerifySchema, type OtpVerify } from "../schemas/login";
+import { otpVerifySchema, type OtpVerify } from "@gymos/api/auth/login-schema";
 
 /** Clients: phone → 6-digit code (WhatsApp, SMS fallback on production; 123456 locally). */
 export function ClientLoginForm({ next }: { next?: string }) {

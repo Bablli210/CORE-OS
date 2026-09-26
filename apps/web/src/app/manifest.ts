@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { t } from "@/lib/i18n";
+import { t } from "@gymos/i18n";
 import { PWA_BACKGROUND, PWA_THEME } from "@/lib/pwa";
 
 /** Installable PWA (docs/05 M5). Members land on /, which routes them to /c. */

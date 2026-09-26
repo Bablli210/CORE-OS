@@ -1,8 +1,8 @@
 import { AlertTriangle, CheckCircle2 } from "lucide-react";
-import { formatEGP } from "@/lib/format";
-import { t } from "@/lib/i18n";
-import { approvalReasonLabel } from "../labels";
-import type { Deal } from "../queries/deals";
+import { formatEGP } from "@gymos/api/format";
+import { t } from "@gymos/i18n";
+import { approvalReasonLabel } from "@gymos/api/deals/labels";
+import type { Deal } from "@gymos/api/deals/deals";
 
 /** Subtotal / discount / total exactly as fn_price_deal stored them, plus the approval preview for drafts. */
 export function DealSummary({ deal, saving = false }: { deal: Deal; saving?: boolean }) {

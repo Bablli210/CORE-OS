@@ -4,11 +4,11 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Select, Textarea } from "@/components/ui/input";
 import { Field } from "@/components/ui/label";
-import { coachingErrorKey } from "@/features/sessions/errors";
-import { t } from "@/lib/i18n";
+import { coachingErrorKey } from "@gymos/api/sessions/errors";
+import { t } from "@gymos/i18n";
 import { cn } from "@/lib/utils";
-import { useCoachingMutation, useRanked } from "../hooks/use-coaching";
-import { assignCoach, type Team } from "../queries/coaching";
+import { useCoachingMutation, useRanked } from "@gymos/api/coaching/use-coaching";
+import { assignCoach, type Team } from "@gymos/api/coaching/coaching";
 
 /** Reassign a client: pick the client, pick from fn_rank_coaches suggestions, give a reason → fn_assign_coach. */
 export function ReassignPanel({ clients, onDone }: { clients: Team["clients"]; onDone: (message: string) => void }) {

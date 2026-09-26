@@ -5,11 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Input, Textarea } from "@/components/ui/input";
 import { Field } from "@/components/ui/label";
 import { Sheet } from "@/components/ui/sheet";
-import { dealErrorKey } from "@/features/deals/errors";
-import { useMoneyMutation } from "@/features/deals/hooks/use-deals";
-import { formatDate } from "@/lib/format";
-import { t } from "@/lib/i18n";
-import { extendExpiry, type Lot } from "../queries/sales-client";
+import { dealErrorKey } from "@gymos/api/deals/errors";
+import { useMoneyMutation } from "@gymos/api/deals/use-deals";
+import { formatDate } from "@gymos/api/format";
+import { t } from "@gymos/i18n";
+import { extendExpiry, type Lot } from "@gymos/api/credits/sales-client";
 
 /** Extend a pack's expiry. Sales manager: applied at once. Rep: sent to the sales manager as an approval. */
 export function ExtendSheet({ lot, direct, onClose, onDone }: { lot: Lot; direct: boolean; onClose: () => void; onDone: (pending: boolean) => void }) {

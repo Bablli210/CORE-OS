@@ -1,8 +1,8 @@
 import { CheckCircle2 } from "lucide-react";
-import { t } from "@/lib/i18n";
+import { t } from "@gymos/i18n";
 import { cn } from "@/lib/utils";
 import { formatMetric, progressPct } from "../format";
-import type { Unit } from "../queries/analytics";
+import type { Unit } from "@gymos/api/analytics/analytics";
 
 /**
  * Progress toward a target (a meter): the fill is the accent, the track a light step of the same ramp; reached = the

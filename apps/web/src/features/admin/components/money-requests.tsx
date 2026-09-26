@@ -7,11 +7,11 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/input";
 import { Field } from "@/components/ui/label";
 import { Sheet } from "@/components/ui/sheet";
-import { dealErrorKey } from "@/features/deals/errors";
-import { useMoneyMutation } from "@/features/deals/hooks/use-deals";
-import { formatDate, formatDateTime, formatEGP } from "@/lib/format";
-import { t, type MessageKey } from "@/lib/i18n";
-import { fetchMoneyRequests, requestKeys, requestRefund, type MoneySummary } from "../queries/money";
+import { dealErrorKey } from "@gymos/api/deals/errors";
+import { useMoneyMutation } from "@gymos/api/deals/use-deals";
+import { formatDate, formatDateTime, formatEGP } from "@gymos/api/format";
+import { t, type MessageKey } from "@gymos/i18n";
+import { fetchMoneyRequests, requestKeys, requestRefund, type MoneySummary } from "@gymos/api/admin/money";
 
 const statusBadge = (s: string) => (s === "approved" ? "success" : s === "rejected" ? "destructive" : "warning");
 

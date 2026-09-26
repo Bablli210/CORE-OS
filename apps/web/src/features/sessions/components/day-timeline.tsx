@@ -1,9 +1,9 @@
 "use client";
 
-import { t, type MessageKey } from "@/lib/i18n";
-import { formatTime } from "@/lib/format";
-import type { CoachDay, DaySession, Outcome } from "../queries/coach";
-import { cairoMinutes, freeGaps, fromMinutes, toMinutes } from "../week";
+import { t, type MessageKey } from "@gymos/i18n";
+import { formatTime } from "@gymos/api/format";
+import type { CoachDay, DaySession, Outcome } from "@gymos/api/sessions/coach";
+import { cairoMinutes, freeGaps, fromMinutes, toMinutes } from "@gymos/api/sessions/week";
 import { SessionRow } from "./session-row";
 
 type Item =

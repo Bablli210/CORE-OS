@@ -1,10 +1,10 @@
 "use client";
 
 import { Plus } from "lucide-react";
-import { t, type MessageKey } from "@/lib/i18n";
+import { t, type MessageKey } from "@gymos/i18n";
 import { cn } from "@/lib/utils";
-import type { CoachWeek, Slot } from "../queries/coach";
-import { dateInWeek, fromMinutes, gridHours, toMinutes } from "../week";
+import type { CoachWeek, Slot } from "@gymos/api/sessions/coach";
+import { dateInWeek, fromMinutes, gridHours, toMinutes } from "@gymos/api/sessions/week";
 
 const ROW = 3; // rem per hour
 

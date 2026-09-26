@@ -5,12 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Input, Select } from "@/components/ui/input";
 import { Field } from "@/components/ui/label";
 import { Sheet } from "@/components/ui/sheet";
-import { t, type MessageKey } from "@/lib/i18n";
+import { t, type MessageKey } from "@gymos/i18n";
 import { cn } from "@/lib/utils";
-import { coachingErrorKey, failedWeekday } from "../errors";
+import { coachingErrorKey, failedWeekday } from "@gymos/api/sessions/errors";
 import { useCoachMutation } from "../hooks/use-coach";
-import { addWeeklySlots, type SchedulableClient, type SlotKind } from "../queries/coach";
-import { fromMinutes, prefWeekdays } from "../week";
+import { addWeeklySlots, type SchedulableClient, type SlotKind } from "@gymos/api/sessions/coach";
+import { fromMinutes, prefWeekdays } from "@gymos/api/sessions/week";
 import { DayChips } from "./day-chips";
 
 const KINDS: SlotKind[] = ["client", "class", "blocked"];

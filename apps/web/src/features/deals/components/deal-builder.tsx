@@ -5,11 +5,11 @@ import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input, Select, Textarea } from "@/components/ui/input";
 import { Field } from "@/components/ui/label";
-import { t } from "@/lib/i18n";
-import { dealErrorKey } from "../errors";
-import { useMoneyMutation } from "../hooks/use-deals";
-import { egpToPiastres } from "../labels";
-import { dealKeys, saveDraft, submitDeal, type Deal, type Draft } from "../queries/deals";
+import { t } from "@gymos/i18n";
+import { dealErrorKey } from "@gymos/api/deals/errors";
+import { useMoneyMutation } from "@gymos/api/deals/use-deals";
+import { egpToPiastres } from "@gymos/api/deals/labels";
+import { dealKeys, saveDraft, submitDeal, type Deal, type Draft } from "@gymos/api/deals/deals";
 import { DealItemsEditor } from "./deal-items-editor";
 import { DealSummary } from "./deal-summary";
 

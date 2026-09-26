@@ -5,9 +5,9 @@ import { EmptyState, ErrorState, LoadingList, PageHeader } from "@/components/st
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useOwnCoachMembership } from "@/features/sessions/hooks/use-coach";
-import { cairoMonth } from "@/lib/format";
-import { t, type MessageKey } from "@/lib/i18n";
-import { useCoachWeeks, useTargets, useTiles } from "../hooks/use-analytics";
+import { cairoMonth } from "@gymos/api/format";
+import { t, type MessageKey } from "@gymos/i18n";
+import { useCoachWeeks, useTargets, useTiles } from "@gymos/api/analytics/use-analytics";
 import { useSetParams } from "../hooks/use-set-params";
 import { MonthPicker } from "./month-picker";
 import { MultiLineChart } from "./multi-line-chart";

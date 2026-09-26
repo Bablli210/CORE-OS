@@ -6,12 +6,12 @@ import { Button } from "@/components/ui/button";
 import { Input, Select } from "@/components/ui/input";
 import { Field } from "@/components/ui/label";
 import { Sheet } from "@/components/ui/sheet";
-import { LIVE_KEY } from "@/features/notifications/queries/notifications";
-import { formatEGP } from "@/lib/format";
-import { t, type MessageKey } from "@/lib/i18n";
+import { LIVE_KEY } from "@gymos/api/notifications/notifications";
+import { formatEGP } from "@gymos/api/format";
+import { t, type MessageKey } from "@gymos/i18n";
 import { recordPayment, type PaymentResult } from "../actions";
-import { egpToPiastres, methodLabel, PAYMENT_METHODS, type PaymentMethod } from "../labels";
-import { dealKeys, type Deal } from "../queries/deals";
+import { egpToPiastres, methodLabel, PAYMENT_METHODS, type PaymentMethod } from "@gymos/api/deals/labels";
+import { dealKeys, type Deal } from "@gymos/api/deals/deals";
 
 /** Record payment (docs/04): amount, method, reference, date → fn_record_payment (+ provision-client on first payment). */
 export function PaymentSheet({ deal, open, onClose, onRecorded }: { deal: Deal; open: boolean; onClose: () => void; onRecorded: (r: PaymentResult) => void }) {

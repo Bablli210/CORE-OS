@@ -6,10 +6,10 @@ import { EmptyState, ErrorState, LoadingList, PageHeader } from "@/components/st
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input, Select } from "@/components/ui/input";
-import { formatDateTime } from "@/lib/format";
-import { t } from "@/lib/i18n";
-import { useAudit } from "../../hooks/use-analytics";
-import type { AuditSource } from "../../queries/analytics";
+import { formatDateTime } from "@gymos/api/format";
+import { t } from "@gymos/i18n";
+import { useAudit } from "@gymos/api/analytics/use-analytics";
+import type { AuditSource } from "@gymos/api/analytics/analytics";
 import { useSetParams } from "../../hooks/use-set-params";
 import { AuditDiff } from "./audit-diff";
 

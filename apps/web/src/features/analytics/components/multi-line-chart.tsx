@@ -1,9 +1,9 @@
 "use client";
 
 import { CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { t } from "@/lib/i18n";
+import { t } from "@gymos/i18n";
 import { axisTick, formatMetric } from "../format";
-import type { Unit } from "../queries/analytics";
+import type { Unit } from "@gymos/api/analytics/analytics";
 
 export type Series = { key: string; name: string; slot: number };
 

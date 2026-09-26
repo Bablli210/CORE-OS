@@ -1,7 +1,7 @@
 "use client";
 
-import { t } from "@/lib/i18n";
-import { useCoachWeeks } from "../hooks/use-analytics";
+import { t } from "@gymos/i18n";
+import { useCoachWeeks } from "@gymos/api/analytics/use-analytics";
 import { MultiLineChart } from "./multi-line-chart";
 
 /**

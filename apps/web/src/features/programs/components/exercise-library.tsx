@@ -6,8 +6,8 @@ import { useDeferredValue, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input, Select } from "@/components/ui/input";
 import { Sheet } from "@/components/ui/sheet";
-import { t } from "@/lib/i18n";
-import { fetchMuscles, programKeys, searchExercises, type Exercise } from "../queries/programs";
+import { t } from "@gymos/i18n";
+import { fetchMuscles, programKeys, searchExercises, type Exercise } from "@gymos/api/programs/programs";
 
 /** Add an exercise from the library: search by name, filter by muscle group. Stays open to add several in a row. */
 export function ExerciseLibrary({ dayName, onAdd, onClose }: { dayName: string; onAdd: (e: Exercise) => void; onClose: () => void }) {

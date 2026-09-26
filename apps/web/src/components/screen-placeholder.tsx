@@ -1,6 +1,6 @@
 import { Construction } from "lucide-react";
 import { EmptyState, PageHeader } from "@/components/states";
-import { t } from "@/lib/i18n";
+import { t } from "@gymos/i18n";
 import { SCREENS, type ScreenId } from "./screens";
 
 /** A screen that exists in the navigation but is built in a later milestone. Names what's next and links onward. */

@@ -6,11 +6,11 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { Input, Select } from "@/components/ui/input";
 import { Field } from "@/components/ui/label";
 import { Sheet } from "@/components/ui/sheet";
-import { t, type MessageKey } from "@/lib/i18n";
-import { coachingErrorKey } from "../errors";
+import { t, type MessageKey } from "@gymos/i18n";
+import { coachingErrorKey } from "@gymos/api/sessions/errors";
 import { useCoachMutation } from "../hooks/use-coach";
-import { changeSlot, endSlot, skipSlot, type Slot } from "../queries/coach";
-import { WEEK_ORDER } from "../week";
+import { changeSlot, endSlot, skipSlot, type Slot } from "@gymos/api/sessions/coach";
+import { WEEK_ORDER } from "@gymos/api/sessions/week";
 import { slotTitle } from "./week-grid";
 
 /** Tap a slot → move or change it, skip one date, or end it. Past sessions are never touched by these. */

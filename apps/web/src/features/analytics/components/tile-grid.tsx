@@ -1,6 +1,6 @@
-import { formatEGP } from "@/lib/format";
-import { t } from "@/lib/i18n";
-import { rowsHref, type Tile } from "../queries/analytics";
+import { formatEGP } from "@gymos/api/format";
+import { t } from "@gymos/i18n";
+import { rowsHref, type Tile } from "@gymos/api/analytics/analytics";
 import { StatTile } from "./stat-tile";
 
 /** One line of context under a tile, from numbers the database returned with it. */

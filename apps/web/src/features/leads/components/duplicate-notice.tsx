@@ -3,9 +3,9 @@
 import Link from "next/link";
 import { AlertTriangle } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
-import { t } from "@/lib/i18n";
-import { stageLabel } from "../labels";
-import type { PhoneMatch } from "../queries/leads";
+import { t } from "@gymos/i18n";
+import { stageLabel } from "@gymos/api/leads/labels";
+import type { PhoneMatch } from "@gymos/api/leads/leads";
 
 /** Shown as soon as a typed phone matches an existing lead or client: open it instead of creating a duplicate. */
 export function DuplicateNotice({ match }: { match: Extract<PhoneMatch, { found: true }> }) {

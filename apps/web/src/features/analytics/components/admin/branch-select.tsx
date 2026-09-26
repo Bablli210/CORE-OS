@@ -2,7 +2,7 @@
 
 import { Select } from "@/components/ui/input";
 import { useMe } from "@/features/auth/me-context";
-import { t } from "@/lib/i18n";
+import { t } from "@gymos/i18n";
 
 /** Branch filter for the admin screens: all branches ("") or one. */
 export function BranchSelect({ value, onChange, allowAll = true }: { value: string; onChange: (v: string) => void; allowAll?: boolean }) {

@@ -5,9 +5,9 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { ErrorState, LoadingList } from "@/components/states";
 import { buttonVariants } from "@/components/ui/button";
-import { t } from "@/lib/i18n";
-import { dealErrorKey } from "../errors";
-import { createDeal } from "../queries/deals";
+import { t } from "@gymos/i18n";
+import { dealErrorKey } from "@gymos/api/deals/errors";
+import { createDeal } from "@gymos/api/deals/deals";
 
 /** /sales/deals/new?lead=… or ?client=… : opens the lead's draft (fn_create_deal reuses an open one). */
 export function NewDeal({ leadId, clientId }: { leadId?: string; clientId?: string }) {

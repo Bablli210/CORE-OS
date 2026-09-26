@@ -1,4 +1,4 @@
-import { t } from "@/lib/i18n";
+import { t } from "@gymos/i18n";
 
 /** Centered single-column layout for the signed-out screens. */
 export function AuthCard({ title, description, children }: { title: string; description?: string; children?: React.ReactNode }) {

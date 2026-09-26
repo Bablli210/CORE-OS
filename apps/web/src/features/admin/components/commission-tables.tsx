@@ -1,6 +1,6 @@
-import { formatEGP } from "@/lib/format";
-import { t } from "@/lib/i18n";
-import type { CommissionReport } from "../queries/money";
+import { formatEGP } from "@gymos/api/format";
+import { t } from "@gymos/i18n";
+import type { CommissionReport } from "@gymos/api/admin/money";
 
 const th = "py-2 pe-3 text-start font-medium";
 const td = "py-2 pe-3";

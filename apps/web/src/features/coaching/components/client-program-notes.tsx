@@ -6,12 +6,12 @@ import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Select, Textarea } from "@/components/ui/input";
 import { Field } from "@/components/ui/label";
-import { coachingErrorKey } from "@/features/sessions/errors";
-import { formatDate, formatDateTime } from "@/lib/format";
-import { t, type MessageKey } from "@/lib/i18n";
+import { coachingErrorKey } from "@gymos/api/sessions/errors";
+import { formatDate, formatDateTime } from "@gymos/api/format";
+import { t, type MessageKey } from "@gymos/i18n";
 import { cn } from "@/lib/utils";
-import { useCoachingMutation } from "../hooks/use-coaching";
-import { addNote, type CoachClient, type NoteVisibility } from "../queries/coaching";
+import { useCoachingMutation } from "@gymos/api/coaching/use-coaching";
+import { addNote, type CoachClient, type NoteVisibility } from "@gymos/api/coaching/coaching";
 
 /** Program: current and past programs; open the builder on the draft, or start one. */
 export function ProgramTab({ client: c }: { client: CoachClient }) {

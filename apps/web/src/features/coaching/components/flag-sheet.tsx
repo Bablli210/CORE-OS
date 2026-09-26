@@ -5,10 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/input";
 import { Field } from "@/components/ui/label";
 import { Sheet } from "@/components/ui/sheet";
-import { coachingErrorKey } from "@/features/sessions/errors";
-import { t } from "@/lib/i18n";
-import { useCoachingMutation } from "../hooks/use-coaching";
-import { flagForSales } from "../queries/coaching";
+import { coachingErrorKey } from "@gymos/api/sessions/errors";
+import { t } from "@gymos/i18n";
+import { useCoachingMutation } from "@gymos/api/coaching/use-coaching";
+import { flagForSales } from "@gymos/api/coaching/coaching";
 
 /** Coach spots an upsell or a renewal: the client's rep (and the sales manager) get a FLAG task at once. */
 export function FlagSheet({ clientId, name, onClose, onDone }: { clientId: string; name: string; onClose: () => void; onDone: () => void }) {

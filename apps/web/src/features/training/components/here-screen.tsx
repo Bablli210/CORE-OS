@@ -6,9 +6,9 @@ import { useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { LoadingList } from "@/components/states";
 import { buttonVariants } from "@/components/ui/button";
-import { coachingErrorKey } from "@/features/sessions/errors";
-import { t, type MessageKey } from "@/lib/i18n";
-import { checkIn, type CheckInResult } from "../queries/client";
+import { coachingErrorKey } from "@gymos/api/sessions/errors";
+import { t, type MessageKey } from "@gymos/i18n";
+import { checkIn, type CheckInResult } from "@gymos/api/training/client";
 
 /** /c/here?b=<branch>&k=<code> — the page the kiosk's QR opens on the member's phone: checks them in once. */
 export function HereScreen() {

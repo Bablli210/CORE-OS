@@ -7,13 +7,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MonthPicker } from "@/features/analytics/components/month-picker";
 import { TargetBar } from "@/features/analytics/components/target-bar";
 import { TileGrid } from "@/features/analytics/components/tile-grid";
-import { useTargets, useTiles } from "@/features/analytics/hooks/use-analytics";
+import { useTargets, useTiles } from "@gymos/api/analytics/use-analytics";
 import { useSetParams } from "@/features/analytics/hooks/use-set-params";
 import { useMe } from "@/features/auth/me-context";
-import { lostReasonLabel, sourceLabel, type LostReason } from "@/features/leads/labels";
-import { cairoMonth } from "@/lib/format";
-import { t, type MessageKey } from "@/lib/i18n";
-import { useNumbers } from "../hooks/use-sales";
+import { lostReasonLabel, sourceLabel, type LostReason } from "@gymos/api/leads/labels";
+import { cairoMonth } from "@gymos/api/format";
+import { t, type MessageKey } from "@gymos/i18n";
+import { useNumbers } from "@gymos/api/sales/use-sales";
 
 /**
  * /sales/numbers: a rep's month (won revenue vs target, leads, conversion, response, membership collected and

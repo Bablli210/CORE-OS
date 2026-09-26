@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { PageHeader } from "@/components/states";
 import { requireRole } from "@/features/auth/guard";
 import { TeamScreen } from "@/features/sales/components/team-screen";
-import { t } from "@/lib/i18n";
+import { t } from "@gymos/i18n";
 
 export const metadata: Metadata = { title: t("screen.sales.team.title") };
 

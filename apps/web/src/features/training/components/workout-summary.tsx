@@ -5,9 +5,9 @@ import { CloudOff, PartyPopper, Trophy } from "lucide-react";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
-import { t } from "@/lib/i18n";
-import { useOutbox } from "../hooks/use-outbox";
-import { clientKeys, fetchWorkoutSets } from "../queries/client";
+import { t } from "@gymos/i18n";
+import { useOutbox } from "@gymos/api/training/use-outbox";
+import { clientKeys, fetchWorkoutSets } from "@gymos/api/training/client";
 
 /**
  * After Finish (?done=<workout id>): waiting on the phone until it is sent, then the sets as saved, with the PR badge the

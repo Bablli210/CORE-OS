@@ -2,7 +2,7 @@ import { CreditCard } from "lucide-react";
 import { EmptyState } from "@/components/states";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { t } from "@/lib/i18n";
+import { t } from "@gymos/i18n";
 import type { ClientCredits } from "../queries/client-credits";
 
 const dateFormat = new Intl.DateTimeFormat("en-GB", { dateStyle: "medium", timeZone: "Africa/Cairo" });

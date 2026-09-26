@@ -6,9 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Input, Textarea } from "@/components/ui/input";
 import { Field } from "@/components/ui/label";
 import { Sheet } from "@/components/ui/sheet";
-import { cairoInstant, cairoToday, addDays } from "@/features/sessions/week";
-import { t } from "@/lib/i18n";
-import { clientKeys, requestFreeze, requestRenewal } from "../queries/client";
+import { cairoInstant, cairoToday, addDays } from "@gymos/api/sessions/week";
+import { t } from "@gymos/i18n";
+import { clientKeys, requestFreeze, requestRenewal } from "@gymos/api/training/client";
 
 function errorText(e: unknown): string {
   const m = (e as { message?: string } | null)?.message ?? "";

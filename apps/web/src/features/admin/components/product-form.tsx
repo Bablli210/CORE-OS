@@ -7,10 +7,10 @@ import { Input, Select } from "@/components/ui/input";
 import { Field } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { useMe } from "@/features/auth/me-context";
-import { dealErrorKey } from "@/features/deals/errors";
-import { egpToPiastres, PRODUCT_TYPES, productTypeLabel } from "@/features/deals/labels";
-import { t } from "@/lib/i18n";
-import { productKeys, saveProduct, type Product, type ProductDraft, type ProductInput } from "../queries/products";
+import { dealErrorKey } from "@gymos/api/deals/errors";
+import { egpToPiastres, PRODUCT_TYPES, productTypeLabel } from "@gymos/api/deals/labels";
+import { t } from "@gymos/i18n";
+import { productKeys, saveProduct, type Product, type ProductDraft, type ProductInput } from "@gymos/api/admin/products";
 
 const num = (v: string) => (v.trim() === "" ? null : Number(v));
 

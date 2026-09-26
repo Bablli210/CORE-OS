@@ -1,8 +1,8 @@
 "use client";
 
-import { t, type MessageKey } from "@/lib/i18n";
+import { t, type MessageKey } from "@gymos/i18n";
 import { cn } from "@/lib/utils";
-import { WEEK_ORDER } from "../week";
+import { WEEK_ORDER } from "@gymos/api/sessions/week";
 
 /** Weekday toggles in gym-week order (Sat first). Multi-select, keyboard reachable, 44px targets. */
 export function DayChips({ value, onChange, label }: { value: number[]; onChange: (days: number[]) => void; label: string }) {

@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { Bell } from "lucide-react";
-import { t } from "@/lib/i18n";
-import { useNotificationsRealtime, useUnreadCount } from "../hooks/use-notifications";
+import { t } from "@gymos/i18n";
+import { useNotificationsRealtime, useUnreadCount } from "@gymos/api/notifications/use-notifications";
 
 /** Header bell: unread count, live via Realtime. Opens the notification center. */
 export function NotificationBell({ userId }: { userId: string }) {

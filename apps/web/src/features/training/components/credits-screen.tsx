@@ -6,10 +6,10 @@ import { EmptyState, ErrorState, LoadingList, PageHeader } from "@/components/st
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { whatsappLink } from "@/lib/contact-links";
-import { formatDate, formatDateTime, formatEGP } from "@/lib/format";
-import { t, type MessageKey } from "@/lib/i18n";
-import { useCredits } from "../hooks/use-client";
+import { whatsappLink } from "@gymos/api/contact-links";
+import { formatDate, formatDateTime, formatEGP } from "@gymos/api/format";
+import { t, type MessageKey } from "@gymos/i18n";
+import { useCredits } from "@gymos/api/training/use-client";
 import { FreezeSheet, RenewSheet } from "./credit-sheets";
 
 /**

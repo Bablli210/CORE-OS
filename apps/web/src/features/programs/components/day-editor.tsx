@@ -3,8 +3,8 @@
 import { ArrowDown, ArrowUp, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input, Select } from "@/components/ui/input";
-import { t } from "@/lib/i18n";
-import type { ProgramDay, ProgramExercise } from "../queries/programs";
+import { t } from "@gymos/i18n";
+import type { ProgramDay, ProgramExercise } from "@gymos/api/programs/programs";
 
 const GROUPS = ["", "A", "B", "C", "D"];
 

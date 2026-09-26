@@ -4,12 +4,12 @@ import { Check, Plus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import type { ProgramExercise } from "@/features/programs/queries/programs";
-import { formatDate } from "@/lib/format";
-import { t } from "@/lib/i18n";
+import type { ProgramExercise } from "@gymos/api/programs/programs";
+import { formatDate } from "@gymos/api/format";
+import { t } from "@gymos/i18n";
 import { cn } from "@/lib/utils";
-import type { LastTime } from "../queries/client";
-import type { DraftExercise, DraftSet } from "../workout-draft";
+import type { LastTime } from "@gymos/api/training/client";
+import type { DraftExercise, DraftSet } from "@gymos/api/training/workout-draft";
 
 /** One exercise: target, last time, and a row per set (kg, reps, Done). Inputs are prefilled from last time. */
 export function ExerciseCard({

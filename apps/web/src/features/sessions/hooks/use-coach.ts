@@ -3,7 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { useMe } from "@/features/auth/me-context";
-import * as q from "../queries/coach";
+import * as q from "@gymos/api/sessions/coach";
 
 /** The coach membership the signed-in person coaches through in the active branch (a head coach has one too). */
 export function useOwnCoachMembership(): string | null {

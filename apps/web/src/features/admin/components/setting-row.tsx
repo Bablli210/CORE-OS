@@ -5,10 +5,10 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input, Textarea } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
-import type { Json } from "@/lib/database.types";
-import { t, type MessageKey } from "@/lib/i18n";
-import { settingsKeys, updateSetting } from "../queries/settings";
-import { humanizeKey, parseTiers, serializeTiers, settingKind, validateTiers, type SettingRow as Row, type Tier } from "../settings-model";
+import type { Json } from "@gymos/api/database.types";
+import { t, type MessageKey } from "@gymos/i18n";
+import { settingsKeys, updateSetting } from "@gymos/api/admin/settings";
+import { humanizeKey, parseTiers, serializeTiers, settingKind, validateTiers, type SettingRow as Row, type Tier } from "@gymos/api/admin/settings-model";
 import { TiersEditor } from "./tiers-editor";
 
 /** One setting with an editor for its type. Saves through fn_update_setting; shows saved / error state inline. */

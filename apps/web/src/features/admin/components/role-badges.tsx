@@ -1,7 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import type { Branch } from "@/features/auth/me";
-import { t, type MessageKey } from "@/lib/i18n";
-import type { PersonMembership } from "../queries/people";
+import { t, type MessageKey } from "@gymos/i18n";
+import type { PersonMembership } from "@gymos/api/admin/people";
 
 export function roleLabel(m: Pick<PersonMembership, "role" | "branchId">, branches: Branch[]) {
   const branch = m.branchId ? (branches.find((b) => b.id === m.branchId)?.code ?? "?") : t("shell.allBranches");

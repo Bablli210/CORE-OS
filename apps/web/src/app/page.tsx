@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { getMe, getSession } from "@/features/auth/me";
-import { homeFor } from "@/features/auth/roles";
+import { homeFor } from "@gymos/api/auth/roles";
 
 /** Role routing: client → /c, coaches → /coach, sales roles → /sales, top management → /admin (last used role first). */
 export default async function Home() {

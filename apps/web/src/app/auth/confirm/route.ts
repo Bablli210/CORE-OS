@@ -1,6 +1,6 @@
 import type { EmailOtpType } from "@supabase/supabase-js";
 import { NextResponse, type NextRequest } from "next/server";
-import { safeNext } from "@/features/auth/schemas/login";
+import { safeNext } from "@gymos/api/auth/login-schema";
 import { createClient } from "@/lib/supabase/server";
 
 /** Email links (staff invite) land here with a token hash; verifying it creates the session server-side. */

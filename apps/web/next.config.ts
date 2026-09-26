@@ -11,6 +11,7 @@ const withSerwist = withSerwistInit({
 });
 
 // pnpm workspace (M8): trace files from the repo root so shared packages are included in the server build.
-const nextConfig: NextConfig = { outputFileTracingRoot: path.join(__dirname, "../..") };
+// The shared packages ship TypeScript source; Next compiles them with the app.
+const nextConfig: NextConfig = { outputFileTracingRoot: path.join(__dirname, "../.."), transpilePackages: ["@gymos/api", "@gymos/i18n"] };
 
 export default withSerwist(nextConfig);

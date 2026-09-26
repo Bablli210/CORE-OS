@@ -8,10 +8,10 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input, Select } from "@/components/ui/input";
 import { useMe } from "@/features/auth/me-context";
-import { formatDate, formatEGP } from "@/lib/format";
-import { t } from "@/lib/i18n";
-import { useDeals } from "../hooks/use-deals";
-import { dealStatusLabel, type DealStatus } from "../labels";
+import { formatDate, formatEGP } from "@gymos/api/format";
+import { t } from "@gymos/i18n";
+import { useDeals } from "@gymos/api/deals/use-deals";
+import { dealStatusLabel, type DealStatus } from "@gymos/api/deals/labels";
 
 const STATUSES: DealStatus[] = ["draft", "pending_approval", "approved", "partially_paid", "paid", "cancelled"];
 

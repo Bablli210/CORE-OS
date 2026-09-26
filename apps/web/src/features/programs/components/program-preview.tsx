@@ -1,5 +1,5 @@
-import { t } from "@/lib/i18n";
-import type { ProgramDay } from "../queries/programs";
+import { t } from "@gymos/i18n";
+import type { ProgramDay } from "@gymos/api/programs/programs";
 
 /** A program as the client sees it: each day, its exercises with sets × reps, rest and target; supersets marked. */
 export function ProgramPreview({ days }: { days: ProgramDay[] }) {

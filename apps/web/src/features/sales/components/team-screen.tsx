@@ -5,13 +5,13 @@ import { ErrorState, LoadingList } from "@/components/states";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { useMe } from "@/features/auth/me-context";
-import { useSalesMutation } from "@/features/leads/hooks/use-leads";
-import { setRotationPaused } from "@/features/leads/queries/leads";
-import { salesErrorKey } from "@/features/leads/errors";
-import { cairoMonth, formatEGP } from "@/lib/format";
-import { t } from "@/lib/i18n";
+import { useSalesMutation } from "@gymos/api/leads/use-leads";
+import { setRotationPaused } from "@gymos/api/leads/leads";
+import { salesErrorKey } from "@gymos/api/leads/errors";
+import { cairoMonth, formatEGP } from "@gymos/api/format";
+import { t } from "@gymos/i18n";
 import { SalesInsights } from "@/features/analytics/components/sales-insights";
-import { useTeam } from "../hooks/use-sales";
+import { useTeam } from "@gymos/api/sales/use-sales";
 
 /** /sales/team (sales manager): each rep's month from mv_rep_month, open flags, overdue, rotation on/off. */
 export function TeamScreen() {

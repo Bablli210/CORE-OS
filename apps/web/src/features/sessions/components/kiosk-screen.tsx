@@ -8,9 +8,9 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { useMe } from "@/features/auth/me-context";
 import { createClient } from "@/lib/supabase/client";
-import { formatDate, formatDateTime } from "@/lib/format";
-import { t } from "@/lib/i18n";
-import { coachingErrorKey } from "../errors";
+import { formatDate, formatDateTime } from "@gymos/api/format";
+import { t } from "@gymos/i18n";
+import { coachingErrorKey } from "@gymos/api/sessions/errors";
 import { KioskQr } from "./kiosk-qr";
 
 type CheckIn = {

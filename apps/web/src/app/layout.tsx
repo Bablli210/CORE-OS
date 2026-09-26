@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { defaultLocale, dir, t } from "@/lib/i18n";
+import { defaultLocale, dir, t } from "@gymos/i18n";
 import { PWA_THEME } from "@/lib/pwa";
 import { Providers } from "./providers";
 import "./globals.css";

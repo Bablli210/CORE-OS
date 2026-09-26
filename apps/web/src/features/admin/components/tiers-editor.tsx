@@ -3,8 +3,8 @@
 import { Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { t } from "@/lib/i18n";
-import type { Tier } from "../settings-model";
+import { t } from "@gymos/i18n";
+import type { Tier } from "@gymos/api/admin/settings-model";
 
 /** Commission tiers as a small table: "up to N sessions → P %"; the last tier has no upper limit. */
 export function TiersEditor({ id, tiers, onChange }: { id: string; tiers: Tier[]; onChange: (tiers: Tier[]) => void }) {

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { AppShell } from "@/components/shell/app-shell";
 import { requireArea } from "@/features/auth/guard";
 import { KioskScreen } from "@/features/sessions/components/kiosk-screen";
-import { t } from "@/lib/i18n";
+import { t } from "@gymos/i18n";
 
 export const metadata: Metadata = { title: t("kiosk.title") };
 

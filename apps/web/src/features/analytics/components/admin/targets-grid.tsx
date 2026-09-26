@@ -5,12 +5,12 @@ import { ErrorState, LoadingList, PageHeader } from "@/components/states";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useMe } from "@/features/auth/me-context";
-import { cairoMonth } from "@/lib/format";
-import { t, type MessageKey } from "@/lib/i18n";
+import { cairoMonth } from "@gymos/api/format";
+import { t, type MessageKey } from "@gymos/i18n";
 import { formatMetric } from "../../format";
-import { useTargets } from "../../hooks/use-analytics";
+import { useTargets } from "@gymos/api/analytics/use-analytics";
 import { useSetParams } from "../../hooks/use-set-params";
-import type { TargetRow } from "../../queries/analytics";
+import type { TargetRow } from "@gymos/api/analytics/analytics";
 import { MonthPicker } from "../month-picker";
 import { TargetCell } from "./target-cell";
 

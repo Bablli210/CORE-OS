@@ -3,10 +3,10 @@
 import { MessageCircle, Phone } from "lucide-react";
 import { useState } from "react";
 import { buttonVariants } from "@/components/ui/button";
-import { telLink, whatsappLink } from "@/lib/contact-links";
-import { t } from "@/lib/i18n";
+import { telLink, whatsappLink } from "@gymos/api/contact-links";
+import { t } from "@gymos/i18n";
 import { cn } from "@/lib/utils";
-import type { TouchType } from "../labels";
+import type { TouchType } from "@gymos/api/leads/labels";
 import { LogTouchSheet } from "./log-touch-sheet";
 
 /** Call (tel:) and WhatsApp (wa.me) open the app and the touch sheet, so the touch is logged in two taps. */

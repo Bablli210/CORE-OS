@@ -8,12 +8,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input, Textarea } from "@/components/ui/input";
 import { Field } from "@/components/ui/label";
 import { Sheet } from "@/components/ui/sheet";
-import { dealErrorKey } from "@/features/deals/errors";
-import { useMoneyMutation } from "@/features/deals/hooks/use-deals";
-import { addDays, cairoInstant, cairoToday } from "@/features/sessions/week";
-import { formatDate } from "@/lib/format";
-import { t, type MessageKey } from "@/lib/i18n";
-import { endFreeze, fetchClientRequests, requestFreezeFor, requestKeys, type Freeze } from "../queries/sales-client";
+import { dealErrorKey } from "@gymos/api/deals/errors";
+import { useMoneyMutation } from "@gymos/api/deals/use-deals";
+import { addDays, cairoInstant, cairoToday } from "@gymos/api/sessions/week";
+import { formatDate } from "@gymos/api/format";
+import { t, type MessageKey } from "@gymos/i18n";
+import { endFreeze, fetchClientRequests, requestFreezeFor, requestKeys, type Freeze } from "@gymos/api/credits/sales-client";
 
 const badge = (s: Freeze["status"]) => (s === "active" ? "warning" : s === "ended" ? "outline" : s === "rejected" ? "destructive" : "secondary");
 

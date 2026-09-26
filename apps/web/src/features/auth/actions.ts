@@ -2,7 +2,7 @@
 
 import type { AuthError } from "@supabase/supabase-js";
 import { redirect } from "next/navigation";
-import type { MessageKey } from "@/lib/i18n";
+import type { MessageKey } from "@gymos/i18n";
 import { createClient } from "@/lib/supabase/server";
 import {
   otpRequestSchema,
@@ -14,7 +14,7 @@ import {
   type OtpVerify,
   type SetPassword,
   type StaffLogin,
-} from "./schemas/login";
+} from "@gymos/api/auth/login-schema";
 
 export type ActionResult = { error?: MessageKey };
 

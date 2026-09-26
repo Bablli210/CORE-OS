@@ -5,9 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/input";
 import { Field } from "@/components/ui/label";
 import { Sheet } from "@/components/ui/sheet";
-import { t } from "@/lib/i18n";
-import { dealErrorKey } from "../errors";
-import { useMoneyMutation } from "../hooks/use-deals";
+import { t } from "@gymos/i18n";
+import { dealErrorKey } from "@gymos/api/deals/errors";
+import { useMoneyMutation } from "@gymos/api/deals/use-deals";
 
 /** A reason-required action (void a payment, cancel a deal). */
 export function ReasonSheet({ open, onClose, title, action, submitLabel, run }: { open: boolean; onClose: () => void; title: string; action: string; submitLabel: string; run: (reason: string) => Promise<unknown> }) {

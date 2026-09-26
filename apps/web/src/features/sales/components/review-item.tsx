@@ -4,10 +4,10 @@ import Link from "next/link";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useSalesMutation } from "@/features/leads/hooks/use-leads";
-import { reviewLead } from "@/features/leads/queries/leads";
-import { t } from "@/lib/i18n";
-import type { Queue } from "../queries/sales";
+import { useSalesMutation } from "@gymos/api/leads/use-leads";
+import { reviewLead } from "@gymos/api/leads/leads";
+import { t } from "@gymos/i18n";
+import type { Queue } from "@gymos/api/sales/sales";
 
 /** Review queue row: approve or reject with a note (fn_review_lead; rejecting marks the lead lost). */
 export function ReviewItem({ lead }: { lead: Queue["review"][number] }) {

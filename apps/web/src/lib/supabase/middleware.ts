@@ -1,6 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
-import type { Database } from "@/lib/database.types";
+import type { Database } from "@gymos/api/database.types";
 import { publicEnv } from "@/lib/env";
 
 /** Routes reachable without a session. Everything else redirects to /login. */

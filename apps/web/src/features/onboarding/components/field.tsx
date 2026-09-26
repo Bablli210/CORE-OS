@@ -1,7 +1,7 @@
 "use client";
 
 import { inputClass } from "@/components/ui/input";
-import { t, type MessageKey } from "@/lib/i18n";
+import { t, type MessageKey } from "@gymos/i18n";
 import { cn } from "@/lib/utils";
 import type { Answer, FieldDef } from "../steps";
 

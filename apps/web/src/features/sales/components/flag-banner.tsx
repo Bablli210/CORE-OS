@@ -3,11 +3,11 @@
 import { Flag as FlagIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ContactButtons } from "@/features/leads/components/contact-buttons";
-import { useSalesMutation } from "@/features/leads/hooks/use-leads";
-import { completeFollowUp } from "@/features/leads/queries/leads";
-import { shortDuration } from "@/lib/format";
-import { t } from "@/lib/i18n";
-import type { Flag } from "../queries/sales";
+import { useSalesMutation } from "@gymos/api/leads/use-leads";
+import { completeFollowUp } from "@gymos/api/leads/leads";
+import { shortDuration } from "@gymos/api/format";
+import { t } from "@gymos/i18n";
+import type { Flag } from "@gymos/api/sales/sales";
 
 /** docs/04 FlagBanner: clients flagged for sales (trained unpaid, kiosk refusal, renewal). Live via Realtime. */
 export function FlagBanner({ flags, showAssignee = false }: { flags: Flag[]; showAssignee?: boolean }) {

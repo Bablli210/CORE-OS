@@ -1,7 +1,7 @@
 "use client";
 
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { t } from "@/lib/i18n";
+import { t } from "@gymos/i18n";
 
 type Point = { date: string; value: number };
 

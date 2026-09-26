@@ -1,9 +1,9 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { formatEGP } from "@/lib/format";
-import { t } from "@/lib/i18n";
-import { useRepExtra, useSources } from "../hooks/use-analytics";
+import { formatEGP } from "@gymos/api/format";
+import { t } from "@gymos/i18n";
+import { useRepExtra, useSources } from "@gymos/api/analytics/use-analytics";
 
 /**
  * The sales manager's month beyond the rep cards (docs/04 /sales/team): source ROI (mv_source_roi), discount usage,

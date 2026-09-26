@@ -1,8 +1,8 @@
 import { HeartPulse } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { formatDate } from "@/lib/format";
-import { t } from "@/lib/i18n";
-import type { CoachClient } from "../queries/coaching";
+import { formatDate } from "@gymos/api/format";
+import { t } from "@gymos/i18n";
+import type { CoachClient } from "@gymos/api/coaching/coaching";
 
 /** docs/04 ClientHeader: name, branch, coach, sessions left per coach, at-risk, injuries, unpaid sessions. */
 export function ClientHeader({ client: c }: { client: CoachClient }) {

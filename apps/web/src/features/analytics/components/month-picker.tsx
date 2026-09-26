@@ -1,8 +1,8 @@
 "use client";
 
 import { Select } from "@/components/ui/input";
-import { cairoMonth } from "@/lib/format";
-import { t } from "@/lib/i18n";
+import { cairoMonth } from "@gymos/api/format";
+import { t } from "@gymos/i18n";
 
 /** The last 12 months (the views keep 12), newest first; `ahead` adds coming months first (targets are set in advance). */
 export function lastMonths(n = 12, now = new Date(), ahead = 0): string[] {

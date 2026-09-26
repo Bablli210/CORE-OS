@@ -5,11 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Sheet } from "@/components/ui/sheet";
 import { Switch } from "@/components/ui/switch";
-import { t, type MessageKey } from "@/lib/i18n";
-import { coachingErrorKey } from "../errors";
+import { t, type MessageKey } from "@gymos/i18n";
+import { coachingErrorKey } from "@gymos/api/sessions/errors";
 import { useCoachMutation } from "../hooks/use-coach";
-import { setAvailability, type WorkingHours } from "../queries/coach";
-import { WEEK_ORDER } from "../week";
+import { setAvailability, type WorkingHours } from "@gymos/api/sessions/coach";
+import { WEEK_ORDER } from "@gymos/api/sessions/week";
 
 type Row = { on: boolean; start: string; end: string };
 

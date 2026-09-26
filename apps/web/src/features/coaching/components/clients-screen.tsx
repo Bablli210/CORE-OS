@@ -8,10 +8,10 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useOwnCoachMembership } from "@/features/sessions/hooks/use-coach";
-import { daysSince, formatDate } from "@/lib/format";
-import { t } from "@/lib/i18n";
+import { daysSince, formatDate } from "@gymos/api/format";
+import { t } from "@gymos/i18n";
 import { cn } from "@/lib/utils";
-import { useCoachClients } from "../hooks/use-coaching";
+import { useCoachClients } from "@gymos/api/coaching/use-coaching";
 
 /** /coach/clients — my clients, at-risk and lowest adherence first (docs/04). Adherence is the live 30-day figure. */
 export function ClientsScreen() {

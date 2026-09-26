@@ -1,10 +1,10 @@
 import Link from "next/link";
-import { rowsHref } from "@/features/analytics/queries/analytics";
-import { WEEK_ORDER } from "@/features/sessions/week";
-import { cairoMonth } from "@/lib/format";
-import { t, type MessageKey } from "@/lib/i18n";
+import { rowsHref } from "@gymos/api/analytics/analytics";
+import { WEEK_ORDER } from "@gymos/api/sessions/week";
+import { cairoMonth } from "@gymos/api/format";
+import { t, type MessageKey } from "@gymos/i18n";
 import { cn } from "@/lib/utils";
-import type { HeatmapRow } from "../queries/coaching";
+import type { HeatmapRow } from "@gymos/api/coaching/coaching";
 
 // Sequential: one hue light → dark (--seq-1…5, tokens.css); an empty cell stays the surface.
 const STEPS = ["bg-seq-1", "bg-seq-2", "bg-seq-3", "bg-seq-4", "bg-seq-5"];

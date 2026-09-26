@@ -5,11 +5,11 @@ import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { formatDateTime } from "@/lib/format";
-import { t } from "@/lib/i18n";
-import { useSalesMutation } from "../hooks/use-leads";
-import { addFollowUp, completeFollowUp, type LeadDetail } from "../queries/leads";
-import { salesErrorKey } from "../errors";
+import { formatDateTime } from "@gymos/api/format";
+import { t } from "@gymos/i18n";
+import { useSalesMutation } from "@gymos/api/leads/use-leads";
+import { addFollowUp, completeFollowUp, type LeadDetail } from "@gymos/api/leads/leads";
+import { salesErrorKey } from "@gymos/api/leads/errors";
 
 /** Open and past follow-ups on a lead; add one (title + when) or complete one in one tap. */
 export function FollowUpsPanel({ lead }: { lead: LeadDetail }) {

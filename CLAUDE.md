@@ -17,7 +17,7 @@ Read `docs/` before touching anything. The docs are the source of truth; this fi
 - Next.js 15 (App Router, TypeScript strict, Server Components by default), Tailwind, shadcn/ui, TanStack Query for client-side data, TanStack Table, Recharts for charts, react-hook-form + zod for forms.
 - Supabase: Postgres, Auth, Row Level Security, Realtime, Edge Functions, Storage. `supabase` CLI for local dev (`supabase start`), migrations in `supabase/migrations`.
 - Deployed on Vercel. PWA via `@serwist/next`. Timezone for all business logic: `Africa/Cairo`. Currency: EGP, stored as integer piastres (`amount_piastres`), displayed as EGP.
-- Package manager: pnpm. Tests: Vitest (unit), Playwright (e2e), SQL rule tests in `supabase/tests/*.sql` (psql scripts that raise on failure; run with `scripts/test-db.sh`).
+- Package manager: pnpm (workspace). Mobile: Expo (SDK 57, expo-router) in `apps/mobile` on the same Supabase and the same `packages/api`. Tests: Vitest (unit), Playwright (e2e), SQL rule tests in `supabase/tests/*.sql` (psql scripts that raise on failure; run with `scripts/test-db.sh`).
 - Language: English UI first; all strings go through `t()` from day one so Arabic can be added later. Layout must survive RTL (use logical CSS properties: `ps-`, `pe-`, `start`, `end`).
 
 ## Architecture rules
@@ -40,27 +40,37 @@ Read `docs/` before touching anything. The docs are the source of truth; this fi
 - Before writing a screen, list the RPCs and queries it needs. If a rule is missing from the database, add the migration first, then the screen.
 - Run `pnpm typecheck && pnpm lint && pnpm test && scripts/test-db.sh` before declaring anything done. Run `supabase db reset` after changing migrations and confirm `supabase/seed.sql` still loads.
 - When a request conflicts with `docs/`, stop and say so; do not silently pick one.
-- Keep components small: a page file composes feature components from `src/features/<domain>/`. No component over ~200 lines.
-- Naming: tables `snake_case` plural, functions `fn_verb_noun`, enums `*_status` / `*_type`, TS types generated with `supabase gen types typescript --local > src/lib/database.types.ts` after every migration.
+- Keep components small: a page file composes feature components from `src/features/<domain>/`. No component over ~200 lines. Data access (RPC queries, query hooks) lives in `packages/api` and is shared by both apps; nothing there may import react-dom, next or react-native.
+- Naming: tables `snake_case` plural, functions `fn_verb_noun`, enums `*_status` / `*_type`, TS types generated with `pnpm db:types` (→ `packages/api/database.types.ts`) after every migration.
 - Seed data (`supabase/seed.sql`) must always produce a working demo: 2 branches, all roles, 6 coaches, 4 reps, 40 clients, weekly slots and 60 days of sessions from them, some clients out of credits. Use it for every screenshot and e2e test.
 - Never store phone numbers in more than one format. Normalize to E.164 (`+20...`) on input with `libphonenumber-js`.
 - Commit after each milestone step with a message that names the milestone (`M2: deal approval flow`).
 
 ## Folder layout
 
+pnpm workspace since M8 (`pnpm-workspace.yaml`: `apps/*`, `packages/*`). Root scripts run every package (`pnpm typecheck`, `pnpm lint`, `pnpm test`); CI (`.github/workflows/ci.yml`) runs them plus the SQL and e2e suites on every commit.
+
 ```
-src/
-  app/                      # routes (App Router). Route groups per role: (client) (coach) (sales) (admin)
-  features/<domain>/        # leads, deals, credits, sessions, programs, analytics, notifications, admin
-    components/ hooks/ queries/ schemas/
-  components/ui/            # shadcn
-  lib/supabase/             # server.ts, client.ts, middleware.ts, database.types.ts
-  lib/i18n/                 # t(), en.json, ar.json (empty until later)
+apps/
+  web/                      # Next.js app (@gymos/web)
+    src/app/                # routes (App Router). Route groups per role: (client) (coach) (sales) (admin)
+    src/features/<domain>/  # components/ and web-only hooks (me-context, media queries, program builder draft)
+    src/components/ui/      # shadcn
+    src/lib/                # supabase (server.ts, client.ts → registers with @gymos/api), platform.ts (web storage/IndexedDB)
+    src/styles/tokens.css   # the ONLY design tokens (mobile's theme is generated from it)
+  mobile/                   # Expo app (@gymos/mobile, SDK 57, expo-router): client app + coach Today/Clients/Schedule
+    app/                    # routes: login, (coach) today/clients/schedule, (client) home/workout/credits
+    src/                    # auth/session, lib (supabase, platform, push), theme (tokens.ts generated), ui, features
+packages/
+  api/                      # @gymos/api — shared by web and mobile, zero React-DOM: supabase.ts (client registry),
+                            # database.types.ts, platform.ts, and per domain the RPC queries, query hooks, zod schemas
+  i18n/                     # @gymos/i18n — t(), en.json, ar.json (empty until later)
 supabase/
   migrations/               # numbered, immutable once applied
-  functions/                # Edge Functions: notify, jobs-nightly, whatsapp-webhook
+  functions/                # Edge Functions: provision-client, notify, whatsapp-webhook (+ _shared providers)
   seed.sql
   tests/                    # SQL rule tests (001_rules.sql covers the core loop)
+e2e/                        # Playwright: web (390/1280) and e2e/mobile (the Expo app's web build)
 docs/                       # the spec
 PROGRESS.md                 # living log, updated at every milestone
 ```
@@ -70,4 +80,4 @@ PROGRESS.md                 # living log, updated at every milestone
 - Works at 390px and 1280px. Keyboard accessible. Loading, empty and error states present.
 - Reads only through RLS-scoped queries; writes only through RPC or an Edge Function.
 - Has at least one Playwright test that runs against seed data.
-- Strings through `t()`. No hard-coded colors; use tokens from `src/styles/tokens.css`.
+- Strings through `t()`. No hard-coded colors; use tokens from `apps/web/src/styles/tokens.css` (the Expo app reads `apps/mobile/src/theme/tokens.ts`, generated from it with `pnpm --filter @gymos/mobile tokens`).

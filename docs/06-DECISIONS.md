@@ -77,3 +77,12 @@ Confirmed: PT commission tiers are counted per calendar month; opening hours 06:
 - `serwist` — the service-worker runtime `@serwist/next` builds `src/app/sw.ts` against (precache, runtime caching, offline fallback).
 - `qrcode` (+ `@types/qrcode`) — draws the kiosk's check-in QR code as SVG; loaded only on `/checkin`.
 - M7 added no npm dependency. The Edge Functions use `fetch` and WebCrypto only. The database gains the `pg_net` extension (ships with Supabase) so pg_cron can call the notify function over HTTP.
+- M8 (monorepo + Expo):
+  - React 19.1.0 → 19.2.3 in the web too. Expo SDK 57 pins it, and one React across the workspace keeps the shared hooks on a single instance.
+  - `expo`, `expo-router`, `react-native`, `react-native-web`, `react-dom`, `@expo/metro-runtime`, `react-native-safe-area-context`, `react-native-screens`, `expo-status-bar`, `expo-constants`, `expo-linking`: the Expo app, its router and its web build (versions pinned by SDK 57). The web build is how the e2e suite drives the app.
+  - `@react-native-async-storage/async-storage`: the phone's session, outbox, offline cache and queued taps (the web uses localStorage and IndexedDB).
+  - `@react-native-community/netinfo`: online/offline on the phone (the web uses window events).
+  - `expo-crypto`: row ids made on the phone (the outbox's idempotency keys).
+  - `expo-notifications`, `expo-device`: the Expo push token (M8: push via Expo).
+  - `react-native-url-polyfill`: the URL API supabase-js needs on React Native.
+  - `typescript-eslint`: lint for the packages and the Expo app, which don't use Next's ESLint config.

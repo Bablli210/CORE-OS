@@ -7,9 +7,10 @@ on:
   pull_request:
   workflow_dispatch:
 
+# Every commit gets a complete run (M8: "CI must stay green at every commit"), so runs queue instead of cancelling.
 concurrency:
-  group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  group: ci-${{ github.ref }}-${{ github.sha }}
+  cancel-in-progress: false
 
 env:
   SUPABASE_CLI_VERSION: 2.117.0

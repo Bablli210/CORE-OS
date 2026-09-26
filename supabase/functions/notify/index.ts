@@ -6,9 +6,9 @@
 //   2. renders them (WhatsApp template, digest or generic email) and sends them through the configured provider,
 //   3. records the outcome (fn_notify_result: sent, retry with backoff, or failed with the provider's error).
 // Providers come from the environment: WHATSAPP_PROVIDER sandbox|meta, EMAIL_PROVIDER log|mailpit|resend,
-// PUSH_PROVIDER log|none (push is left pending until the Expo app ships, M8).
+// PUSH_PROVIDER expo|log|none (expo: the phone app's registered devices; none leaves push rows pending).
 
-import { LogEmail, LogPush, MailpitEmail, MetaWhatsApp, ResendEmail, SandboxWhatsApp, type Channel, type EmailProvider, type Outbound, type PushProvider, type SendResult, type WhatsAppProvider } from "../_shared/providers.ts";
+import { ExpoPush, LogEmail, LogPush, MailpitEmail, MetaWhatsApp, ResendEmail, SandboxWhatsApp, type Channel, type EmailProvider, type Outbound, type PushProvider, type SendResult, type WhatsAppProvider } from "../_shared/providers.ts";
 import { renderDigest, renderGeneric, whatsappTemplate, type Digest } from "../_shared/templates.ts";
 
 const env = (k: string, d = "") => Deno.env.get(k) ?? d;
@@ -54,7 +54,14 @@ function email(): EmailProvider {
 }
 
 function push(): PushProvider | null {
-  return env("PUSH_PROVIDER", "none") === "log" ? new LogPush(log) : null;
+  switch (env("PUSH_PROVIDER", "none")) {
+    case "expo":
+      return new ExpoPush({ accessToken: env("EXPO_ACCESS_TOKEN") || undefined, onDeadToken: (token, reason) => rpc("fn_revoke_push_token", { p_token: token, p_reason: reason }) });
+    case "log":
+      return new LogPush(log);
+    default:
+      return null;
+  }
 }
 
 /** Constant-time comparison of the shared secret. */

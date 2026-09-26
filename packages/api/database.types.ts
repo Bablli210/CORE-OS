@@ -2536,6 +2536,50 @@ export type Database = {
           },
         ]
       }
+      push_tokens: {
+        Row: {
+          created_at: string
+          device_name: string | null
+          id: string
+          last_seen_at: string
+          platform: string
+          profile_id: string
+          revoked_at: string | null
+          revoked_reason: string | null
+          token: string
+        }
+        Insert: {
+          created_at?: string
+          device_name?: string | null
+          id?: string
+          last_seen_at?: string
+          platform: string
+          profile_id: string
+          revoked_at?: string | null
+          revoked_reason?: string | null
+          token: string
+        }
+        Update: {
+          created_at?: string
+          device_name?: string | null
+          id?: string
+          last_seen_at?: string
+          platform?: string
+          profile_id?: string
+          revoked_at?: string | null
+          revoked_reason?: string | null
+          token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "push_tokens_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       round_robin_state: {
         Row: {
           branch_id: string
@@ -4627,6 +4671,10 @@ export type Database = {
         Returns: Json
       }
       fn_refresh_views: { Args: { p_heavy?: boolean }; Returns: undefined }
+      fn_register_push_token: {
+        Args: { p_device?: string; p_platform: string; p_token: string }
+        Returns: string
+      }
       fn_request_approval: {
         Args: {
           p_branch_id: string
@@ -4700,6 +4748,10 @@ export type Database = {
       fn_review_lead: {
         Args: { p_approve: boolean; p_lead_id: string; p_note?: string }
         Returns: undefined
+      }
+      fn_revoke_push_token: {
+        Args: { p_reason: string; p_token: string }
+        Returns: boolean
       }
       fn_round_robin_next: { Args: { p_branch_id: string }; Returns: string }
       fn_sales_approvals: { Args: { p_branch_id: string }; Returns: Json }
@@ -4967,6 +5019,7 @@ export type Database = {
         Returns: Json
       }
       fn_today_live: { Args: never; Returns: Json }
+      fn_unregister_push_token: { Args: { p_token: string }; Returns: boolean }
       fn_update_my_profile: {
         Args: {
           p_consent_content?: boolean

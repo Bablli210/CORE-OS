@@ -35,3 +35,8 @@ supabase/.branches
 **/public/sw.js
 **/public/sw.js.map
 **/public/swe-worker-*.js
+
+# expo (apps/mobile)
+.expo
+dist-web
+expo-env.d.ts

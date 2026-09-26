@@ -14,7 +14,7 @@ export type Outbound = {
   title: string;
   body: string | null;
   data: Record<string, unknown>;
-  recipient: { name: string | null; phone: string | null; email: string | null; language: string };
+  recipient: { name: string | null; phone: string | null; email: string | null; language: string; push_tokens?: string[] | null };
 };
 
 export type SendResult =
@@ -193,7 +193,7 @@ export class ResendEmail implements EmailProvider {
 }
 
 // ------------------------------------------------------------------ push
-/** Push until the Expo app ships (M8): logs the message. Only used where PUSH_PROVIDER=log (local). */
+/** Local push: logs the message (PUSH_PROVIDER=log). The phone app's pushes go through ExpoPush. */
 export class LogPush implements PushProvider {
   readonly name = "log";
   readonly idempotent = true;
@@ -202,6 +202,43 @@ export class LogPush implements PushProvider {
     const to = msg.recipient.phone ?? msg.recipient.email ?? "device";
     this.log({ provider: "push-log", to, title: msg.title, notification_id: msg.id });
     return { outcome: "sent", providerMessageId: `push-log-${msg.id}`, to };
+  }
+}
+
+/**
+ * Expo Push (M8): one message per active device of the recipient (`push_tokens`, from 0013's claim). Expo's API has
+ * no idempotency key, so this is not idempotent: a network error or a 5xx is final, never resent; only 429 is retried.
+ * Tickets that say DeviceNotRegistered revoke that token. Sent when at least one device accepted it.
+ */
+export class ExpoPush implements PushProvider {
+  readonly name = "expo";
+  readonly idempotent = false;
+  constructor(private opts: { accessToken?: string; onDeadToken?: (token: string, reason: string) => Promise<unknown>; fetch?: Fetch }) {}
+
+  async send(msg: Outbound): Promise<SendResult> {
+    const tokens = msg.recipient.push_tokens ?? [];
+    if (!tokens.length) return { outcome: "failed", error: "no phone registered for push (the person hasn't signed in on the app)" };
+    const messages = tokens.map((to) => ({ to, title: msg.title, body: msg.body ?? undefined, sound: "default", data: { ...msg.data, notification_id: msg.id, type: msg.type } }));
+    let res: Response;
+    try {
+      res = await (this.opts.fetch ?? fetch)("https://exp.host/--/api/v2/push/send", {
+        method: "POST",
+        headers: { "content-type": "application/json", accept: "application/json", ...(this.opts.accessToken ? { authorization: `Bearer ${this.opts.accessToken}` } : {}) },
+        body: JSON.stringify(messages),
+      });
+    } catch (e) {
+      return { outcome: "failed", error: `network error, outcome unknown: ${String(e)}`, to: tokens.join(",") };
+    }
+    const json = (await res.json().catch(() => ({}))) as { data?: { status: "ok" | "error"; id?: string; message?: string; details?: { error?: string } }[]; errors?: { message: string }[] };
+    if (!res.ok) {
+      const error = `expo ${res.status}: ${json.errors?.[0]?.message ?? ""}`;
+      return res.status === 429 ? { outcome: "retry", error, to: tokens.join(",") } : { outcome: "failed", error, to: tokens.join(",") };
+    }
+    const tickets = json.data ?? [];
+    await Promise.all(tickets.map((t, i) => (t.status === "error" && t.details?.error === "DeviceNotRegistered" && this.opts.onDeadToken ? this.opts.onDeadToken(tokens[i], "DeviceNotRegistered").catch(() => undefined) : null)));
+    const ok = tickets.filter((t) => t.status === "ok" && t.id).map((t) => t.id as string);
+    if (ok.length) return { outcome: "sent", providerMessageId: ok.join(","), to: tokens.filter((_, i) => tickets[i]?.status === "ok").join(",") };
+    return { outcome: "failed", error: `expo: ${tickets[0]?.details?.error ?? tickets[0]?.message ?? "no ticket"}`, to: tokens.join(",") };
   }
 }
 

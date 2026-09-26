@@ -1,6 +1,6 @@
 // @vitest-environment node
 import { describe, expect, it, vi } from "vitest";
-import { MetaWhatsApp, parseMetaStatuses, ResendEmail, SandboxWhatsApp, verifySignature, hmacHex, type Outbound } from "./providers.ts";
+import { ExpoPush, MetaWhatsApp, parseMetaStatuses, ResendEmail, SandboxWhatsApp, verifySignature, hmacHex, type Outbound } from "./providers.ts";
 import { renderDigest, whatsappTemplate, FALLBACK_TEMPLATE } from "./templates.ts";
 
 const msg = (over: Partial<Outbound> = {}): Outbound => ({
@@ -127,5 +127,27 @@ describe("digests", () => {
     }, "https://app");
     expect(e.html).toMatch(/Branch A<\/td><td[^>]*>EGP 1,000<\/td><td[^>]*>EGP 2,500/);
     expect(e.html).toContain("https://app/admin");
+  });
+});
+
+describe("ExpoPush", () => {
+  const withTokens = (tokens: string[]) => msg({ type: "session.completed", title: "7 sessions left", recipient: { ...msg().recipient, push_tokens: tokens } });
+  it("sends one message per device with the notification id in data, and revokes dead devices", async () => {
+    const fetch = vi.fn((_u: string | URL | Request, _i?: RequestInit) => reply(200, { data: [{ status: "ok", id: "t1" }, { status: "error", message: "gone", details: { error: "DeviceNotRegistered" } }] }));
+    const dead = vi.fn(async () => true);
+    const p = new ExpoPush({ fetch: fetch as unknown as typeof globalThis.fetch, onDeadToken: dead });
+    const r = await p.send(withTokens(["ExponentPushToken[a]", "ExponentPushToken[b]"]));
+    expect(r).toEqual({ outcome: "sent", providerMessageId: "t1", to: "ExponentPushToken[a]" });
+    const body = JSON.parse(String(fetch.mock.calls[0][1]!.body));
+    expect(body).toHaveLength(2);
+    expect(body[0]).toMatchObject({ to: "ExponentPushToken[a]", title: "7 sessions left", data: { notification_id: msg().id, type: "session.completed" } });
+    expect(dead).toHaveBeenCalledWith("ExponentPushToken[b]", "DeviceNotRegistered");
+  });
+  it("fails without a registered device, retries only 429, never resends after a network error", async () => {
+    const make = (f: () => Promise<Response>) => new ExpoPush({ fetch: vi.fn(f) as unknown as typeof globalThis.fetch });
+    expect((await make(() => reply(200, {})).send(withTokens([]))).outcome).toBe("failed");
+    expect((await make(() => reply(429, { errors: [{ message: "slow down" }] })).send(withTokens(["ExponentPushToken[a]"]))).outcome).toBe("retry");
+    expect((await make(() => reply(500, {})).send(withTokens(["ExponentPushToken[a]"]))).outcome).toBe("failed");
+    expect(await make(() => Promise.reject(new Error("down"))).send(withTokens(["ExponentPushToken[a]"]))).toMatchObject({ outcome: "failed", error: expect.stringContaining("outcome unknown") });
   });
 });

@@ -153,6 +153,13 @@ One row per WhatsApp / email / push notification that the notify function has pi
 - Written only by `fn_notify_claim`, `fn_notify_result` and `fn_whatsapp_status` (service role). Top management can read it (`/admin/audit` → Deliveries).
 - `notifications.status` mirrors the outcome: sent or failed, with `error`.
 
+### `push_tokens` (0013, M8)
+The phone app's Expo push token per signed-in person: `token` (unique; Expo format), `platform` (ios / android), `device_name`, `last_seen_at`, `revoked_at` / `revoked_reason`.
+- `fn_register_push_token` (on sign-in) moves a shared phone's token to whoever signs in; `fn_unregister_push_token` runs on sign-out.
+- `fn_revoke_push_token` (service role) is called when Expo reports DeviceNotRegistered.
+- A person reads their own rows; top management reads all.
+- The notify claim carries the recipient's active tokens on `channel = push` rows.
+
 ### `targets`
 `period` (`YYYY-MM`), `scope_type` (`branch, membership`), `scope_id`, `metric` (`won_revenue, delivered_revenue, new_clients, sessions_completed, retention_pct`), `value numeric`. Unique per (period, scope_type, scope_id, metric).
 

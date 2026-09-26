@@ -45,9 +45,15 @@ export function ExerciseCard({
             ? t("workout.lastTime", { date: formatDate(last.performed_at), sets: last.sets.map((s) => `${s.weight_kg ?? "–"}×${s.reps ?? "–"}`).join(", ") })
             : t("workout.firstTime")}
         </p>
+        <div aria-hidden className="grid grid-cols-[2rem_1fr_1fr_2.75rem] gap-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+          <span>{t("workout.col.set")}</span>
+          <span>{t("workout.col.kg")}</span>
+          <span>{t("workout.col.reps")}</span>
+          <span className="text-center">{t("workout.col.done")}</span>
+        </div>
         <ol className="grid gap-2">
           {draft.sets.map((s, i) => (
-            <li key={i} className="grid grid-cols-[2rem_1fr_1fr_auto] items-center gap-2" data-testid="set-row">
+            <li key={i} className="grid grid-cols-[2rem_1fr_1fr_2.75rem] items-center gap-2" data-testid="set-row">
               <span className="text-sm text-muted-foreground">{i + 1}</span>
               <Input aria-label={t("workout.kgFor", { n: i + 1, name: e.exercise_name })} inputMode="decimal" value={s.weight} placeholder="kg"
                 onChange={(ev) => set(i, { weight: ev.target.value })} />

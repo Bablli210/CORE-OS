@@ -1,3 +1,4 @@
+import { Section } from "@/components/layout";
 import { formatEGP } from "@gymos/api/format";
 import { t } from "@gymos/i18n";
 import type { CommissionReport } from "@gymos/api/admin/money";
@@ -8,10 +9,9 @@ const td = "py-2 pe-3";
 /** Payroll view of what mv_coach_month / mv_rep_month computed. Per-session values come from the server. */
 export function CommissionTables({ report }: { report: CommissionReport }) {
   return (
-    <div className="grid gap-6">
-      <section aria-labelledby="comm-coaches" className="grid gap-2 overflow-x-auto">
-        <h2 id="comm-coaches" className="font-semibold">{t("money.coachCommission")}</h2>
-        <p className="text-sm text-muted-foreground">{t("money.coachFormula", { tax: report.tax_pct, net: 100 - report.tax_pct })}</p>
+    <div className="grid gap-8">
+      <Section title={t("money.coachCommission")} description={t("money.coachFormula", { tax: report.tax_pct, net: 100 - report.tax_pct })}>
+        <div className="overflow-x-auto">
         <table className="w-full min-w-[40rem] text-sm" data-testid="coach-commission">
           <thead className="text-muted-foreground"><tr className="border-b">
             <th className={th}>{t("money.coach")}</th><th className={th}>{t("money.burned")}</th><th className={th}>{t("money.perSession")}</th>
@@ -30,10 +30,10 @@ export function CommissionTables({ report }: { report: CommissionReport }) {
             ))}
           </tbody>
         </table>
-      </section>
-      <section aria-labelledby="comm-reps" className="grid gap-2 overflow-x-auto">
-        <h2 id="comm-reps" className="font-semibold">{t("money.repCommission")}</h2>
-        <p className="text-sm text-muted-foreground">{t("money.repFormula", { pct: report.membership_pct, nutrition: report.nutrition_pct })}</p>
+        </div>
+      </Section>
+      <Section title={t("money.repCommission")} description={t("money.repFormula", { pct: report.membership_pct, nutrition: report.nutrition_pct })}>
+        <div className="overflow-x-auto">
         <table className="w-full min-w-[36rem] text-sm" data-testid="rep-commission">
           <thead className="text-muted-foreground"><tr className="border-b">
             <th className={th}>{t("money.rep")}</th><th className={th}>{t("money.wonRevenue")}</th><th className={th}>{t("money.membershipCollected")}</th>
@@ -48,7 +48,8 @@ export function CommissionTables({ report }: { report: CommissionReport }) {
             ))}
           </tbody>
         </table>
-      </section>
+        </div>
+      </Section>
     </div>
   );
 }

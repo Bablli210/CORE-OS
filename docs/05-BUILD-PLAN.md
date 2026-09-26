@@ -193,6 +193,10 @@ Milestone M8 from docs/05-BUILD-PLAN.md. Read PROGRESS.md. Convert to a monorepo
 
 ---
 
+## After M8: UX pass (done before branding)
+
+Asked for after M8: make daily use straightforward — clear sections instead of content run together, easy navigation, easy onboarding. Delivered as a pass over every screen (screenshot audit at 390px and 1280px, before and after): the layout kit and canvas token, tabs for the long admin screens, plain-language settings, the week-grid overlap fix, a front-desk home, and a first-run guide per role with a help button. Recorded in docs/04 and docs/06; PROGRESS.md has the details.
+
 ## After M8: branding
 
 Replace `src/styles/tokens.css` values, the logo slot in AppShell, the PWA icons and the WhatsApp templates' sign-off. Nothing else should need to change; if it does, that was a rule violation in an earlier milestone — fix the component to use tokens.

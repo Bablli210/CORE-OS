@@ -22,8 +22,8 @@ export function FollowUpsPanel({ lead }: { lead: LeadDetail }) {
       <ul className="grid gap-2">
         {lead.follow_ups.length === 0 ? <li className="text-sm text-muted-foreground">{t("followUps.none")}</li> : null}
         {lead.follow_ups.map((f) => (
-          <li key={f.id} className="flex items-center justify-between gap-3 rounded-md border p-3">
-            <span className="grid">
+          <li key={f.id} className="flex items-center justify-between gap-3 rounded-md bg-muted/50 p-3">
+            <span className="grid min-w-0">
               <span className={f.status === "open" ? "font-medium" : "text-muted-foreground line-through"}>{f.title}</span>
               <span className="text-xs text-muted-foreground">{formatDateTime(f.due_at)} · {f.assignee_name}</span>
             </span>
@@ -40,15 +40,15 @@ export function FollowUpsPanel({ lead }: { lead: LeadDetail }) {
       </ul>
       {lead.can_edit ? (
         <form
-          className="grid gap-2 md:grid-cols-[1fr_14rem_auto]"
+          className="grid grid-cols-[minmax(0,1fr)_auto] gap-2"
           onSubmit={(e) => {
             e.preventDefault();
             if (!title.trim() || !due) return;
             add.mutate({ leadId: lead.id, title: title.trim(), dueAt: new Date(due).toISOString() }, { onSuccess: () => { setTitle(""); setDue(""); } });
           }}
         >
-          <Input aria-label={t("followUps.title")} placeholder={t("followUps.titlePlaceholder")} value={title} onChange={(e) => setTitle(e.target.value)} />
-          <Input aria-label={t("followUps.due")} type="datetime-local" value={due} onChange={(e) => setDue(e.target.value)} />
+          <Input className="col-span-2" aria-label={t("followUps.title")} placeholder={t("followUps.titlePlaceholder")} value={title} onChange={(e) => setTitle(e.target.value)} />
+          <Input className="min-w-0" aria-label={t("followUps.due")} type="datetime-local" value={due} onChange={(e) => setDue(e.target.value)} />
           <Button type="submit" variant="outline" disabled={add.isPending || !title.trim() || !due}>{t("followUps.add")}</Button>
         </form>
       ) : null}

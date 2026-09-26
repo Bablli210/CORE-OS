@@ -2,7 +2,9 @@
 
 import Link from "next/link";
 import { Handshake, Search } from "lucide-react";
+import { useSearchParams } from "next/navigation";
 import { useDeferredValue, useState } from "react";
+import { RowList } from "@/components/layout";
 import { EmptyState, ErrorState, LoadingList } from "@/components/states";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -19,7 +21,8 @@ const STATUSES: DealStatus[] = ["draft", "pending_approval", "approved", "partia
 export function DealsList() {
   const me = useMe();
   const [query, setQuery] = useState("");
-  const [status, setStatus] = useState<DealStatus | "">("");
+  const initial = useSearchParams().get("status") as DealStatus | null;
+  const [status, setStatus] = useState<DealStatus | "">(initial && STATUSES.includes(initial) ? initial : "");
   const search = useDeferredValue(query);
   const { data, isPending, isError, refetch } = useDeals(me.active.branchId ?? "", status || undefined, search);
   return (
@@ -43,10 +46,10 @@ export function DealsList() {
       ) : data.length === 0 ? (
         <EmptyState icon={Handshake} title={query || status ? t("deal.noMatch") : t("deal.empty")} body={t("deal.emptyBody")} action={{ href: "/sales/pipeline", label: t("action.openPipeline") }} />
       ) : (
-        <ul className="grid gap-2">
+        <RowList>
           {data.map((d) => (
             <li key={d.id}>
-              <Link href={`/sales/deals/${d.id}`} className="grid gap-1 rounded-lg border p-3 hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring md:grid-cols-[2fr_1fr_1fr_1fr] md:items-center">
+              <Link href={`/sales/deals/${d.id}`} className="grid gap-1 p-3 hover:bg-accent md:p-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring md:grid-cols-[2fr_1fr_1fr_1fr] md:items-center">
                 <span className="font-medium">{d.name}{d.is_renewal ? ` · ${t("deal.renewal")}` : ""}</span>
                 <span><Badge variant={d.status === "paid" ? "success" : d.status === "cancelled" ? "destructive" : "outline"}>{t(dealStatusLabel(d.status))}</Badge></span>
                 <span className="text-sm">{formatEGP(d.paid_piastres)} / {formatEGP(d.total_piastres)}</span>
@@ -54,7 +57,7 @@ export function DealsList() {
               </Link>
             </li>
           ))}
-        </ul>
+        </RowList>
       )}
     </div>
   );

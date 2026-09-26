@@ -4,18 +4,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
-/** Screen title row. */
-export function PageHeader({ title, description, actions }: { title: string; description?: string; actions?: React.ReactNode }) {
-  return (
-    <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
-      <div className="grid gap-1">
-        <h1 className="text-xl font-semibold md:text-2xl">{title}</h1>
-        {description ? <p className="text-sm text-muted-foreground">{description}</p> : null}
-      </div>
-      {actions}
-    </div>
-  );
-}
+export { PageHeader } from "./layout";
 
 /** docs/04 `EmptyState`: icon, one sentence, the next action. No dead ends (CLAUDE.md rule 8). */
 export function EmptyState({

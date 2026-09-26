@@ -40,7 +40,7 @@ Read `docs/` before touching anything. The docs are the source of truth; this fi
 - Before writing a screen, list the RPCs and queries it needs. If a rule is missing from the database, add the migration first, then the screen.
 - Run `pnpm typecheck && pnpm lint && pnpm test && scripts/test-db.sh` before declaring anything done. Run `supabase db reset` after changing migrations and confirm `supabase/seed.sql` still loads.
 - When a request conflicts with `docs/`, stop and say so; do not silently pick one.
-- Keep components small: a page file composes feature components from `src/features/<domain>/`. No component over ~200 lines. Data access (RPC queries, query hooks) lives in `packages/api` and is shared by both apps; nothing there may import react-dom, next or react-native.
+- Keep components small: a page file composes feature components from `src/features/<domain>/`. No component over ~200 lines. Lay screens out with `apps/web/src/components/layout.tsx` (PageHeader, Section, RowList, SummaryStrip, PageTabs, Facts) so every screen reads the same way. Data access (RPC queries, query hooks) lives in `packages/api` and is shared by both apps; nothing there may import react-dom, next or react-native.
 - Naming: tables `snake_case` plural, functions `fn_verb_noun`, enums `*_status` / `*_type`, TS types generated with `pnpm db:types` (→ `packages/api/database.types.ts`) after every migration.
 - Seed data (`supabase/seed.sql`) must always produce a working demo: 2 branches, all roles, 6 coaches, 4 reps, 40 clients, weekly slots and 60 days of sessions from them, some clients out of credits. Use it for every screenshot and e2e test.
 - Never store phone numbers in more than one format. Normalize to E.164 (`+20...`) on input with `libphonenumber-js`.

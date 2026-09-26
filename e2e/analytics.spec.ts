@@ -76,6 +76,7 @@ test.describe("tiles click through to rows that equal them", () => {
   test("admin branch comparison cells open the branch's rows", async ({ page }) => {
     await loginStaff(page, STAFF.ceo);
     await page.goto("/admin");
+    await page.getByTestId("page-tab-branches").click();
     const cell = page.getByTestId("compare-cell").and(page.locator('[data-key="admin.collected"]')).first();
     const value = await cell.getAttribute("data-value");
     await cell.click();

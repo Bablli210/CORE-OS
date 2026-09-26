@@ -1,5 +1,5 @@
 import type { Json } from "../database.types";
-import type { MessageKey } from "@gymos/i18n";
+import { hasMessage, t, type MessageKey } from "@gymos/i18n";
 
 export type SettingRow = { key: string; value: Json; description: string | null; updated_at: string };
 export type SettingKind = "boolean" | "number" | "text" | "tiers" | "json";
@@ -33,6 +33,21 @@ export function settingKind(key: string, value: Json): SettingKind {
   if (typeof value === "number") return "number";
   if (typeof value === "string") return "text";
   return "json";
+}
+
+/** Settings for the system itself rather than the gym's rules: shown last, under Advanced. */
+export const ADVANCED_KEYS = new Set(["analytics.week_start", "notify.batch_size", "notify.max_attempts", "leads.round_robin_weighted", "products.enable_group_classes", "nutrition.fallback_to_coach"]);
+
+/** The plain-language label of a setting, or its key made readable when none is written yet. */
+export function settingLabel(key: string): string {
+  const k = `setting.label.${key}`;
+  return hasMessage(k) ? t(k) : humanizeKey(key);
+}
+
+/** The help line of a setting: the written one, else the description stored with the setting. */
+export function settingHelp(key: string, description: string | null): string | null {
+  const k = `setting.help.${key}`;
+  return hasMessage(k) ? t(k) : description;
 }
 
 /** "attendance.edit_window_hours" → "Edit window hours" */

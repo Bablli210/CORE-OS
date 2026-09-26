@@ -171,6 +171,7 @@ test("admin money: liability equals remaining credits × value; per-session net 
   await loginStaff(page, STAFF.ceo);
   await page.goto("/admin/money");
   await expect(page.getByTestId("liability-total")).toHaveText(egp(liability));
+  await page.getByTestId("page-tab-commission").click();
   const rows = page.getByTestId("coach-row");
   await expect(rows.first()).toBeVisible();
   let checked = 0;

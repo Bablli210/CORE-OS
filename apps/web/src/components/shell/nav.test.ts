@@ -7,6 +7,11 @@ describe("navigation per role (docs/04)", () => {
     expect(navFor("coach").primary.map((i) => i.href)).not.toContain("/coach/team");
   });
 
+  it("puts My week in the coach's bottom bar, next to Today", () => {
+    expect(navFor("coach").primary.map((i) => i.href).slice(0, 2)).toEqual(["/coach", "/coach/schedule"]);
+    expect(splitForBottomBar(navFor("coach").primary).overflow).toHaveLength(0);
+  });
+
   it("gives the sales manager Queue and Team on top of the rep tabs", () => {
     const rep = navFor("sales_rep").primary.map((i) => i.href);
     const manager = navFor("sales_manager").primary.map((i) => i.href);

@@ -21,3 +21,8 @@ export function t(key: MessageKey, vars?: Record<string, string | number>, local
   if (!vars) return template;
   return template.replace(/\{(\w+)\}/g, (match, name: string) => (name in vars ? String(vars[name]) : match));
 }
+
+/** True when the English catalog has this key (for labels looked up from data, e.g. a setting's key). */
+export function hasMessage(key: string): key is MessageKey {
+  return key in en;
+}

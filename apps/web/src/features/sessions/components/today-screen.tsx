@@ -1,9 +1,11 @@
 "use client";
 
+import { GettingStarted } from "@/features/guide/components/getting-started";
 import { CalendarDays, ChevronLeft, ChevronRight, CloudOff, UserPlus } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
+import { Section } from "@/components/layout";
 import { EmptyState, ErrorState, LoadingList, PageHeader } from "@/components/states";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { formatDate, shortDuration } from "@gymos/api/format";
@@ -60,13 +62,15 @@ export function TodayScreen() {
     <>
       <PageHeader
         title={date === today ? t("today.title") : formatDate(`${date}T12:00:00Z`)}
-        description={shown ? t("today.summary", { n: shown.sessions.length, done: shown.sessions.filter((s) => s.status !== "booked").length }) : undefined}
+        description={t("today.job")}
+        meta={shown && shown.sessions.length ? <RecordedProgress total={shown.sessions.length} done={shown.sessions.filter((s) => s.status !== "booked").length} /> : undefined}
         actions={<Link href="/coach/schedule" className={buttonVariants({ variant: "outline" })}><CalendarDays aria-hidden />{t("action.openWeek")}</Link>}
       />
-      <div className="mb-3 flex items-center justify-between gap-2">
-        <Button variant="ghost" size="icon" aria-label={t("today.prevDay")} onClick={() => go(addDays(date, -1))}><ChevronLeft className="rtl:rotate-180" /></Button>
-        {date !== today ? <Button variant="link" onClick={() => go(today)}>{t("today.backToToday")}</Button> : <span className="text-sm text-muted-foreground">{formatDate(`${date}T12:00:00Z`)}</span>}
-        <Button variant="ghost" size="icon" aria-label={t("today.nextDay")} onClick={() => go(addDays(date, 1))}><ChevronRight className="rtl:rotate-180" /></Button>
+      <div className="mb-4 flex items-center gap-1">
+        <Button variant="outline" size="icon" aria-label={t("today.prevDay")} onClick={() => go(addDays(date, -1))}><ChevronLeft className="rtl:rotate-180" /></Button>
+        <span className="min-w-36 px-2 text-center text-sm font-medium">{formatDate(`${date}T12:00:00Z`)}</span>
+        <Button variant="outline" size="icon" aria-label={t("today.nextDay")} onClick={() => go(addDays(date, 1))}><ChevronRight className="rtl:rotate-180" /></Button>
+        {date !== today ? <Button variant="link" onClick={() => go(today)}>{t("today.backToToday")}</Button> : null}
       </div>
 
       {queue.length ? (
@@ -92,18 +96,17 @@ export function TodayScreen() {
             )}
             {date > today && shown.can_record ? <p className="text-sm text-muted-foreground">{t("today.futureHint")}</p> : null}
           </section>
-          <aside className="grid content-start gap-3">
+          <aside className="grid content-start gap-6">
             {recordable && date === today ? (
               <Button size="block" variant="outline" onClick={() => setWalkIn(true)}><UserPlus aria-hidden />{t("today.walkInStart")}</Button>
             ) : null}
-            <section aria-label={t("today.followUps")} className="grid gap-2">
-              <h2 className="text-sm font-semibold">{t("today.followUps")}</h2>
+            <Section title={t("today.followUps")} count={shown.follow_ups.length} plain>
               {shown.follow_ups.length === 0 ? (
-                <p className="text-sm text-muted-foreground">{t("today.noFollowUps")}</p>
+                <p className="rounded-lg border bg-card p-3 text-sm text-muted-foreground">{t("today.noFollowUps")}</p>
               ) : (
                 <ul className="grid gap-2">
                   {shown.follow_ups.map((f) => (
-                    <li key={f.id} className="flex items-center justify-between gap-2 rounded-md border p-2 text-sm">
+                    <li key={f.id} className="flex items-center justify-between gap-2 rounded-lg border bg-card p-3 text-sm">
                       <span className="grid">
                         {f.client_id ? <Link href={`/coach/clients/${f.client_id}`} className="font-medium hover:underline">{f.title}</Link> : <span className="font-medium">{f.title}</span>}
                         <span className={f.overdue ? "text-destructive" : "text-muted-foreground"}>{f.overdue ? t("today.overdue", { time: shortDuration(Date.now() - new Date(f.due_at).getTime()) }) : t("today.due", { date: formatDate(f.due_at) })}</span>
@@ -113,7 +116,8 @@ export function TodayScreen() {
                   ))}
                 </ul>
               )}
-            </section>
+            </Section>
+            {date === today ? <div className="empty:hidden"><GettingStarted /></div> : null}
           </aside>
         </div>
       )}
@@ -131,5 +135,17 @@ export function TodayScreen() {
       ) : null}
       {walkIn ? <WalkInSheet coach={coach} onClose={() => setWalkIn(false)} onDone={(name) => { setWalkIn(false); setStatus(t("today.walkInDone", { name })); }} /> : null}
     </>
+  );
+}
+
+/** "2 of 4 recorded" with a bar, so the coach sees at a glance what is left to record today. */
+function RecordedProgress({ total, done }: { total: number; done: number }) {
+  return (
+    <span className="flex w-full max-w-xs items-center gap-3 text-sm" data-testid="recorded-progress">
+      <span className="h-2 flex-1 overflow-hidden rounded-full bg-muted" aria-hidden>
+        <span className="block h-full rounded-full bg-success" style={{ width: `${(done / total) * 100}%` }} />
+      </span>
+      <span className="whitespace-nowrap text-muted-foreground">{t("today.recorded", { done, n: total })}</span>
+    </span>
   );
 }

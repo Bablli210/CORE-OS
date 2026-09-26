@@ -23,28 +23,36 @@ export function SessionRow({
   onOutcome: (s: DaySession, outcome: Outcome) => void;
 }) {
   return (
-    <li data-testid="session-row" data-status={s.status} className="grid gap-3 rounded-lg border bg-card p-3">
-      <div className="flex items-start justify-between gap-3">
-        <div className="grid gap-1">
-          <span className="text-sm text-muted-foreground">
-            {formatTime(s.starts_at)} · {t("schedule.minutes", { n: s.duration_minutes })}
-            {s.is_walk_in ? ` · ${t("today.walkIn")}` : ""}
-          </span>
-          <Link href={`/coach/clients/${s.client_id}`} className="font-medium underline-offset-4 hover:underline">{s.client_name}</Link>
-          <span className="flex flex-wrap gap-1">
-            <Badge variant={s.credits_left > 0 ? "secondary" : "destructive"} data-testid="credits-left">{t("today.left", { n: s.credits_left })}</Badge>
-            {s.unpaid ? <Badge variant="destructive">{t("today.unpaid")}</Badge> : null}
-            {s.injuries ? <Badge variant="warning" title={s.injuries}><HeartPulse aria-hidden className="me-1 size-3" />{t("today.injury")}</Badge> : null}
-            {s.at_risk ? <Badge variant="outline">{t("today.atRisk")}</Badge> : null}
-            {s.waived ? <Badge variant="outline">{t("today.waived")}</Badge> : null}
-            {s.pending_approval ? <Badge variant="warning">{t("today.pendingApproval")}</Badge> : null}
-            {queued ? <Badge variant="outline" data-testid="queued"><CloudOff aria-hidden className="me-1 size-3" />{t("today.queued")}</Badge> : null}
-          </span>
-        </div>
-        {s.injuries ? <p className="max-w-40 text-end text-xs text-muted-foreground"><AlertTriangle aria-hidden className="me-1 inline size-3" />{s.injuries}</p> : null}
+    <li
+      data-testid="session-row"
+      data-status={s.status}
+      className={cn(
+        "grid grid-cols-[3.5rem_minmax(0,1fr)] gap-x-3 gap-y-3 rounded-lg border border-s-4 bg-card p-3 md:p-4",
+        s.status === "completed" ? "border-s-success" : s.status === "no_show" ? "border-s-warning" : s.status === "cancelled" ? "border-s-muted-foreground" : "border-s-border",
+      )}
+    >
+      <div className="grid content-start leading-tight">
+        <span className="text-lg font-semibold tabular-nums">{formatTime(s.starts_at)}</span>
+        <span className="text-xs text-muted-foreground">{t("schedule.minutes", { n: s.duration_minutes })}</span>
+      </div>
+      <div className="grid min-w-0 gap-1.5">
+        <span className="flex flex-wrap items-baseline gap-x-2">
+          <Link href={`/coach/clients/${s.client_id}`} className="truncate text-base font-medium underline-offset-4 hover:underline">{s.client_name}</Link>
+          {s.is_walk_in ? <span className="text-xs text-muted-foreground">{t("today.walkIn")}</span> : null}
+        </span>
+        <span className="flex flex-wrap gap-1">
+          <Badge variant={s.credits_left > 0 ? "secondary" : "destructive"} data-testid="credits-left">{t("today.left", { n: s.credits_left })}</Badge>
+          {s.unpaid ? <Badge variant="destructive">{t("today.unpaid")}</Badge> : null}
+          {s.injuries ? <Badge variant="warning" title={s.injuries}><HeartPulse aria-hidden className="me-1 size-3" />{t("today.injury")}</Badge> : null}
+          {s.at_risk ? <Badge variant="outline">{t("today.atRisk")}</Badge> : null}
+          {s.waived ? <Badge variant="outline">{t("today.waived")}</Badge> : null}
+          {s.pending_approval ? <Badge variant="warning">{t("today.pendingApproval")}</Badge> : null}
+          {queued ? <Badge variant="outline" data-testid="queued"><CloudOff aria-hidden className="me-1 size-3" />{t("today.queued")}</Badge> : null}
+        </span>
+        {s.injuries ? <p className="text-xs text-muted-foreground"><AlertTriangle aria-hidden className="me-1 inline size-3" />{s.injuries}</p> : null}
       </div>
       {canRecord ? (
-        <div role="group" aria-label={t("today.outcomeFor", { name: s.client_name })} className="grid grid-cols-3 gap-2">
+        <div role="group" aria-label={t("today.outcomeFor", { name: s.client_name })} className="col-span-2 grid grid-cols-3 gap-2 sm:col-span-1 sm:col-start-2">
           {OUTCOMES.map((o) => (
             <button
               key={o}
@@ -64,7 +72,7 @@ export function SessionRow({
           ))}
         </div>
       ) : (
-        <p className="text-sm text-muted-foreground">{t(`session.status.${s.status}` as MessageKey)}</p>
+        <p className="col-start-2 text-sm text-muted-foreground">{t(`session.status.${s.status}` as MessageKey)}</p>
       )}
     </li>
   );

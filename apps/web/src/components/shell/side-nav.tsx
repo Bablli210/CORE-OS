@@ -28,7 +28,16 @@ export function SideNav({ primary, secondary }: { primary: NavItem[]; secondary:
   );
   return (
     <nav aria-label={t("shell.mainNav")} className="hidden w-60 shrink-0 border-e border-sidebar-border bg-sidebar p-3 md:block">
-      <ul className="grid gap-1">{primary.map(item)}</ul>
+      <ul className="grid gap-1">
+        {primary.flatMap((i, n) => [
+          i.group ? (
+            <li key={`g-${i.href}`} aria-hidden className={cn("px-3 pb-1 text-xs font-medium uppercase tracking-wide text-muted-foreground", n > 0 && "mt-4")}>
+              {t(i.group)}
+            </li>
+          ) : null,
+          item(i),
+        ])}
+      </ul>
       {secondary.length ? <ul className="mt-4 grid gap-1 border-t border-sidebar-border pt-4">{secondary.map(item)}</ul> : null}
     </nav>
   );

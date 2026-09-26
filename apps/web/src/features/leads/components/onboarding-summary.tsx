@@ -32,7 +32,7 @@ export function OnboardingSummary({ responses, completedAt }: { responses: Respo
       <dl className="grid gap-4 md:grid-cols-2">
         {sections.map((s) => (
           <div key={s} className="grid gap-1 rounded-md border p-3">
-            <dt className="text-sm font-semibold">{t(`wizard.step.${s}` as MessageKey)}</dt>
+            <dt className="text-sm font-semibold">{t(`answers.step.${s}` as MessageKey)}</dt>
             {Object.entries(responses[s]).map(([k, v]) => (
               <dd key={k} className="flex justify-between gap-3 text-sm">
                 <span className="text-muted-foreground">{t(`field.${k}` as MessageKey)}</span>

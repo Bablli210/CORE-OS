@@ -57,6 +57,17 @@ Items marked **fill in later** ship with a placeholder value that is easy to cha
 
 Confirmed: PT commission tiers are counted per calendar month; opening hours 06:00–24:00.
 
+## UX pass (after M8)
+
+- **Layout kit, not per-screen styling.** `components/layout.tsx` (PageHeader, Section, RowList, SummaryStrip, PageTabs, Facts) gives every screen the same rhythm. One new semantic token, `--canvas` (the page area behind cards); branding may change its value like any other.
+- **Long screens become URL tabs** (`?tab=`): admin Overview (Summary · Branches · Trends) and Money (Summary · Commission · Payments and deals). A tab can be linked and survives a refresh.
+- **Settings speak plainly.** Each key has a written label and help line (`setting.label.*`, `setting.help.*` in i18n); the raw key is only a tooltip. System settings (batch size, attempts, unused flags) sit under Advanced.
+- **First-run guide state is per device** (localStorage: hidden, ticked steps). It is a convenience; losing it only shows the guide again. Top management's setup steps tick from data, not storage.
+- **Overlapping week blocks sit side by side** (`laneLayout` in `packages/api/sessions/week.ts`); two clients booked in the same hour no longer draw on top of each other.
+- **Front desk gets its own home** on `/sales` (check in · walk-in · payment) instead of the rep's Today.
+- **Coach nav:** My week is a bottom tab (was reachable only from Today on a phone).
+- No dependency added.
+
 ## Dependencies chosen (and why)
 
 - `@supabase/ssr` — server-side auth in App Router.

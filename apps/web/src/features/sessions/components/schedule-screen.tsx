@@ -10,6 +10,7 @@ import { t, type MessageKey } from "@gymos/i18n";
 import { cn } from "@/lib/utils";
 import { useIsDesktop, useOwnCoachMembership, useSchedulable, useWeek } from "../hooks/use-coach";
 import type { Slot } from "@gymos/api/sessions/coach";
+import { formatDate } from "@gymos/api/format";
 import { addDays, cairoToday, dateInWeek, isIsoDate, WEEK_ORDER, weekdayOf, weekStart } from "@gymos/api/sessions/week";
 import { HoursSheet } from "./hours-sheet";
 import { SlotDetailSheet } from "./slot-detail-sheet";
@@ -85,7 +86,7 @@ export function ScheduleScreen() {
       <div className="mb-3 flex items-center justify-between gap-2">
         <Button variant="ghost" size="icon" aria-label={t("schedule.prevWeek")} onClick={() => go({ week: addDays(start, -7) })}><ChevronLeft className="rtl:rotate-180" /></Button>
         <div className="grid text-center">
-          <span className="font-medium" data-testid="week-range">{t("schedule.weekOf", { from: start, to: addDays(start, 6) })}</span>
+          <span className="font-medium" data-testid="week-range">{t("schedule.weekOf", { from: formatDate(start), to: formatDate(addDays(start, 6)) })}</span>
           {start !== weekStart(today) ? <button type="button" className="text-sm underline underline-offset-4" onClick={() => go({ week: null })}>{t("schedule.thisWeek")}</button> : null}
         </div>
         <Button variant="ghost" size="icon" aria-label={t("schedule.nextWeek")} onClick={() => go({ week: addDays(start, 7) })}><ChevronRight className="rtl:rotate-180" /></Button>

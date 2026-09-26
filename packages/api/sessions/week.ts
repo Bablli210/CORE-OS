@@ -97,3 +97,32 @@ export function cairoInstant(date: string, time: string): string {
   t = naive - offsetAt(t);
   return new Date(t).toISOString();
 }
+
+/**
+ * Side-by-side lanes for blocks that overlap in time (two clients booked in the same hour), so the week grid draws them
+ * next to each other instead of on top of each other. Blocks that overlap directly or through a chain share one
+ * cluster; each gets the first free lane, and every block in a cluster is split into the cluster's lane count.
+ */
+export function laneLayout<T extends { id: string; start: number; end: number }>(blocks: T[]): Map<string, { lane: number; lanes: number }> {
+  const sorted = [...blocks].sort((a, b) => a.start - b.start || b.end - a.end || a.id.localeCompare(b.id));
+  const out = new Map<string, { lane: number; lanes: number }>();
+  let cluster: string[] = [];
+  let laneEnds: number[] = [];
+  let clusterEnd = -Infinity;
+  const close = () => {
+    for (const id of cluster) out.set(id, { lane: out.get(id)!.lane, lanes: laneEnds.length });
+    cluster = [];
+    laneEnds = [];
+  };
+  for (const b of sorted) {
+    if (b.start >= clusterEnd) close();
+    let lane = laneEnds.findIndex((end) => end <= b.start);
+    if (lane < 0) lane = laneEnds.push(b.end) - 1;
+    else laneEnds[lane] = b.end;
+    out.set(b.id, { lane, lanes: 0 });
+    cluster.push(b.id);
+    clusterEnd = Math.max(clusterEnd, b.end);
+  }
+  close();
+  return out;
+}

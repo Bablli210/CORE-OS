@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Me } from "@/features/auth/me";
 import { MeProvider } from "@/features/auth/me-context";
 import { homeFor } from "@gymos/api/auth/roles";
+import { HelpButton } from "@/features/guide/components/help-button";
 import { NotificationBell } from "@/features/notifications/components/notification-bell";
 import { t, type MessageKey } from "@gymos/i18n";
 import { cn } from "@/lib/utils";
@@ -26,12 +27,15 @@ export function AppShell({ me, children }: { me: Me; children: React.ReactNode }
             </span>
           </Link>
           <RoleSwitcher />
+          <HelpButton />
           <NotificationBell userId={me.profile.id} />
           <SignOutButton />
         </header>
         <div className="flex flex-1">
           <SideNav primary={primary} secondary={secondary} />
-          <main className="min-w-0 flex-1 px-4 pb-28 pt-4 md:px-8 md:pb-8 md:pt-6">{children}</main>
+          <main className="min-w-0 flex-1 bg-canvas px-4 pb-28 pt-5 md:px-8 md:pb-10 md:pt-8">
+            <div className="mx-auto w-full max-w-6xl">{children}</div>
+          </main>
         </div>
         <BottomNav items={primary} />
       </div>

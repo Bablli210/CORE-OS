@@ -8,7 +8,7 @@ import { Switch } from "@/components/ui/switch";
 import type { Json } from "@gymos/api/database.types";
 import { t, type MessageKey } from "@gymos/i18n";
 import { settingsKeys, updateSetting } from "@gymos/api/admin/settings";
-import { humanizeKey, parseTiers, serializeTiers, settingKind, validateTiers, type SettingRow as Row, type Tier } from "@gymos/api/admin/settings-model";
+import { parseTiers, settingHelp, settingLabel, serializeTiers, settingKind, validateTiers, type SettingRow as Row, type Tier } from "@gymos/api/admin/settings-model";
 import { TiersEditor } from "./tiers-editor";
 
 /** One setting with an editor for its type. Saves through fn_update_setting; shows saved / error state inline. */
@@ -23,6 +23,7 @@ export function SettingRow({ row }: { row: Row }) {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: settingsKeys.all }),
   });
   const id = `setting-${row.key.replace(/\W/g, "-")}`;
+  const help = settingHelp(row.key, row.description);
 
   const dirty =
     kind === "tiers" ? JSON.stringify(serializeTiers(tiers)) !== JSON.stringify(row.value) : kind !== "boolean" && draft !== (kind === "json" ? JSON.stringify(row.value, null, 2) : String(row.value ?? ""));
@@ -50,11 +51,10 @@ export function SettingRow({ row }: { row: Row }) {
   return (
     <li className="grid gap-2 border-b py-4 last:border-0 md:grid-cols-[1fr_minmax(0,22rem)] md:gap-6" data-testid={`setting-${row.key}`}>
       <div className="grid gap-1">
-        <label htmlFor={id} id={`${id}-label`} className="font-medium">
-          {humanizeKey(row.key)}
+        <label htmlFor={id} id={`${id}-label`} className="font-medium" title={t("settings.key", { key: row.key })}>
+          {settingLabel(row.key)}
         </label>
-        <code className="text-xs text-muted-foreground">{row.key}</code>
-        {row.description ? <p className="text-sm text-muted-foreground">{row.description}</p> : null}
+        {help ? <p className="text-sm text-muted-foreground">{help}</p> : null}
       </div>
       <div className="grid gap-2">
         {kind === "boolean" ? (

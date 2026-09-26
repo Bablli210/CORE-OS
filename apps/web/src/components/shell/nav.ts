@@ -27,7 +27,8 @@ export type NavIcon =
   | "settings"
   | "audit";
 
-export type NavItem = { href: string; label: MessageKey; icon: NavIcon };
+/** `group` starts a labelled block in the desktop side nav (the bottom bar ignores it). */
+export type NavItem = { href: string; label: MessageKey; icon: NavIcon; group?: MessageKey };
 
 const client: NavItem[] = [
   { href: "/c", label: "nav.today", icon: "today" },
@@ -37,16 +38,16 @@ const client: NavItem[] = [
   { href: "/c/profile", label: "nav.profile", icon: "profile" },
 ];
 
-// docs/04: Today · Clients · Programs · Numbers (+ Team for the head coach). "My week" is reached from Today
-// and sits in the desktop side nav as a secondary item.
+// docs/04: Today · My week · Clients · Programs · Numbers (+ Team for the head coach, under More on a phone).
 const coach: NavItem[] = [
   { href: "/coach", label: "nav.today", icon: "today" },
+  { href: "/coach/schedule", label: "nav.schedule", icon: "schedule" },
   { href: "/coach/clients", label: "nav.clients", icon: "clients" },
   { href: "/coach/programs", label: "nav.programs", icon: "programs" },
   { href: "/coach/numbers", label: "nav.numbers", icon: "numbers" },
 ];
-const coachSecondary: NavItem[] = [{ href: "/coach/schedule", label: "nav.schedule", icon: "schedule" }];
-const headCoachExtra: NavItem[] = [{ href: "/coach/team", label: "nav.team", icon: "team" }];
+const coachSecondary: NavItem[] = [];
+const headCoachExtra: NavItem[] = [{ href: "/coach/team", label: "nav.team", icon: "team", group: "nav.group.manage" }];
 
 // docs/04: Today · Pipeline · Leads · Deals · Numbers; the sales manager also gets Queue · Team.
 const sales: NavItem[] = [
@@ -57,7 +58,7 @@ const sales: NavItem[] = [
   { href: "/sales/numbers", label: "nav.numbers", icon: "numbers" },
 ];
 const salesManagerExtra: NavItem[] = [
-  { href: "/sales/queue", label: "nav.queue", icon: "queue" },
+  { href: "/sales/queue", label: "nav.queue", icon: "queue", group: "nav.group.manage" },
   { href: "/sales/team", label: "nav.team", icon: "team" },
 ];
 // Front desk: check-ins, walk-in leads, payments (docs/01 §4.9).
@@ -70,14 +71,14 @@ const frontDesk: NavItem[] = [
 
 // docs/04: Overview · Branches · Sales · Coaching · Clients · Money · Targets · People · Settings · Audit.
 const admin: NavItem[] = [
-  { href: "/admin", label: "nav.overview", icon: "overview" },
+  { href: "/admin", label: "nav.overview", icon: "overview", group: "nav.group.watch" },
   { href: "/admin/branches", label: "nav.branches", icon: "branches" },
   { href: "/admin/sales", label: "nav.sales", icon: "sales" },
   { href: "/admin/coaching", label: "nav.coaching", icon: "coaching" },
   { href: "/admin/clients", label: "nav.clients", icon: "clients" },
-  { href: "/admin/money", label: "nav.money", icon: "money" },
+  { href: "/admin/money", label: "nav.money", icon: "money", group: "nav.group.money" },
   { href: "/admin/targets", label: "nav.targets", icon: "targets" },
-  { href: "/admin/people", label: "nav.people", icon: "people" },
+  { href: "/admin/people", label: "nav.people", icon: "people", group: "nav.group.setup" },
   { href: "/admin/settings", label: "nav.settings", icon: "settings" },
   { href: "/admin/audit", label: "nav.audit", icon: "audit" },
 ];

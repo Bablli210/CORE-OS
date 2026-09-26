@@ -4,7 +4,7 @@ import { Plus } from "lucide-react";
 import { t, type MessageKey } from "@gymos/i18n";
 import { cn } from "@/lib/utils";
 import type { CoachWeek, Slot } from "@gymos/api/sessions/coach";
-import { dateInWeek, fromMinutes, gridHours, toMinutes } from "@gymos/api/sessions/week";
+import { dateInWeek, fromMinutes, gridHours, laneLayout, toMinutes } from "@gymos/api/sessions/week";
 
 const ROW = 3; // rem per hour
 
@@ -29,6 +29,10 @@ export function WeekGrid({
   ];
   const hours = gridHours(ranges);
   const first = hours[0] * 60;
+  // blocks that share a time on the same day sit side by side
+  const lanes = new Map(
+    days.flatMap((d) => [...laneLayout(week.slots.filter((s) => s.weekday === d).map((s) => ({ id: s.id, start: toMinutes(s.start_time), end: toMinutes(s.start_time) + s.duration_minutes })))]),
+  );
   const working = (weekday: number, hour: number) =>
     week.availability.some((a) => a.weekday === weekday && toMinutes(a.start_time) <= hour * 60 && toMinutes(a.end_time) >= hour * 60 + 60);
 
@@ -80,12 +84,14 @@ export function WeekGrid({
           const date = dateInWeek(week.week_start, s.weekday);
           const skipped = s.skipped.includes(date);
           const notYet = s.starts_on > date || (s.ends_on !== null && s.ends_on < date);
+          const { lane, lanes: of } = lanes.get(s.id) ?? { lane: 0, lanes: 1 };
           return (
             <button
               key={s.id}
               type="button"
               data-testid="slot"
               onClick={() => onSlot(s)}
+              title={`${slotTitle(s)} · ${s.start_time}`}
               aria-label={t("schedule.slotLabel", { day: t(`weekday.${s.weekday}` as MessageKey), time: s.start_time, what: slotTitle(s) })}
               className={cn(
                 "z-10 m-0.5 flex flex-col items-start overflow-hidden rounded-md border px-2 py-1 text-start text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
@@ -96,10 +102,11 @@ export function WeekGrid({
                 gridColumn: days.indexOf(s.weekday) + 2,
                 gridRow: `${Math.floor(start / 60) + 2} / span ${Math.max(1, Math.ceil((start % 60 + s.duration_minutes) / 60))}`,
                 marginTop: `${((start % 60) / 60) * ROW}rem`,
+                ...(of > 1 ? { justifySelf: "start", width: `calc(${100 / of}% - 0.25rem)`, marginInlineStart: `calc(${(lane * 100) / of}% + 0.125rem)` } : {}),
               }}
             >
-              <span className={cn("font-medium", skipped && "line-through")}>{slotTitle(s)}</span>
-              <span className="text-muted-foreground">
+              <span className={cn("w-full truncate font-medium", skipped && "line-through")}>{slotTitle(s)}</span>
+              <span className="w-full truncate text-muted-foreground">
                 {s.start_time}
                 {s.kind === "client" && s.credits_left !== null ? <span className={cn(s.credits_left <= 0 && "font-medium text-destructive")}> · {t("schedule.left", { n: s.credits_left })}</span> : null}
                 {skipped ? ` · ${t("schedule.skipped")}` : ""}

@@ -6,6 +6,10 @@ Route groups: `(public)`, `(client)`, `(coach)`, `(sales)`, `(admin)`. A person 
 
 Shared components: `AppShell` (header, bottom tab bar on mobile / side nav on desktop, role switcher, notification bell fed by Realtime), `StatTile` (value, label, delta vs target, click-through), `DataTable` (search, one filter, sort, card mode below `md`), `EmptyState` (icon, sentence, primary action), `ClientHeader` (name, branch, coach, credits-per-coach pill, at-risk badge, injuries flag, unpaid-sessions badge), `CreditsPill` (balance with this coach, next expiry), `PhoneInput` (country-code picker defaulting to +20, stores E.164), `WeekGrid` (7 columns × hours, slots as blocks, free gaps visible), `Sheet` (bottom sheet on mobile, dialog on desktop), `ApprovalBadge`, `FlagBanner` (live list of flagged clients on sales screens).
 
+Page layout (UX pass, after M8): every screen is `PageHeader` (optional back link, title, one line saying what the screen is for, its main action) then `Section`s — a titled block with its count, a one-line hint and at most one action — on a `canvas` background so blocks read as separate cards. Long screens split into URL tabs (`PageTabs`, `?tab=`), lists of rows sit in one card (`RowList`), and a day's numbers open the screen as a `SummaryStrip`. All in `apps/web/src/components/layout.tsx`.
+
+First-run guide (all roles): each role's home shows a "Getting started" card — 3–5 steps for that role (`packages/api/guide/guides.ts`), each linking to where it's done, ticked by the person or, for top management's setup, from real data (staff invited, a priced product, this month's targets). It can be hidden; the header's **?** button shows it any time and puts it back.
+
 ## Public
 
 ### `/onboard/[token]` — Onboarding wizard
@@ -38,7 +42,7 @@ Preferences from onboarding, editable; Instagram handle; consents; language; log
 
 ## Coach `(coach)`
 
-Bottom tabs: Today · Clients · Programs · Numbers. Head coach gets a fifth tab: Team.
+Bottom tabs: Today · My week · Clients · Programs · Numbers. Head coach also gets Team (under More on a phone). My week moved into the tabs in the UX pass: coaches open it daily.
 
 ### `/coach` — Today
 Job: run the day from one screen. On open, calls `fn_materialize_sessions(today, me)` then `fn_coach_day(me, today)`: the day as a timeline — client sessions (name, time, sessions left with me, injuries flag, unpaid badge), classes, blocked hours, free gaps. Primary per session row: Completed / No-show / Cancelled (`fn_record_attendance`, optimistic, one tap; a zero-credit client gets a confirm sheet "Deliver anyway? Sales will be flagged now"). "Start walk-in session" (client picker → `fn_start_walkin_session`). Open follow-ups (welcome calls due). Empty: "Nothing scheduled today — open your week" → `/coach/schedule`.
@@ -66,7 +70,9 @@ Sections: Schedules (every coach's week side by side — who is doing what; open
 Bottom tabs: Today · Pipeline · Leads · Deals · Numbers. Sales manager gets: Queue · Team.
 
 ### `/sales` — Today
-Job: do today's follow-ups, respond to new leads within SLA, catch flagged clients before they leave. Data: `FlagBanner` at the top — open FLAG tasks (client, why, when, which coach; arrives live via Realtime on `notifications`), then follow-ups due today + overdue; new leads assigned to me without first contact, with SLA countdown; today's onboarding completions. Primary per row: Call (tel: link + auto-log touch sheet), WhatsApp (wa.me deep link + touch), Done. Empty: "All caught up — add a lead".
+Job: do today's follow-ups, respond to new leads within SLA, catch flagged clients before they leave. Data: `FlagBanner` at the top — open FLAG tasks (client, why, when, which coach; arrives live via Realtime on `notifications`), then follow-ups due today + overdue; new leads assigned to me without first contact, with SLA countdown; today's onboarding completions. Primary per row: Call (tel: link + auto-log touch sheet), WhatsApp (wa.me deep link + touch), Done. A summary strip on top counts each section (follow-ups due, new leads, flags, onboarded). Header action: Add a lead. Empty: "You're all caught up".
+
+Front desk sees a desk home here instead: three one-tap actions (check a member in, add a walk-in, take a payment → approved deals), then the same lists.
 
 ### `/sales/leads/new` — Capture (also reachable from the header + button everywhere)
 Name, phone (dup check as you type), source, branch (prefilled), interest chips (membership/PT/nutrition), note. Primary: Save → then "Send onboarding link" (WhatsApp) or "Fill together". Calls `fn_create_lead`, `fn_issue_onboarding_token`.
@@ -91,10 +97,10 @@ Reps table (`fn_dashboard_reps`): leads, contacted, onboarded, quoted, won, reve
 
 ## Admin `(admin)` — Top management
 
-Side nav: Overview · Branches · Sales · Coaching · Clients · Money · Targets · People · Settings · Audit.
+Side nav, grouped: Watch (Overview · Branches · Sales · Coaching · Clients) · Money and targets (Money · Targets) · Set up (People · Settings · Audit).
 
 ### `/admin` — Overview
-Live "today" strip (`fn_today_live`: visits, sessions, leads, collected, unpaid sessions open — refreshed every 30s + Realtime). Branch A vs B tiles: revenue booked, collected, delivered (gross / net), deferred liability; commission accruals (coaches, reps); new / lapsed / net clients; sessions; no-show %. Trend charts (12 weeks). Targets vs actual bars. Everything clicks through.
+Three tabs: **Summary** (live "today" strip, reconciliation, the month's tiles, targets vs actual), **Branches side by side**, **12-week trends**. Live "today" strip (`fn_today_live`: visits, sessions, leads, collected, unpaid sessions open — refreshed every 30s + Realtime). Branch A vs B tiles: revenue booked, collected, delivered (gross / net), deferred liability; commission accruals (coaches, reps); new / lapsed / net clients; sessions; no-show %. Trend charts (12 weeks). Targets vs actual bars. Everything clicks through.
 
 ### `/admin/sales`, `/admin/coaching`
 The manager/head-coach team screens, for both branches, read-only, with branch filter.

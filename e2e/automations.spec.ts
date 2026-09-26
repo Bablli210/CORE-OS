@@ -130,7 +130,7 @@ test.describe("refunds and transfers", () => {
     const [pay, month, amount] = sql(`select x.id || '|' || to_char(x.received_at at time zone 'Africa/Cairo', 'YYYY-MM') || '|' || x.amount_piastres from payments x join deals d on d.id = x.deal_id
                                       join clients c on c.id = d.client_id where c.phone = '+201110000006' and x.voided_at is null order by x.received_at desc limit 1`).split("|");
     await loginStaff(page, STAFF.ceo);
-    await page.goto("/admin/money");
+    await page.goto("/admin/money?tab=payments");
     await page.getByLabel("Month").selectOption(month);
     await page.getByLabel("Branch").selectOption(BRANCH_A);
     const row = page.getByTestId("money-payment").filter({ hasText: "Salma Rashad" }).first();
@@ -148,7 +148,7 @@ test.describe("refunds and transfers", () => {
     expect(sql(`select voided_at is not null from payments where id = '${pay}'`)).toBe("t");
 
     await loginStaff(page, STAFF.ceo);
-    await page.goto("/admin/money");
+    await page.goto("/admin/money?tab=payments");
     await page.getByLabel("Month").selectOption(month);
     await expect(page.getByTestId("money-request").filter({ hasText: "Salma" }).first()).toHaveAttribute("data-status", "approved");
   });
@@ -198,6 +198,7 @@ test("the new freeze, transfer and refund controls fit a 390px phone", async ({ 
   expect(await noOverflow()).toBeLessThanOrEqual(0);
   await loginStaff(page, STAFF.ceo);
   await page.goto("/admin/money");
+  await page.getByTestId("page-tab-payments").click();
   await expect(page.getByTestId("money-requests")).toBeVisible();
   await page.getByTestId("money-payment").getByRole("button", { name: "Refund" }).first().click();
   await expect(page.getByRole("dialog", { name: "Request a refund" })).toBeVisible();

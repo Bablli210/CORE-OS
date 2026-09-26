@@ -20,13 +20,13 @@ export function StatTile({ tile, href, sub }: { tile: Tile; href: string; sub?: 
       data-key={tile.key}
       data-value={tile.value ?? ""}
       aria-label={t("tile.open", { label, value: formatMetric(tile.unit, tile.value) })}
-      className="group grid content-start gap-1 rounded-lg border bg-card p-4 hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      className="group grid min-w-0 content-start gap-1 rounded-lg border bg-card p-3 hover:bg-accent md:p-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
-      <span className="flex items-center justify-between gap-2 text-sm text-muted-foreground">
-        <span>{label}</span>
+      <span className="flex items-start justify-between gap-2 text-sm text-muted-foreground">
+        <span className="min-w-0 leading-snug">{label}</span>
         {tile.live ? <Radio aria-label={t("tile.live")} className="size-3.5" /> : <ChevronRight aria-hidden className="size-4 opacity-0 group-hover:opacity-100 rtl:rotate-180" />}
       </span>
-      <span className="text-2xl font-semibold">{formatMetric(tile.unit, tile.value)}</span>
+      <span className="break-words text-xl font-semibold tabular-nums leading-tight md:text-2xl">{formatMetric(tile.unit, tile.value)}</span>
       {pct !== null ? <TargetBar actual={tile.value ?? 0} target={tile.target!} unit={tile.unit} compact /> : null}
       {sub ? <span className={cn("text-xs text-muted-foreground")}>{sub}</span> : null}
     </Link>

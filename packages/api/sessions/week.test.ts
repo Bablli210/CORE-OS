@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { addDays, cairoInstant, cairoMinutes, cairoToday, dateInWeek, freeGaps, fromMinutes, gridHours, isIsoDate, prefWeekdays, toMinutes, weekStart, weekdayOf } from "./week";
+import { addDays, cairoInstant, cairoMinutes, cairoToday, dateInWeek, freeGaps, fromMinutes, gridHours, isIsoDate, laneLayout, prefWeekdays, toMinutes, weekStart, weekdayOf } from "./week";
 
 describe("week math", () => {
   it("the gym week starts on Saturday", () => {
@@ -61,5 +61,36 @@ describe("free gaps and grid", () => {
   it("reads preferred days from onboarding", () => {
     expect(prefWeekdays(["sat", "mon", "wed"])).toEqual([6, 1, 3]);
     expect(prefWeekdays("nope")).toEqual([]);
+  });
+});
+
+describe("laneLayout", () => {
+  it("keeps separate blocks full width and splits overlapping ones side by side", () => {
+    const l = laneLayout([
+      { id: "a", start: 900, end: 960 },
+      { id: "b", start: 900, end: 960 },
+      { id: "c", start: 1020, end: 1080 },
+    ]);
+    expect(l.get("a")).toEqual({ lane: 0, lanes: 2 });
+    expect(l.get("b")).toEqual({ lane: 1, lanes: 2 });
+    expect(l.get("c")).toEqual({ lane: 0, lanes: 1 });
+  });
+  it("reuses a lane once it is free and splits a chained cluster evenly", () => {
+    const l = laneLayout([
+      { id: "long", start: 600, end: 720 },
+      { id: "first", start: 600, end: 660 },
+      { id: "second", start: 660, end: 720 },
+    ]);
+    expect(l.get("long")).toEqual({ lane: 0, lanes: 2 });
+    expect(l.get("first")).toEqual({ lane: 1, lanes: 2 });
+    expect(l.get("second")).toEqual({ lane: 1, lanes: 2 });
+  });
+  it("treats touching blocks (one ends as the next starts) as separate", () => {
+    const l = laneLayout([
+      { id: "a", start: 600, end: 660 },
+      { id: "b", start: 660, end: 720 },
+    ]);
+    expect(l.get("a")).toEqual({ lane: 0, lanes: 1 });
+    expect(l.get("b")).toEqual({ lane: 0, lanes: 1 });
   });
 });

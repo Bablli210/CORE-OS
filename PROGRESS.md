@@ -4,7 +4,48 @@ Living log. Claude Code updates this at the end of every milestone step. Newest 
 
 ## Current milestone
 
-M8 — Mobile: **built, awaiting review.** This is the last build milestone; next is branding (docs/05 "After M8"). M1–M7 are covered by the same test run.
+UX pass (asked for after M8, before branding): **built, awaiting review.** "Everything clear, sections mapped out and not on top of each other, easy to navigate, easy onboarding — it's for everyday use." Branding is still next (docs/05).
+
+How it was done: every screen of every role was captured at 390px and 1280px on the seed (`node scripts/ux-audit.mjs <dir> [role]`), reviewed, fixed, and captured again.
+
+What the audit found, and what changed:
+- **Screens ran together.** White cards on a white page, section titles as bare bold text, no counts.
+  - Now there is a layout kit (`apps/web/src/components/layout.tsx`): `PageHeader` with a back link and one line saying what the screen is for, `Section` with a count, hint and one action, `RowList`, `SummaryStrip`, `PageTabs` and `Facts`.
+  - A `--canvas` page background sits behind white cards, content has a readable maximum width, and the admin side nav is grouped (Watch · Money and targets · Set up).
+- **Things drawn on top of each other.** In My week, two clients booked in the same hour overlapped; they now sit side by side (`laneLayout`, unit-tested). Stat values overflowed their tiles at 390px; they now wrap. The lead page's right column overflowed at 1280px; its form now stacks.
+- **Long admin screens.**
+  - Overview was about 2,700px long; it now has tabs: Summary · Branches side by side · 12-week trends.
+  - Money was about 2,900px; it now has tabs: Summary · Commission · Payments and deals.
+  - Settings was about 5,700px, showing raw keys and machine labels such as "Weekly dow". It now has a section index, a written label and help line for every setting, and system settings under Advanced.
+- **Sales.**
+  - Today: a summary strip, Add a lead as the header action, rows in one card with the time in its own column.
+  - Lead page:
+    - a stage tracker (New → Contacted → Onboarded → Quoted → Won) and a "Next step" card that says what to do now;
+    - the work on the left, and on the right the labelled details, follow-ups, quotes and the rarer actions.
+  - Queue: only the parts with work are shown in full; the empty ones collapse into one "All clear" list, with plain names instead of "SLA breaches".
+  - New deal with no lead: a lead picker instead of a red error.
+- **Front desk** had the rep's Today. It now has its own home: Check a member in · Add a walk-in · Take a payment (approved deals).
+- **Coach.**
+  - Today: each session has the time in a bold column, a colour on the edge once recorded, "2 of 4 recorded" with a bar, and compact day arrows.
+  - My week is now a bottom tab.
+  - The client page's onboarding answers are titled for staff ("Goal", not "Your goal").
+- **Client.** The workout logger has Set / kg / Reps / Done column headers. The home page's weekly slots show as rows. "Streak" is now "Weeks in a row at the gym".
+- **Onboarding.**
+  - Every role's home shows a "Getting started" guide: 3–5 steps for that role (`packages/api/guide/guides.ts`, shared with mobile), each linking to where it's done, with ticks and progress.
+  - Top management's version is a setup checklist that ticks itself from data (staff invited, a priced product, this month's targets).
+  - The guide can be hidden. The new **?** button in the header shows it any time and can put it back on the home page.
+
+Decisions (docs/06 "UX pass"): no new dependency. The guide state is per device, in localStorage (a convenience). Tab state is in the URL. docs/04 is updated: layout, guide, the coach tabs, the desk home, the Overview tabs.
+
+Also fixed: `supabase/tests/009_automations.sql` A25 failed whenever it ran between 20:00 and 21:00 Cairo, because the real hourly job had already queued that day's digests. It now checks the result (one digest per recipient, and a second run adds none) instead of the call's count.
+
+Not changed: the Expo app's screens. They share the data layer, the i18n and the guide content, and could take the same guide next.
+
+Checks: `pnpm typecheck && pnpm lint && pnpm test` pass (web 17, api 57, i18n 3, mobile 9, functions 14). `scripts/test-db.sh` passes, 10/10. E2E_RESULT_PLACEHOLDER
+
+## M8 — Mobile
+
+M8 — Mobile: **built.** The UX pass was asked for next. M1–M7 are covered by the same test run.
 
 Acceptance (docs/05 M8). The e2e tests are in `e2e/mobile/app.spec.ts` (project `expo-390`). They drive the Expo app's web build (react-native-web: the same screens, shared hooks and RPC layer as the iOS/Android build) against the same local Supabase:
 - [x] Coach Today works in the Expo app against the same local Supabase, including attendance outcomes and walk-ins.
@@ -20,7 +61,7 @@ Acceptance (docs/05 M8). The e2e tests are in `e2e/mobile/app.spec.ts` (project 
 - [x] Also required by the M8 prompt:
   - **Monorepo without breaking the web app; CI green at every commit.**
     - The repo had no CI. The first M8 commit adds `.github/workflows/ci.yml`: typecheck, lint and unit tests; the SQL suite; the Playwright e2e against a local Supabase.
-    - Runs #1–#4 ran green on GitHub Actions. Run #5 (the Expo app commit) went red: in CI the app's web build never saw the browser go offline, so the offline workout test failed. Run #6 (the PROGRESS commit) went red on the same test. The next commit, the web connectivity fix (see decisions), must go green. Run #3 was first cancelled by the workflow's own concurrency setting, then re-run green; the workflow no longer cancels a commit's run.
+    - Runs #1–#4 ran green on GitHub Actions. Run #5 (the Expo app commit) went red: in CI the app's web build never saw the browser go offline, so the offline workout test failed. Run #6 (the PROGRESS commit) went red on the same test. Run #7, the web connectivity fix (see decisions), went green. Run #3 was first cancelled by the workflow's own concurrency setting, then re-run green; the workflow no longer cancels a commit's run.
   - **packages/api extracted.** Every RPC query module moved with only its import paths changed. The web uses them from the package, and the Expo app reuses them as they are: no mobile-specific data layer.
   - **Expo app for the client and coach scopes.** Push via Expo Push is stored as `channel = push` (see decisions).
 - [x] `pnpm typecheck && pnpm lint && pnpm test` pass across the workspace (web 16, api 53, i18n 3, mobile 8, Edge Functions 14 unit tests). `scripts/test-db.sh` passes (ten suites; 010_push adds 12 checks). `pnpm test:e2e` passes: 120 tests on a fresh reset and seed (118 web + 2 Expo), production builds. 8 are skipped by design, as in M7.

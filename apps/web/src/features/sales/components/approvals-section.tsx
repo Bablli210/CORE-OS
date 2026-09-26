@@ -2,7 +2,9 @@
 
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
+import { CheckCircle2 } from "lucide-react";
 import { useState } from "react";
+import { Section } from "@/components/layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { dealErrorKey } from "@gymos/api/deals/errors";
@@ -35,13 +37,19 @@ async function fetchApprovals(branchId: string): Promise<Approval[]> {
 /** Pending approvals for the sales manager (discounts, voids, refunds, transfers, freezes, extensions, lead moves): what it is, who asked, why; approve or reject with a note (fn_decide_approval). */
 export function ApprovalsSection({ branchId }: { branchId: string }) {
   const { data = [], isPending } = useQuery({ queryKey: ["approvals", branchId], queryFn: () => fetchApprovals(branchId) });
+  if (isPending) return null;
+  if (data.length === 0)
+    return (
+      <p data-testid="queue-approvals" className="flex items-center gap-2 rounded-lg border bg-card p-3 text-sm md:p-4">
+        <CheckCircle2 aria-hidden className="size-4 text-success" />
+        {t("queue.approvals")}
+        <span className="ms-auto text-muted-foreground">{t("queue.nothing")}</span>
+      </p>
+    );
   return (
-    <section aria-labelledby="q-approvals" data-testid="queue-approvals" className="grid gap-2">
-      <h2 id="q-approvals" className="font-semibold">{t("queue.approvals")} <span className="text-muted-foreground">({data.length})</span></h2>
-      {isPending ? null : data.length === 0 ? <p className="text-sm text-muted-foreground">{t("queue.nothing")}</p> : (
-        <ul className="grid gap-2">{data.map((a) => <ApprovalItem key={a.id} a={a} />)}</ul>
-      )}
-    </section>
+    <Section id="q-approvals" testId="queue-approvals" title={t("queue.approvals")} count={data.length} plain>
+      <ul className="grid gap-2">{data.map((a) => <ApprovalItem key={a.id} a={a} />)}</ul>
+    </Section>
   );
 }
 
@@ -59,7 +67,7 @@ function ApprovalItem({ a }: { a: Approval }) {
     : a.freeze ? t("approval.freezeLine", { name: a.freeze.name, days: a.freeze.days })
     : a.lead ? t("approval.leadLine", { name: a.lead.name, to: a.lead.to }) : null;
   return (
-    <li className="grid gap-2 rounded-lg border p-3" data-testid="approval-item">
+    <li className="grid gap-2 rounded-lg border bg-card p-3 md:p-4" data-testid="approval-item">
       <span className="flex flex-wrap justify-between gap-2">
         <span className="font-medium">{t(approvalTypeLabel(a.type))}</span>
         <span className="text-xs text-muted-foreground">{[a.requested_by, formatDateTime(a.requested_at)].filter(Boolean).join(" · ")}</span>

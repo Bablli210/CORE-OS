@@ -36,11 +36,12 @@ export function DayTimeline({ day, canRecord, queuedIds, onOutcome }: { day: Coa
         it.kind === "session" ? (
           <SessionRow key={it.session.id} session={it.session} canRecord={canRecord} queued={queuedIds.has(it.session.id)} onOutcome={onOutcome} />
         ) : it.kind === "block" ? (
-          <li key={`b-${it.at}-${it.label}`} className="rounded-lg border border-dashed bg-muted/50 p-3 text-sm">
-            <span className="font-medium">{it.label}</span> <span className="text-muted-foreground">{it.time}</span>
+          <li key={`b-${it.at}-${it.label}`} className="grid grid-cols-[3.5rem_minmax(0,1fr)] gap-x-3 rounded-lg border border-dashed bg-muted/50 p-3 text-sm md:px-4">
+            <span className="tabular-nums text-muted-foreground">{fromMinutes(it.at)}</span>
+            <span><span className="font-medium">{it.label}</span> <span className="text-muted-foreground">{it.time}</span></span>
           </li>
         ) : (
-          <li key={`g-${it.at}`} className="rounded-lg px-3 py-1 text-xs text-muted-foreground">
+          <li key={`g-${it.at}`} className="flex items-center gap-2 px-3 py-0.5 text-xs text-muted-foreground before:h-px before:w-8 before:bg-border md:px-4">
             {t("today.free", { from: fromMinutes(it.at), to: fromMinutes(it.end) })}
           </li>
         ),

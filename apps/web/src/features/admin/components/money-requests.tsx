@@ -2,6 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
+import { Section } from "@/components/layout";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/input";
@@ -19,14 +20,12 @@ const statusBadge = (s: string) => (s === "approved" ? "success" : s === "reject
 export function MoneyRequests({ month, branch }: { month: string; branch: string }) {
   const { data = [], isError } = useQuery({ queryKey: requestKeys.all(month, branch), queryFn: () => fetchMoneyRequests(month, branch || null) });
   return (
-    <section aria-labelledby="mreq" className="grid gap-2 rounded-lg border p-4" data-testid="money-requests">
-      <h2 id="mreq" className="font-semibold">{t("money.requests")}</h2>
-      <p className="text-sm text-muted-foreground">{t("money.requestsHint")}</p>
+    <Section id="mreq" testId="money-requests" title={t("money.requests")} count={data.length} description={t("money.requestsHint")}>
       {isError ? <p role="alert" className="text-sm text-destructive">{t("error.retryHint")}</p> : null}
       {data.length === 0 ? <p className="text-sm text-muted-foreground">{t("money.noRequests")}</p> : (
         <ul className="grid gap-2">
           {data.map((r) => (
-            <li key={r.id} className="grid gap-1 rounded-md border p-3 text-sm" data-testid="money-request" data-type={r.type} data-status={r.status}>
+            <li key={r.id} className="grid gap-1 rounded-md bg-muted/50 p-3 text-sm" data-testid="money-request" data-type={r.type} data-status={r.status}>
               <span className="flex flex-wrap items-center justify-between gap-2">
                 <span className="font-medium">{t(`approval.type.${r.type}` as MessageKey)} · {r.type === "refund"
                   ? t("money.refundLine", { name: r.client_name ?? "", amount: formatEGP(r.amount_piastres ?? 0) })
@@ -39,7 +38,7 @@ export function MoneyRequests({ month, branch }: { month: string; branch: string
           ))}
         </ul>
       )}
-    </section>
+    </Section>
   );
 }
 

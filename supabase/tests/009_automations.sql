@@ -138,9 +138,15 @@ update clients set profile_id = '00000000-0000-0000-0001-000000000005' where id 
 
 -- ---------------------------------------------------------------- digests
 select ok(fn_queue_digests(((cairo_date(now()))::text || ' 14:10')::timestamp at time zone 'Africa/Cairo') = 0, 'A24 no digest outside its hour');
+-- judged on the result, not on this call's count: between 20:00 and 21:00 Cairo the real hourly job may already have
+-- queued today's digests, and then this call rightly adds none
 select fn_queue_digests(((cairo_date(now()))::text || ' 20:10')::timestamp at time zone 'Africa/Cairo') as d1 \gset
-select ok(:d1 = (select count(*) from (select distinct m.profile_id, m.role, m.branch_id from memberships m join profiles p on p.id = m.profile_id
+select ok((select count(distinct (recipient_profile_id, data->>'branch_id', data->>'role')) from notifications
+            where type = 'digest.daily' and data->>'period' = cairo_date(now())::text)
+          = (select count(*) from (select distinct m.profile_id, m.role, m.branch_id from memberships m join profiles p on p.id = m.profile_id
                   where m.is_active and m.role in ('head_coach', 'sales_manager') and p.email is not null) x)
+          and (select count(*) = count(distinct (recipient_profile_id, data->>'branch_id', data->>'role', channel)) from notifications
+                where type = 'digest.daily' and data->>'period' = cairo_date(now())::text)
           and fn_queue_digests(((cairo_date(now()))::text || ' 20:40')::timestamp at time zone 'Africa/Cairo') = 0,
           'A25 20:00 Cairo: one daily digest per head coach and sales manager (per branch), once');
 select ok(fn_queue_digests(((cairo_date(now()) + (6 - extract(dow from cairo_date(now()))::int + 7) % 7)::text || ' 09:10')::timestamp at time zone 'Africa/Cairo') >= 2,

@@ -1,5 +1,6 @@
 "use client";
 
+import { GettingStarted } from "@/features/guide/components/getting-started";
 import { CalendarDays, CheckCircle2, CloudOff, Dumbbell } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
@@ -33,7 +34,7 @@ export function ClientToday() {
 
   return (
     <div className="grid max-w-xl gap-4">
-      <PageHeader title={t("client.greeting", { name: h.first_name })} description={h.full_name} />
+      <PageHeader title={t("client.greeting", { name: h.first_name })} description={t("home.job")} />
       {h.fromCache ? <p role="status" className="flex items-center gap-2 text-sm text-muted-foreground"><CloudOff aria-hidden className="size-4" />{t("home.cached")}</p> : null}
 
       <Card data-testid="next-session">
@@ -65,14 +66,22 @@ export function ClientToday() {
         </CardContent>
       </Card>
 
+      <div className="empty:hidden"><GettingStarted /></div>
+
       <CreditSummary credits={{ clientId: h.client_id, membershipEndsAt: h.membership_ends_at, balances: h.balances.map((b) => ({ coachMembershipId: b.coach_membership_id, coachName: b.coach_name, balance: b.balance, nextExpiry: b.next_expiry })) }} />
 
       <Card data-testid="my-slots">
         <CardHeader><CardTitle>{t("home.yourWeek")}</CardTitle><p className="text-sm text-muted-foreground">{t("home.yourWeekHint")}</p></CardHeader>
         <CardContent>
           {h.slots.length === 0 ? <p className="text-sm text-muted-foreground">{t("home.noSlots")}</p> : (
-            <ul className="grid gap-1 text-sm">
-              {h.slots.map((s, i) => <li key={i}>{t("home.slotLine", { day: t(`weekday.${s.weekday}` as MessageKey), time: s.start_time, coach: s.coach_name })}</li>)}
+            <ul className="grid gap-2 text-sm">
+              {h.slots.map((s, i) => (
+                <li key={i} className="flex items-center justify-between gap-2 rounded-md bg-muted/50 px-3 py-2">
+                  <span className="font-medium">{t(`weekday.${s.weekday}` as MessageKey)}</span>
+                  <span className="tabular-nums">{s.start_time}</span>
+                  <span className="min-w-0 truncate text-muted-foreground">{s.coach_name}</span>
+                </li>
+              ))}
             </ul>
           )}
         </CardContent>

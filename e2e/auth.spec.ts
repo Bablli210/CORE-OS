@@ -34,8 +34,9 @@ test.describe("M1 login and role routing", () => {
   test("Ahmed sees the coach tabs and Team; as plain coach Team disappears and a direct link switches him back", async ({ page }) => {
     await loginStaff(page, STAFF.headCoach);
     const nav = page.getByRole("navigation", { name: "Main navigation" }).filter({ visible: true });
-    for (const tab of ["Today", "Clients", "Programs", "Numbers", "Team"]) await expect(nav.getByRole("link", { name: tab, exact: true })).toBeVisible();
-    await nav.getByRole("link", { name: "Team", exact: true }).click();
+    // Today · My week · Clients · Programs in the bar; Numbers and Team in the side nav, or under More on a phone
+    for (const tab of ["Today", "My week", "Clients", "Programs"]) await expect(nav.getByRole("link", { name: tab, exact: true })).toBeVisible();
+    await openNav(page, "Team");
     await expect(page.getByRole("heading", { name: "Team" })).toBeVisible();
     await page.getByRole("combobox", { name: "Switch role or branch" }).selectOption({ label: "Coach · Branch A — New Cairo" });
     await expectContext(page, "Coach · Branch A — New Cairo");

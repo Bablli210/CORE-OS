@@ -115,7 +115,7 @@ test("Today shows the coach's slots read-only (no booking) and one tap checks in
   await page.goto("/c");
   const slots = page.getByTestId("my-slots");
   await expect(slots.getByRole("listitem")).toHaveCount(3);
-  await expect(slots).toContainText("with Mahmoud Gamal");
+  await expect(slots.getByRole("listitem").first()).toContainText(/Saturday\s*15:00\s*Mahmoud Gamal/);
   await expect(slots.getByRole("button")).toHaveCount(0);
   await expect(page.getByRole("button", { name: /book/i })).toHaveCount(0);
 

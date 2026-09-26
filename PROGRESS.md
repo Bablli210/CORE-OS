@@ -41,7 +41,7 @@ Also fixed: `supabase/tests/009_automations.sql` A25 failed whenever it ran betw
 
 Not changed: the Expo app's screens. They share the data layer, the i18n and the guide content, and could take the same guide next.
 
-Checks: `pnpm typecheck && pnpm lint && pnpm test` pass (web 17, api 57, i18n 3, mobile 9, functions 14). `scripts/test-db.sh` passes, 10/10. E2E_RESULT_PLACEHOLDER
+Checks: `pnpm typecheck && pnpm lint && pnpm test` pass (web 17, api 57, i18n 3, mobile 9, functions 14). `scripts/test-db.sh` passes, 10/10. `pnpm test:e2e` passes on a fresh reset and seed with CI's headless browser: 120 passed, 8 skipped by design (as before). The e2e tests that depended on the old layout were updated: the Admin Overview and Money tabs, the lead owner fact, the client's slot rows, the head coach's Team under More on a phone.
 
 ## M8 — Mobile
 

@@ -84,7 +84,7 @@ export function LeadDetailScreen({ id }: { id: string }) {
               className="md:grid-cols-2 lg:grid-cols-1"
               items={[
                 { label: t("leads.phone"), value: <span dir="ltr">{lead.phone}</span> },
-                { label: t("leads.owner"), value: lead.owner_name ?? t("capture.unassigned") },
+                { label: t("leads.owner"), value: lead.owner_name ?? t("capture.unassigned"), testId: "lead-owner" },
                 { label: t("leads.interestedIn"), value: lead.interest_tags.map((i) => t(interestLabel(i))).join(", ") || t("leads.noInterests") },
                 { label: t("leads.source"), value: lead.source_name ?? "—" },
               ]}

@@ -77,6 +77,8 @@ test.describe("tiles click through to rows that equal them", () => {
     await loginStaff(page, STAFF.ceo);
     await page.goto("/admin");
     await page.getByTestId("page-tab-branches").click();
+    await expect(page).toHaveURL(/tab=branches/);
+    await expect(page.getByTestId("compare-cell").first()).toBeVisible();
     const cell = page.getByTestId("compare-cell").and(page.locator('[data-key="admin.collected"]')).first();
     const value = await cell.getAttribute("data-value");
     await cell.click();

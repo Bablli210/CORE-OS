@@ -101,7 +101,7 @@ test.describe("M2 sales", () => {
     await sheet.getByLabel("Reason (required)").fill("Mona is on leave this week");
     await sheet.getByRole("button", { name: "Reassign" }).click();
     await expect(sheet).toBeHidden();
-    await expect(page.getByText("Owner: Youssef Tarek")).toBeVisible();
+    await expect(page.getByTestId("lead-owner")).toContainText("Youssef Tarek");
     expect(sql(`select count(*) from notifications where type = 'lead.assigned' and data->>'lead_id' = '${id}' and recipient_profile_id = '00000000-0000-0000-0000-000000000012'`)).toBe("1");
     expect(sql(`select count(*) from notifications where type = 'lead.reassigned' and data->>'lead_id' = '${id}' and recipient_profile_id = '00000000-0000-0000-0000-000000000011'`)).toBe("1");
   });

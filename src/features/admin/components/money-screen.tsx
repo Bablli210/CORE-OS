@@ -8,9 +8,10 @@ import { Select } from "@/components/ui/input";
 import { useMe } from "@/features/auth/me-context";
 import { cairoMonth, formatEGP } from "@/lib/format";
 import { t } from "@/lib/i18n";
-import { fetchMoney, moneyKeys } from "../queries/money";
+import { fetchMoney, moneyKeys, type MoneySummary } from "../queries/money";
 import { CommissionTables } from "./commission-tables";
 import { CollectedBreakdowns, LiabilityTable, RecentLists } from "./money-lists";
+import { MoneyRequests, RefundSheet } from "./money-requests";
 
 function lastMonths(n: number): string[] {
   const now = new Date();
@@ -21,12 +22,14 @@ function Tile({ label, value, testId }: { label: string; value: string; testId?:
   return <div className="grid gap-1 rounded-lg border p-4"><span className="text-sm text-muted-foreground">{label}</span><span className="text-xl font-semibold" data-testid={testId}>{value}</span></div>;
 }
 
-/** /admin/money: month close, deferred liability and the commission report — all computed in the database. */
+/** /admin/money: month close, deferred liability, the commission report, refunds and transfers — all computed in the database. */
 export function MoneyScreen() {
   const { branches } = useMe();
   const months = lastMonths(12);
   const [month, setMonth] = useState(months[0]);
   const [branch, setBranch] = useState("");
+  const [refunding, setRefunding] = useState<MoneySummary["payments"][number] | null>(null);
+  const [notice, setNotice] = useState("");
   const { data, isPending, isError, refetch } = useQuery({ queryKey: moneyKeys.all(month, branch), queryFn: () => fetchMoney(month, branch || null) });
 
   return (
@@ -38,6 +41,8 @@ export function MoneyScreen() {
         </label>
       </div>
       <p className="text-sm text-muted-foreground">{t("team.refreshNote")}</p>
+      <p role="status" className="text-sm text-success empty:hidden">{notice}</p>
+      {refunding ? <RefundSheet payment={refunding} onClose={() => setRefunding(null)} onDone={() => { setRefunding(null); setNotice(t("refund.sent")); }} /> : null}
       {isPending ? <LoadingList label={t("common.loading")} /> : isError ? (
         <ErrorState title={t("money.error")} body={t("error.retryHint")} action={<Button variant="outline" onClick={() => refetch()}>{t("common.retry")}</Button>} />
       ) : (
@@ -52,7 +57,8 @@ export function MoneyScreen() {
           <CollectedBreakdowns summary={data.summary} />
           <LiabilityTable report={data.report} />
           <CommissionTables report={data.report} />
-          <RecentLists summary={data.summary} />
+          <MoneyRequests month={month} branch={branch} />
+          <RecentLists summary={data.summary} onRefund={setRefunding} />
         </>
       )}
     </div>

@@ -4,25 +4,64 @@ Living log. Claude Code updates this at the end of every milestone step. Newest 
 
 ## Current milestone
 
-M6 — Analytics: **built, awaiting review.** Do not start M7 until M6 is reviewed. (M1–M5 are covered by the same test run.)
+M7 — Automations and governance: **built, awaiting review.** Do not start M8 until M7 is reviewed. (M1–M6 are covered by the same test run.)
 
-Acceptance (docs/05 M6). The SQL tests are in `supabase/tests/008_analytics.sql` (N1–N28). The e2e tests are in `e2e/analytics.spec.ts` and run at 390px and 1280px:
-- [x] Every StatTile links to a filtered list whose count equals the tile. The e2e opens every tile on `/admin`, `/sales/numbers` (manager and rep) and `/coach/numbers`, plus the reconciliation figures and the branch-comparison cells, and compares each list's total with the tile. N1–N5 check the same for every screen in SQL.
-- [x] The heatmap shows the seed's busiest hours; clicking a cell lists its sessions. The busiest cell is the darkest step, and its list has exactly that many rows (e2e; N20).
-- [x] Targets entered in `/admin/targets` appear as progress bars on the rep's and coach's own screens: in a "Your targets" card and on the matching tile (e2e; N13–N19).
-- [x] The admin "today" strip updates within 30s of a kiosk check-in. It polls every 30s and refetches on every `events` insert over Realtime, so in practice it takes about a second (e2e).
-- [x] Booked − collected = outstanding, and deferred = the liability view (e2e compares with `mv_liability`; N6–N7).
-- [x] A coach with 33 sessions burned shows tier 30%. Seeding 165 burned sessions shows 40% applied to all 165: commission = the month's net delivered × 40%, and its rows add up (e2e on Laila; N8–N10).
-- [x] Also required by the M6 prompt:
-  - Numbers come only from `fn_dashboard_*` accessors and `events`. The new shapes are materialized views plus accessors in 0011, refreshed by `fn_refresh_views`.
-  - Charts use Recharts and the data-viz tokens only, and are RTL-safe (logical properties; the table twin under every chart).
-- [x] `pnpm typecheck && pnpm lint && pnpm test` pass (70 unit tests). `scripts/test-db.sh` passes (eight suites; 008 adds 28 checks). `pnpm test:e2e` passes: 111 tests on a fresh reset and seed, production build (1 skipped: the PWA check runs once, on the phone profile).
+Acceptance (docs/05 M7). The SQL tests are in `supabase/tests/009_automations.sql` (A1–A46). The e2e tests are in `e2e/automations.spec.ts`; they run the real delivery path (pg_net → `notify` → sandbox → signed `whatsapp-webhook`):
+- [x] A session booked for tomorrow gets its −24h reminder row within the hour, and it is delivered to the sandbox number. The e2e runs the hourly job twice (one row, not two), then notify, then waits for the delivery to reach `delivered`. The row shows in `/admin/audit` → Deliveries with the phone (A19).
+- [x] A client with 2 credits gets one "time to renew" message per week, not one per hour: the hourly job ran 3 times, one WhatsApp row (e2e; A20–A22). Before M7 the weekly cap was shared with the coach's and rep's notices, so a staff notice could hold back the client's message. It is now per recipient.
+- [x] Freeze: request → approve → client frozen → auto-end at the date → expiry extended by the frozen days (e2e: the rep asks on the sales client screen, the sales manager approves in the queue, then the nightly job at 03:30 Cairo ends it; every active pack moves exactly 7 days; A31–A34). Before M7 the nightly job never ended freezes; it does now.
+- [x] The nightly job runs at 03:30 Cairo and its `job.nightly` event shows counts, `freezes_ended` included (e2e reads it in `/admin/audit`; A35–A36: skipped at 02:30, runs at 03:30, once per Cairo date).
+- [x] Also required by the M7 prompt:
+  - `notify` and `whatsapp-webhook` Edge Functions, service role only, listed in docs/03 §9.
+  - Providers behind interfaces: `WhatsAppProvider` with the sandbox (log) implementation for local and a WhatsApp Cloud API one; email as log, Mailpit or Resend; push logged locally.
+  - Freeze, refund and transfer UIs (e2e for each).
+  - Daily and weekly digests (e2e: the sales manager's digest arrives in Mailpit; A24–A30).
+  - Every outbound message is idempotent by notification id (A3–A13, A14–A18; unit tests for the providers).
+  - pg_cron: see "Hosted project" below.
+- [x] `pnpm typecheck && pnpm lint && pnpm test` pass (82 unit tests, 12 of them for the providers and templates). `scripts/test-db.sh` passes (nine suites). `pnpm test:e2e` passes: 118 tests on a fresh reset and seed, production build. 8 are skipped by design: the M5 PWA check runs on the phone only, and the seven M7 one-shot flows (a payment is refunded once, a pack moves once) run on desktop only. A separate check covers the new controls at 390px.
 
-How to run: `supabase start -x studio,imgproxy,logflare,vector,supavisor && supabase db reset && pnpm seed:auth && pnpm env:local && pnpm dev`. `seed:auth` also refreshes every dashboard view, so the numbers show straight after a reset. If client provisioning (M3) fails after a Docker restart, run `docker start supabase_edge_runtime_gymos`.
+**Hosted project: not confirmed.** The Supabase account reachable from this session has no GymOS project (it lists MBF, ai-crm and three paused projects, none of them this app), and I didn't touch any of them. Instead:
+- `scripts/verify-jobs.sh` (`pnpm verify:jobs`) checks, read-only:
+  - pg_cron and pg_net are installed;
+  - the four schedules are present and active (the three from 0002/0007, plus notify);
+  - their last 24 hours of runs;
+  - the latest `job.nightly` with its counts;
+  - the notify Vault secrets exist.
+- It passes locally: pg_cron ran `gymos-notify` and `gymos-refresh-5min` at 08:15 UTC. Pointed at the hosted project with `SUPABASE_DB_URL=… pnpm verify:jobs`, it gives the confirmation.
+- The hosted setup steps are in docs/03 §9.
+
+How to run: `supabase start -x studio,imgproxy,logflare,vector,supavisor && supabase db reset && pnpm seed:auth && pnpm env:local && pnpm dev`.
+- Local delivery: WhatsApp goes to the sandbox (edge runtime logs), email to Mailpit (http://localhost:54324), push to the log.
+- pg_cron calls notify every 5 minutes; to run it now: `psql … -c "select fn_invoke_notify()"`.
+- After editing `supabase/functions/_shared`, restart the edge runtime (`docker restart supabase_edge_runtime_gymos`). The per-worker hot reload doesn't reload shared modules.
+- Changing `supabase/config.toml` needs `supabase stop && supabase start`.
+
 Local logins: staff `*@gymos.local` / `gymos-dev`. Clients log in by phone with OTP `123456` (Hassan = `01110000001`, Farida = `01110000008`).
 
 ## Decisions made during the build
 
+- 2026-09-26 (M7) — **Migration 0012_automations.sql.**
+  - Delivery claims, results and statuses.
+  - Digests.
+  - Hourly and nightly jobs redefined.
+  - `fn_nightly_if_due` guard; notify via pg_net and Vault.
+  - Refund and transfer requests with their read shapes.
+  - Deliveries in the audit explorer.
+- 2026-09-26 (M7) — **Idempotency by notification id.** A `notification_deliveries` row per notification (primary key = notification id), claimed under a 5-minute lease with `FOR UPDATE SKIP LOCKED` and closed once.
+  - When a run dies after sending, the lease expires. The notification goes out again only through a provider that dedupes on the id: the sandbox (its message id is derived from the notification id), or Resend (the notification id is its `Idempotency-Key`).
+  - The WhatsApp Cloud API has no idempotency key. There, an unknown outcome is closed as failed rather than risking a second message.
+  - Retries happen only when the provider said it did not send (429 or throttling codes).
+  - Chosen as at most once for WhatsApp: a duplicate reminder to a client is worse than a missing one, and failures show in `/admin/audit` → Deliveries.
+- 2026-09-26 (M7) — **WhatsApp provider.** docs/05 says "the chosen provider", but no provider is chosen in the docs. I built the WhatsApp Cloud API (Meta) adapter; a BSP would be one more adapter. Templates: one per notification type, `gymos_*`, all with the same three parameters ({{1}} first name, {{2}} title, {{3}} detail), so the database's title and body stay the message. Listed in docs/06 "to fill in later" #4.
+- 2026-09-26 (M7) — **Push waits for M8.** There is no Web Push subscription flow yet, and M8 moves push to Expo. `PUSH_PROVIDER=none` (hosted) doesn't claim push rows, so they stay pending and still show in-app. Locally, `PUSH_PROVIDER=log` marks them sent through the log.
+- 2026-09-26 (M7) — **The nightly job at 03:30 Cairo, all year.** pg_cron runs in UTC and Egypt moves between UTC+2 and UTC+3. `gymos-nightly` is now `30 0,1 * * *` and calls `fn_nightly_if_due()`, which runs only in the 03:00 Cairo hour and once per Cairo date. It is the same job name, so it is still one of 0002's three schedules.
+- 2026-09-26 (M7) — **Digests read as the recipient.** `fn_digest` sets the request's JWT claims to the recipient for the duration of the call and reads `fn_today_live`, `fn_dashboard_tiles`, `fn_sales_team`, `fn_dashboard_coaches` and `fn_dashboard_weekly`. A digest therefore shows exactly what that person's screens show, and the dashboard accessors stay the only source (the M6 rule). A30 checks that the caller's claims are restored.
+- 2026-09-26 (M7) — **Reminders reach clients without an account yet**, by phone through `fn_notify_client`. 0002 skipped them.
+- 2026-09-26 (M7) — **Local wiring lives in config, not code.**
+  - `supabase/config.toml [edge_runtime.secrets]` holds local-only values (sandbox, Mailpit, a local shared secret) and turns JWT verification off for the two functions; each checks its own credential.
+  - `supabase/seed.sql` adds the local Vault secrets.
+  - The hosted project sets its own values (docs/03 §9).
+- 2026-09-26 (M7) — **No new npm dependency.** The Edge Functions use `fetch` and WebCrypto, and their shared code is unit-tested by Vitest (`supabase/functions/_shared/*.test.ts`). The database gains `pg_net`.
 - 2026-09-26 (M6) — **Migration named 0011_analytics_more.sql.** The prompt says `0004_analytics_more.sql`, but 0004 is taken (admin). Same approach as M2's renumbering.
 - 2026-09-26 (M6) — **Data-viz tokens.** The prompt points to "dataviz guidance in CLAUDE.md's tokens file", which didn't exist. `src/styles/tokens.css` now has a data-viz block with written guidance:
   - `--series-1…8`: categorical, for identity (branch, coach), assigned in a fixed order. Validated for light and dark.
@@ -135,6 +174,13 @@ Local logins: staff `*@gymos.local` / `gymos-dev`. Clients log in by phone with 
 
 ## Deferred
 
+- M7: hosted pg_cron is not confirmed; there is no hosted GymOS project in reach. Run `SUPABASE_DB_URL=… pnpm verify:jobs` after the hosted setup in docs/03 §9.
+- M7: WhatsApp templates must be created and approved in Meta Business Manager (names in `_shared/templates.ts`) before `WHATSAPP_PROVIDER=meta`. English only; the `ar` variants come with the Arabic strings.
+- M7: push delivery (Web Push or Expo) is M8. Push rows stay pending on the hosted project until then.
+- M7: approving a freeze freezes the client at once, even if the requested start date is later; the nightly job ends it on its end date. So a freeze approved ahead of time freezes the client for longer than the days it extends. The fix needs a small change to `fn_decide_approval` (start due freezes in the nightly job). Not changed here, to keep 0001's tested approval function as it is.
+- M7: `notify` doesn't retry `provision-client` for clients without an account (docs/03 §9 mentions it). Their messages reach them by phone, but a failed provisioning still needs the sales screen.
+- M7: `notify.batch_size` is in settings, but the function reads its batch size from `NOTIFY_BATCH` (the claim happens before settings could be read cheaply). The setting is reserved.
+- M7: digests have no per-person opt-out yet (settings are per role, gym-wide).
 - M6: `/admin/branches` and `/admin/clients` (docs/04) aren't in any milestone's build list in docs/05. They are still placeholders ("Arrives in a later milestone"). The overview's branch comparison covers A vs B for now. Decide where they belong.
 - M6: the today strip's figures open the audit explorer (visits, sessions, leads for today) or `/admin/money`. It has no row lists of its own, because `fn_today_live` has no rows accessor.
 - M6: the head coach's `/coach/numbers?coach=` view works, but the Team screen doesn't link to it yet. `/admin/coaching` is read-only and doesn't link into coach screens (top management can't open the coach route group).
@@ -176,6 +222,24 @@ Local logins: staff `*@gymos.local` / `gymos-dev`. Clients log in by phone with 
 
 ## Shipped
 
+- 2026-09-26 — **M7 Automations and governance.**
+  - Edge Functions `notify` and `whatsapp-webhook`, with provider adapters:
+    - WhatsApp: sandbox and Cloud API;
+    - email: log, Mailpit and Resend;
+    - push: log.
+  - Delivery claims idempotent by notification id, retries with backoff, forward-only delivery status.
+  - Daily and weekly email digests.
+  - Freeze card on `/sales/clients/[id]`: history, request on behalf, end now.
+  - Pack transfer by phone on the same screen.
+  - Refunds and a refunds/transfers card on `/admin/money`.
+  - Transfer lines in `/sales/queue`.
+  - Deliveries in `/admin/audit`, and a Notifications group in `/admin/settings`.
+  - Jobs:
+    - the nightly job at 03:30 Cairo year-round, now ending due freezes;
+    - per-recipient renewal caps;
+    - notify every 5 minutes via pg_net.
+  - `pnpm verify:jobs`.
+  - Migration 0012. Tests: 009_automations.sql (A1–A46), unit tests for providers and templates, and e2e for every M7 box.
 - 2026-09-26 — **M6 Analytics.**
   - `/coach/numbers`:
     - commission tier meter with the formula;

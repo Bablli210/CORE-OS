@@ -1,4 +1,5 @@
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { dealStatusLabel, methodLabel, productTypeLabel, type DealStatus } from "@/features/deals/labels";
 import { formatDate, formatDateTime, formatEGP } from "@/lib/format";
 import { t } from "@/lib/i18n";
@@ -39,7 +40,7 @@ export function LiabilityTable({ report }: { report: CommissionReport }) {
   );
 }
 
-export function RecentLists({ summary }: { summary: MoneySummary }) {
+export function RecentLists({ summary, onRefund }: { summary: MoneySummary; onRefund?: (p: MoneySummary["payments"][number]) => void }) {
   return (
     <div className="grid gap-4 md:grid-cols-2">
       <section className="grid gap-2 rounded-lg border p-4">
@@ -49,7 +50,12 @@ export function RecentLists({ summary }: { summary: MoneySummary }) {
       <section className="grid gap-2 rounded-lg border p-4">
         <h2 className="font-semibold">{t("money.payments")}</h2>
         <ul className="grid gap-1 text-sm">{summary.payments.slice(0, 15).map((p) => (
-          <li key={p.id} className="flex justify-between gap-2"><span className={p.voided_at ? "line-through" : ""}>{p.name} · {t(methodLabel(p.method))} · {formatDate(p.received_at)}</span><span>{formatEGP(p.amount_piastres)}</span></li>
+          <li key={p.id} className="flex flex-wrap items-center justify-between gap-2" data-testid="money-payment">
+            <span className={p.voided_at ? "line-through" : ""}>{p.name} · {t(methodLabel(p.method))} · {formatDate(p.received_at)}</span>
+            <span className="flex items-center gap-2">{formatEGP(p.amount_piastres)}
+              {onRefund && !p.voided_at ? <Button size="sm" variant="ghost" onClick={() => onRefund(p)} aria-label={t("refund.for", { name: p.name, amount: formatEGP(p.amount_piastres) })}>{t("refund.button")}</Button> : null}
+            </span>
+          </li>
         ))}</ul>
       </section>
       <section className="grid gap-2 rounded-lg border p-4 md:col-span-2">

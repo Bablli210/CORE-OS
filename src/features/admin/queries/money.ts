@@ -30,3 +30,37 @@ export async function fetchMoney(month: string, branchId: string | null): Promis
   if (r.error) throw r.error;
   return { summary: s.data as MoneySummary, report: r.data as CommissionReport };
 }
+
+export type MoneyRequest = {
+  id: string;
+  type: "refund" | "transfer";
+  status: "pending" | "approved" | "rejected";
+  reason: string | null;
+  note: string | null;
+  requested_at: string;
+  decided_at: string | null;
+  requested_by: string | null;
+  decided_by: string | null;
+  branch_id: string | null;
+  amount_piastres: number | null;
+  deal_id: string | null;
+  client_name: string | null;
+  to_client_name: string | null;
+  qty: number | null;
+  coach_name: string | null;
+};
+export const requestKeys = { all: (month: string, branch: string) => ["money", "requests", month, branch] as const };
+
+/** Refunds and transfers of the month, and any still pending (fn_money_requests, top management). */
+export async function fetchMoneyRequests(month: string, branch: string | null): Promise<MoneyRequest[]> {
+  const { data, error } = await createClient().rpc("fn_money_requests", { p_month: month, p_branch_id: branch ?? undefined });
+  if (error) throw error;
+  return data as MoneyRequest[];
+}
+
+/** fn_request_refund: voids the payment and withdraws the deal's unused sessions once the sales manager approves. */
+export async function requestRefund(paymentId: string, reason: string): Promise<string> {
+  const { data, error } = await createClient().rpc("fn_request_refund", { p_payment_id: paymentId, p_reason: reason });
+  if (error) throw error;
+  return data as string;
+}

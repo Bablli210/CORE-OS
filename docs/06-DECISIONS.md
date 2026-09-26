@@ -41,12 +41,19 @@ Items marked **fill in later** ship with a placeholder value that is easy to cha
 | `credits.expiry_days_small` / `_large` | 90 / 180 | `fn_issue_credits` when the product has no `expiry_days` |
 | `risk.at_risk_threshold` | 60 | `fn_compute_risk_scores` notifications |
 | `retention` | — | none: nothing is deleted or anonymized |
+| `notify.enabled` | true | `fn_notify_claim`: off stops WhatsApp / email / push delivery (in-app still shows) |
+| `notify.max_attempts` | 3 | `fn_notify_result`: retries (with 2^n-minute backoff) before a delivery is failed |
+| `notify.batch_size` | 50 | reserved: the notify function takes `NOTIFY_BATCH` from its environment |
+| `digest.daily_enabled` / `digest.daily_hour` | true / 20 | `fn_queue_digests`: head coach + sales manager, per branch, Cairo hour |
+| `digest.weekly_enabled` / `digest.weekly_dow` / `digest.weekly_hour` | true / 6 (Sat) / 9 | `fn_queue_digests`: top management |
 
 ## To fill in later (placeholders in place; nothing blocks the build)
 
 1. Sales commission rate on memberships (`commission.sales_membership_pct`), and the nutrition rate / owner (`commission.sales_nutrition_pct`).
 2. Expiry days per pack (`products.expiry_days` in the catalog; the `credits.expiry_days_*` settings are the fallback).
 3. Freeze rules (`freeze.max_days`, `freeze.max_count`).
+4. WhatsApp provider (M7). The notify function talks to providers through an interface. Built: the local sandbox and the WhatsApp Cloud API (Meta) directly. A BSP (Twilio, 360dialog, …) is one more adapter. Needs the business number and the approved templates listed in `supabase/functions/_shared/templates.ts` (`gymos_*`: {{1}} first name, {{2}} title, {{3}} detail), in English (Arabic later).
+5. Email sender (M7): Resend adapter built. Needs the sending domain and `EMAIL_FROM`.
 
 Confirmed: PT commission tiers are counted per calendar month; opening hours 06:00–24:00.
 
@@ -69,3 +76,4 @@ Confirmed: PT commission tiers are counted per calendar month; opening hours 06:
 - `server-only` — makes importing the service-role module from browser code a build error.
 - `serwist` — the service-worker runtime `@serwist/next` builds `src/app/sw.ts` against (precache, runtime caching, offline fallback).
 - `qrcode` (+ `@types/qrcode`) — draws the kiosk's check-in QR code as SVG; loaded only on `/checkin`.
+- M7 added no npm dependency. The Edge Functions use `fetch` and WebCrypto only. The database gains the `pg_net` extension (ships with Supabase) so pg_cron can call the notify function over HTTP.

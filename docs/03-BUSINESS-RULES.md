@@ -68,7 +68,8 @@ new ──contacted──▶ contacted ──onboarding done──▶ onboarded 
 - Cross-branch: a membership admits the client at both branches; a pack cannot be used with another coach or at the other branch (there is simply no lot for that coach to burn).
 - `fn_expire_credits()` nightly: lots with `expires_at < now()` and `qty_remaining > 0` → `expired`, ledger `expire` row, emit `credit.expired`. Warnings: `credits.expiring_14d` to client and coach once per lot; `credits.low` (see above) also covers "expiring within `risk.expiring_days`".
 - Extension (sales team only): `fn_extend_expiry(lot, new_date, reason)`. Sales manager / top management apply directly; any rep of the branch may request, which becomes an `expiry_extension` approval for the manager; coaches cannot. An expired lot that is extended is revived with the sessions the expiry removed (`restore` ledger row). Emits `credit.expiry_extended`. Expired packs also notify the client and the coach (`credit.expired`).
-- Freeze: `fn_request_freeze` validates `setting:freeze.max_days` and `max_count` and creates an approval. On approval the client is `frozen`; `fn_end_freeze` (nightly at `ends_at`, or manual) extends `expires_at` of active lots and `ends_at` of entitlements by the frozen days.
+- Freeze: `fn_request_freeze` (the client from the app, or the sales team from the client screen) validates `setting:freeze.max_days` and `max_count` and creates an approval. On approval the client is `frozen`. `fn_end_freeze` extends `expires_at` of active lots and `ends_at` of entitlements by the frozen days. It runs in the nightly job once `ends_at` has passed (`fn_end_due_freezes`, M7), or when the sales manager taps "End now". Approval freezes the client at once, even when the start date is later (see PROGRESS, M7 deferred).
+- Refund and transfer (M7): `fn_request_refund(payment, reason)` (whoever may record payments on the deal, or top management) and `fn_request_transfer(lot, to_client, reason)` (sales team of the client's branch, top management) create `refund` / `transfer` approvals. One pending request per payment or pack. The sales manager decides in `/sales/queue` (`fn_decide_approval`): a refund voids the payment and withdraws the deal's unused sessions; a transfer moves the pack (same coach and expiry) with ledger rows on both sides.
 - Reassignment (head coach, `fn_assign_coach(client, coach, reason)`): moves the client's active lots to the new coach, closes the old coach's weekly slots for the client and cancels their future booked sessions, opens a new assignment (welcome-call task, notifications). Reason required. Emits `coach.reassigned`.
 
 ## 5. The weekly schedule
@@ -164,12 +165,36 @@ R = read, W = write via RPC, — = none. "Own" = rows the person is attached to.
 
 Write protection beyond RLS: the tables that carry state (`leads`, `clients`, `deals`, `deal_items`, `sessions`, `profiles`, `notifications`) have column-level UPDATE grants, so even a row the user may see can only be edited in its editorial columns (leads: name, email, source, tags, referral, handle, consents; clients: name, email, gender, birth date, injuries, handle, onboarding answers, nutritionist; deals in draft: discount, plan, notes, renewal flag, closer; sessions: notes); `status`, owners, review fields, money and credit columns change only inside `fn_*` (which run as the table owner). `payments`, `approvals`, `sessions` (insert), `schedule_slots`, `schedule_skips`, `credit_*`, `entitlements`, `coach_assignments`, `events` and `audit_log` have no direct insert path at all.
 
-Scheduled work runs inside Postgres with pg_cron (UTC): `fn_refresh_views(false)` every 5 min, `fn_hourly_notifications()` hourly (also materializes today's and tomorrow's sessions), `fn_nightly()` at 00:30 UTC = 03:30 Cairo in summer / 02:30 in winter (expiry, lapse, at-risk badge, materialization, heavy view refresh). Nothing is ever deleted or anonymized.
+Scheduled work runs inside Postgres with pg_cron (UTC):
+- `fn_refresh_views(false)` every 5 minutes.
+- `fn_hourly_notifications()` at :05. It also materializes today's and tomorrow's sessions, queues reminders and "time to renew", and queues the digests due that Cairo hour.
+- `fn_invoke_notify()` every 5 minutes: pg_net POSTs to the notify function, with the URL and shared secret read from Vault.
+- The nightly job, `fn_nightly_if_due()`. It is scheduled at 00:30 and 01:30 UTC and runs only in the 03:00 Cairo hour, once per Cairo date. So it runs at 03:30 Cairo in both seasons (UTC+3 in summer, UTC+2 in winter). It ends due freezes, expires credits, marks lapsed clients, scores at-risk, materializes sessions and does the heavy view refresh. It writes `job.nightly` with those counts.
+
+`scripts/verify-jobs.sh` (`pnpm verify:jobs`, or `SUPABASE_DB_URL=… pnpm verify:jobs` for the hosted project) checks the extensions, the four schedules, their last runs, `job.nightly` and the notify secrets. Nothing is ever deleted or anonymized.
 
 Edge Functions that run with the service role (bypass RLS), and why:
 - `provision-client`: creates the auth user + profile + client membership for a new client, sets `clients.profile_id`, backfills `notifications.recipient_profile_id` for rows queued on that `client_id`, and sends the welcome message with the app link (`client.created`). Invoked from the server action right after `fn_record_payment` returns a new `client_id`, and retried by `notify` if `profile_id` is still null Built in M3 (`supabase/functions/provision-client`): POST `{client_id}` with the caller's JWT; it first calls `fn_sales_client(client_id)` **with the caller's token** and refuses (403) unless that succeeds, so only staff who can open the client can provision them. It reuses an existing profile with the same phone (one person, many memberships) before creating a phone-login auth user, is idempotent (a client that already has `profile_id` returns it unchanged) and emits `client.provisioned`. Called by the `recordPayment` server action (`src/features/deals/actions.ts`) whenever the paid deal's client has no `profile_id`.
-- `notify`: every 5 minutes (pg_cron → pg_net, or Supabase's scheduled function trigger), reads `notifications` with `status = pending`, delivers by channel (WhatsApp provider, Resend email, Web Push), marks sent/failed. In-app notifications need no delivery: the app subscribes to its own `notifications` rows with Realtime.
-- `whatsapp-webhook`: inbound delivery-status updates from the WhatsApp provider.
+- `notify` (M7, `supabase/functions/notify`): pg_cron calls it every 5 minutes through pg_net with the `x-notify-secret` header (Vault `notify_url` / `notify_secret`, the function's `NOTIFY_SECRET`). It is deployed with `--no-verify-jwt`, and its own secret is the gate. Each run:
+  1. `fn_notify_claim` hands out pending WhatsApp / email / push rows with a 5-minute lease per notification id (`notification_deliveries`, one row per notification).
+  2. It renders them: the WhatsApp template per type, or the email (digests from `fn_digest`, which reads the dashboard accessors as the recipient).
+  3. It sends them through the configured provider.
+  4. `fn_notify_result` records sent, retry (backoff, up to `notify.max_attempts`) or failed with the provider's error.
+
+  **Idempotent by notification id:** a notification is handed to one run at a time and closed once. If a run dies after sending, the lease runs out and the notification goes out again only through a provider that dedupes on the id: the sandbox, or Resend's `Idempotency-Key`. For any other provider, the WhatsApp Cloud API included, it is closed as failed ("outcome unknown; not resent"), so no message is ever sent twice. Providers (`supabase/functions/_shared/providers.ts`):
+  - `WHATSAPP_PROVIDER`: `sandbox` (logs, delivers only to `WHATSAPP_SANDBOX_NUMBERS`, reports delivery through the signed webhook) or `meta` (`META_WA_TOKEN`, `META_WA_PHONE_NUMBER_ID`).
+  - `EMAIL_PROVIDER`: `log`, `mailpit` (local inbox) or `resend` (`RESEND_API_KEY`, `EMAIL_FROM`).
+  - `PUSH_PROVIDER`: `log` locally, or `none`, which leaves push rows pending until the Expo app ships in M8.
+
+  In-app notifications need no delivery: the app subscribes to its own `notifications` rows with Realtime.
+- `whatsapp-webhook` (M7, `supabase/functions/whatsapp-webhook`, `--no-verify-jwt`): Meta's GET subscription check (`WHATSAPP_VERIFY_TOKEN`). On POST it checks `X-Hub-Signature-256`, the HMAC-SHA256 of the raw body with `WHATSAPP_APP_SECRET`, and moves each message's delivery forward with `fn_whatsapp_status`: sent → delivered → read, or failed. Repeats and late webhooks change nothing.
+- Hosted setup, once per environment:
+  1. `supabase db push`.
+  2. `supabase functions deploy notify --no-verify-jwt` and `supabase functions deploy whatsapp-webhook --no-verify-jwt`.
+  3. `supabase secrets set NOTIFY_SECRET=… WHATSAPP_PROVIDER=meta META_WA_TOKEN=… META_WA_PHONE_NUMBER_ID=… WHATSAPP_APP_SECRET=… WHATSAPP_VERIFY_TOKEN=… EMAIL_PROVIDER=resend RESEND_API_KEY=… EMAIL_FROM=… APP_URL=… PUSH_PROVIDER=none`.
+  4. In SQL: `select vault.create_secret('https://<ref>.supabase.co/functions/v1/notify', 'notify_url'); select vault.create_secret('<same NOTIFY_SECRET>', 'notify_secret');`
+  5. Point the Meta app's webhook at `/functions/v1/whatsapp-webhook`.
+  6. Run `scripts/verify-jobs.sh`.
 - Server action `inviteStaff` (`src/features/admin/actions.ts`, M1; docs/05 M1 asks for "admin API via a server action"): uses the service role **only** for the Auth admin API (`inviteUserByEmail`, and `deleteUser` to roll back a failed invite), after checking `is_top_management()` with the caller's own session. The profile and role are written through `fn_create_staff_profile` / `fn_save_membership` as the caller. The client is built in `src/lib/supabase/admin.ts` (server-only, exposes `auth.admin` only).
 Nothing else may use the service role.
 
@@ -179,7 +204,7 @@ Client app (0010): members write their own `workout_logs`, `set_logs` and `body_
 
 `anon` can execute exactly `fn_submit_onboarding`, `fn_onboarding_state` and `fn_normalize_phone` (0006; tested in `supabase/tests/004_sales.sql`). New migrations must `revoke execute ... from public, anon` on the functions they create.
 
-Internal helpers are not callable over the API (0005): `fn_emit_event`, `fn_notify*`, `fn_round_robin_next`, `fn_convert_lead`, `fn_issue_credits`, `fn_set_primary_coach`, `fn_settle_unpaid_sessions`, `fn_consume_credit`, `fn_restore_credit`, `fn_apply_attendance`, `fn_flag_for_sales_internal`, `fn_apply_expiry_extension` and the jobs `fn_expire_credits`, `fn_compute_risk_scores`, `fn_mark_lapsed` have no EXECUTE for `anon`/`authenticated`; the checked entry points call them as the owner. `fn_end_freeze` stays callable for the sales manager of the client's branch and top management (and the nightly job).
+Internal helpers are not callable over the API (0005): `fn_emit_event`, `fn_notify*`, `fn_round_robin_next`, `fn_convert_lead`, `fn_issue_credits`, `fn_set_primary_coach`, `fn_settle_unpaid_sessions`, `fn_consume_credit`, `fn_restore_credit`, `fn_apply_attendance`, `fn_flag_for_sales_internal`, `fn_apply_expiry_extension` and the jobs `fn_expire_credits`, `fn_compute_risk_scores`, `fn_mark_lapsed` have no EXECUTE for `anon`/`authenticated`; the checked entry points call them as the owner. `fn_end_freeze` stays callable for the sales manager of the client's branch and top management (and the nightly job). 0012 (M7): `fn_notify_claim`, `fn_notify_result`, `fn_whatsapp_status` and `fn_digest` are executable by `service_role` only, which means the two Edge Functions. `fn_queue_digests`, `fn_end_due_freezes`, `fn_nightly_if_due` and `fn_invoke_notify` run only from the jobs.
 
 ## 10. Notifications (event → recipient → channel)
 
@@ -203,10 +228,10 @@ The `type` column is the exact string in `notifications.type`.
 | `client.pt_purchased` | pack paid | head coach ("client → coach") | in_app |
 | `client.reassigned` | reassignment | previous coach | in_app |
 | `session.added` | one-off session | client | whatsapp |
-| `session.reminder_24h`, `session.reminder_2h` | hourly job (23–25h and 1–3h ahead; a session added later than that gets only the 2h one) | client | whatsapp |
+| `session.reminder_24h`, `session.reminder_2h` | hourly job (23–25h and 1–3h ahead; a session added later than that gets only the 2h one; a client without an account yet is reached on their phone) | client | whatsapp |
 | `session.completed` / `session.no_show` | attendance | client ("N sessions left with your coach") | push |
 | `session.waived` | waiver | head coach | in_app |
-| `credits.low` | balance with the coach ≤ 2 at the moment it happens (weekly cap per client); hourly job also covers "expiring within 7 days" | coach, rep; client (job, whatsapp) | in_app / whatsapp |
+| `credits.low` | balance with the coach ≤ 2 at the moment it happens; hourly job also covers "expiring within 7 days". At most once a week per recipient: the client's "time to renew" and each staff notice are capped separately (M7) | coach, rep; client (job, whatsapp) | in_app / whatsapp |
 | `credits.expiring_14d` | hourly job, once per pack | client, coach | whatsapp / in_app |
 | `credit.expired` | nightly expiry | client, coach | in_app |
 | `credit.expiry_extended` | (event only; the client sees the new date in the app) | — | — |
@@ -215,4 +240,6 @@ The `type` column is the exact string in `notifications.type`.
 | `program.activated` | program set active | client | push |
 | `client.at_risk` | nightly, score ≥ `risk.at_risk_threshold`, weekly cap | coach, head coach | in_app |
 | `freeze.started` / `freeze.ended` | approval / auto-end | client | whatsapp |
-| digests (M7, rendered by `notify`) | 20:00 daily / Sat 09:00 weekly | head coach + sales manager / top management | email |
+| `digest.daily` | hourly job at `digest.daily_hour` (20:00 Cairo), one per recipient, branch and day | head coach, sales manager (per branch) | email (rendered by `notify` from `fn_digest`) |
+| `digest.weekly` | hourly job at `digest.weekly_dow` / `digest.weekly_hour` (Sat 09:00 Cairo), one per recipient and week | top management | email |
+| `notification.sent` / `.failed` / `.delivered` / `.read` | delivery outcomes (`fn_notify_result`, `fn_whatsapp_status`) | — (events; `/admin/audit` → Deliveries) | — |

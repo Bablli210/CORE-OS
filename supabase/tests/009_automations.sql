@@ -224,6 +224,9 @@ do $$ begin
 exception when insufficient_privilege then raise notice 'PASS A44 the money requests are top management''s'; end $$;
 select login(:CEO);
 select ok((select count(*) >= 2 from jsonb_array_elements(fn_money_requests(to_char(cairo_date(now()), 'YYYY-MM'))) x where x->>'id' in (:'refund_a', :'tr')), 'A45 /admin/money lists the refund and the transfer');
+select ok((select x->>'action' = 'read' and x->'new_row'->>'provider' = 'sandbox' and x->'new_row'->>'to' = '+201110000001'
+           from jsonb_array_elements((fn_audit_explorer('deliveries', null, null, null, null, 'T1 whatsapp'))->'rows') x),
+          'A46 the audit explorer shows each delivery: state, provider, recipient');
 
 reset role;
 select cron.alter_job(jobid, active := true) from cron.job where jobname in ('gymos-notify', 'gymos-hourly-notifications', 'gymos-nightly');

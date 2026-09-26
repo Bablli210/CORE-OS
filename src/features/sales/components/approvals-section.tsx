@@ -32,7 +32,7 @@ async function fetchApprovals(branchId: string): Promise<Approval[]> {
   return data as Approval[];
 }
 
-/** Pending approvals for the sales manager: what it is, who asked, why; approve or reject with a note (fn_decide_approval). */
+/** Pending approvals for the sales manager (discounts, voids, refunds, transfers, freezes, extensions, lead moves): what it is, who asked, why; approve or reject with a note (fn_decide_approval). */
 export function ApprovalsSection({ branchId }: { branchId: string }) {
   const { data = [], isPending } = useQuery({ queryKey: ["approvals", branchId], queryFn: () => fetchApprovals(branchId) });
   return (
@@ -54,6 +54,7 @@ function ApprovalItem({ a }: { a: Approval }) {
   const what = a.deal
     ? <Link href={`/sales/deals/${a.deal.id}`} className="underline-offset-4 hover:underline">{t("approval.dealLine", { name: a.deal.name, total: formatEGP(a.deal.total_piastres), discount: formatEGP(a.deal.discount_piastres) })}</Link>
     : a.payment ? <Link href={`/sales/deals/${a.payment.deal_id}`} className="underline-offset-4 hover:underline">{t("approval.paymentLine", { name: a.payment.name, amount: formatEGP(a.payment.amount_piastres), method: t(methodLabel(a.payment.method)), date: formatDate(a.payment.received_at) })}</Link>
+    : a.lot && a.type === "transfer" ? <Link href={`/sales/clients/${a.lot.client_id}`} className="underline-offset-4 hover:underline">{t("approval.transferLine", { name: a.lot.name, to: String(a.payload.to_client_name ?? ""), n: Number(a.payload.qty ?? a.lot.qty_remaining), coach: a.lot.coach_name })}</Link>
     : a.lot ? <Link href={`/sales/clients/${a.lot.client_id}`} className="underline-offset-4 hover:underline">{t("approval.lotLine", { name: a.lot.name, coach: a.lot.coach_name, from: formatDate(a.lot.expires_at), to: typeof a.payload.new_expires_at === "string" ? formatDate(a.payload.new_expires_at) : "" })}</Link>
     : a.freeze ? t("approval.freezeLine", { name: a.freeze.name, days: a.freeze.days })
     : a.lead ? t("approval.leadLine", { name: a.lead.name, to: a.lead.to }) : null;

@@ -5,7 +5,7 @@ export type SettingRow = { key: string; value: Json; description: string | null;
 export type SettingKind = "boolean" | "number" | "text" | "tiers" | "json";
 export type Tier = { upTo: number | null; pct: number };
 
-/** docs/04 /admin/settings groups (Sales, Deals, Payments, Credits, Attendance, Scheduling, Commission, Risk, Freeze) + Other. */
+/** docs/04 /admin/settings groups (Sales, Deals, Payments, Credits, Attendance, Scheduling, Commission, Risk, Freeze) + Notifications (M7) + Other. */
 const GROUPS: { id: string; label: MessageKey; prefixes: string[] }[] = [
   { id: "sales", label: "settings.group.sales", prefixes: ["sales", "leads", "attribution"] },
   { id: "deals", label: "settings.group.deals", prefixes: ["deals"] },
@@ -16,6 +16,7 @@ const GROUPS: { id: string; label: MessageKey; prefixes: string[] }[] = [
   { id: "commission", label: "settings.group.commission", prefixes: ["commission"] },
   { id: "risk", label: "settings.group.risk", prefixes: ["risk"] },
   { id: "freeze", label: "settings.group.freeze", prefixes: ["freeze"] },
+  { id: "notifications", label: "settings.group.notifications", prefixes: ["notify", "digest"] },
   { id: "other", label: "settings.group.other", prefixes: [] },
 ];
 

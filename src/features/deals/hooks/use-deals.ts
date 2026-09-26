@@ -21,7 +21,7 @@ export function useMoneyMutation<TVars, TResult>(fn: (vars: TVars) => Promise<TR
     mutationFn: fn,
     onSuccess: () =>
       Promise.all(
-        [q.dealKeys.all, leadKeys.all, LIVE_KEY, ["credits"], ["approvals"]].map((queryKey) => queryClient.invalidateQueries({ queryKey })),
+        [q.dealKeys.all, leadKeys.all, LIVE_KEY, ["credits"], ["approvals"], ["money"]].map((queryKey) => queryClient.invalidateQueries({ queryKey })),
       ),
   });
 }

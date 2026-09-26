@@ -10,19 +10,24 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { dealStatusLabel, type DealStatus } from "@/features/deals/labels";
 import { formatDate, formatEGP } from "@/lib/format";
 import { t } from "@/lib/i18n";
-import { clientKeys, fetchSalesClient, type Lot } from "../queries/sales-client";
+import { clientKeys, fetchClientRequests, fetchSalesClient, requestKeys, type Lot } from "../queries/sales-client";
 import { ExtendSheet } from "./extend-sheet";
+import { FreezeCard } from "./freeze-card";
+import { TransferSheet } from "./transfer-sheet";
 
 const lotBadge = (s: Lot["status"]) => (s === "active" ? "success" : s === "expired" || s === "refunded" ? "destructive" : "outline");
 
-/** /sales/clients/[id]: the client's packs (per coach, with expiry), memberships and deals; expiry extension lives here. */
+/** /sales/clients/[id]: the client's packs (per coach, with expiry), memberships, deals and freezes; expiry extension, transfers and freezes are asked for here. */
 export function SalesClientScreen({ id }: { id: string }) {
   const { data: c, isPending, isError } = useQuery({ queryKey: clientKeys.detail(id), queryFn: () => fetchSalesClient(id) });
   const [extending, setExtending] = useState<Lot | null>(null);
+  const [transferring, setTransferring] = useState<Lot | null>(null);
+  const requests = useQuery({ queryKey: requestKeys.client(id), queryFn: () => fetchClientRequests(id) });
   const [notice, setNotice] = useState<string | null>(null);
   if (isPending) return <LoadingList label={t("common.loading")} />;
   if (isError) return <ErrorState title={t("client.error.load")} body={t("client.error.loadBody")} action={<Link href="/sales" className={buttonVariants({ variant: "outline" })}>{t("nav.backToday")}</Link>} />;
   const canAct = c.can_extend || c.can_request_extension;
+  const pendingTransfer = (lotId: string) => requests.data?.transfers.some((x) => x.lot_id === lotId && x.status === "pending");
 
   return (
     <div className="grid gap-4">
@@ -47,6 +52,9 @@ export function SalesClientScreen({ id }: { id: string }) {
                   <Badge variant={lotBadge(l.status)}>{t(`lot.status.${l.status}`)}</Badge>
                   {l.pending_extension ? <Badge variant="warning">{t("extend.pending")}</Badge> : canAct && (l.status === "active" || l.status === "expired") ? (
                     <Button size="sm" variant="outline" onClick={() => setExtending(l)}>{t("extend.button")}</Button>
+                  ) : null}
+                  {pendingTransfer(l.id) ? <Badge variant="warning">{t("transfer.pending")}</Badge> : requests.data?.can_transfer && l.status === "active" && l.qty_remaining > 0 ? (
+                    <Button size="sm" variant="outline" onClick={() => setTransferring(l)}>{t("transfer.button")}</Button>
                   ) : null}
                 </span>
               </li>
@@ -76,6 +84,8 @@ export function SalesClientScreen({ id }: { id: string }) {
           </CardContent>
         </Card>
       </div>
+      <FreezeCard clientId={c.id} onNotice={setNotice} />
+      {transferring ? <TransferSheet lot={transferring} onClose={() => setTransferring(null)} onDone={() => { setTransferring(null); setNotice(t("transfer.sent")); }} /> : null}
       {extending ? (
         <ExtendSheet lot={extending} direct={c.can_extend} onClose={() => setExtending(null)} onDone={(pending) => setNotice(pending ? t("extend.sentForApproval") : t("extend.applied"))} />
       ) : null}

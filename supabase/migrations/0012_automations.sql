@@ -424,6 +424,52 @@ begin
       and (a.status = 'pending' or to_char(a.requested_at at time zone 'Africa/Cairo', 'YYYY-MM') = p_month)), '[]');
 end $$;
 
+-- ===================================================================== audit explorer: deliveries
+-- A third source for /admin/audit: what went out on WhatsApp / email / push, to whom, and what happened to it.
+create or replace function fn_audit_explorer(p_source text default 'events', p_table text default null, p_actor uuid default null,
+  p_from date default null, p_to date default null, p_search text default null, p_limit int default 100) returns jsonb
+language plpgsql stable security definer set search_path = public as $$
+begin
+  if not is_top_management() then raise exception 'the audit explorer is top management''s' using errcode = 'insufficient_privilege'; end if;
+  if p_source = 'deliveries' then
+    return jsonb_build_object(
+      'tables', (select coalesce(jsonb_agg(distinct split_part(n.type, '.', 1)), '[]') from notification_deliveries d join notifications n on n.id = d.notification_id),
+      'rows', coalesce((select jsonb_agg(x order by x.occurred_at desc) from (
+        select n.id, coalesce(d.sent_at, d.claimed_at, n.created_at) occurred_at, n.type as kind, d.state as action, n.id as row_id, null::uuid branch_id,
+               coalesce((select full_name from profiles where id = n.recipient_profile_id), (select full_name from clients where id = n.client_id)) actor,
+               n.recipient_profile_id actor_id, null::jsonb old_row,
+               jsonb_strip_nulls(jsonb_build_object('channel', d.channel, 'title', n.title, 'body', n.body, 'provider', d.provider, 'to', d.to_address,
+                 'attempts', d.attempts, 'provider_message_id', d.provider_message_id, 'error', d.last_error, 'sent_at', d.sent_at,
+                 'delivered_at', d.delivered_at, 'read_at', d.read_at)) new_row
+        from notification_deliveries d join notifications n on n.id = d.notification_id
+        where (p_table is null or split_part(n.type, '.', 1) = p_table) and (p_actor is null or n.recipient_profile_id = p_actor)
+          and (p_from is null or cairo_date(coalesce(d.sent_at, d.claimed_at, n.created_at)) >= p_from)
+          and (p_to is null or cairo_date(coalesce(d.sent_at, d.claimed_at, n.created_at)) <= p_to)
+          and (p_search is null or n.type ilike '%' || p_search || '%' or d.state = p_search or coalesce(d.to_address, '') ilike '%' || p_search || '%'
+               or coalesce(d.last_error, '') ilike '%' || p_search || '%' or n.title ilike '%' || p_search || '%')
+        order by coalesce(d.sent_at, d.claimed_at, n.created_at) desc limit least(greatest(p_limit, 1), 500)) x), '[]'));
+  elsif p_source = 'audit' then
+    return jsonb_build_object(
+      'tables', (select coalesce(jsonb_agg(distinct table_name), '[]') from audit_log),
+      'rows', coalesce((select jsonb_agg(x order by x.occurred_at desc) from (
+        select a.id, a.occurred_at, a.table_name as kind, a.action, a.row_id, a.branch_id, (select full_name from profiles where id = a.actor_profile_id) actor, a.actor_profile_id actor_id, a.old_row, a.new_row
+        from audit_log a
+        where (p_table is null or a.table_name = p_table) and (p_actor is null or a.actor_profile_id = p_actor)
+          and (p_from is null or cairo_date(a.occurred_at) >= p_from) and (p_to is null or cairo_date(a.occurred_at) <= p_to)
+          and (p_search is null or a.new_row::text ilike '%' || p_search || '%' or a.old_row::text ilike '%' || p_search || '%')
+        order by a.occurred_at desc limit least(greatest(p_limit, 1), 500)) x), '[]'));
+  end if;
+  return jsonb_build_object(
+    'tables', (select coalesce(jsonb_agg(distinct split_part(type, '.', 1)), '[]') from events),
+    'rows', coalesce((select jsonb_agg(x order by x.occurred_at desc) from (
+      select e.id, e.occurred_at, e.type as kind, e.subject_table as action, e.subject_id as row_id, e.branch_id, (select full_name from profiles where id = e.actor_profile_id) actor, e.actor_profile_id actor_id, null::jsonb old_row, e.payload new_row
+      from events e
+      where (p_table is null or split_part(e.type, '.', 1) = p_table) and (p_actor is null or e.actor_profile_id = p_actor)
+        and (p_from is null or cairo_date(e.occurred_at) >= p_from) and (p_to is null or cairo_date(e.occurred_at) <= p_to)
+        and (p_search is null or e.type ilike '%' || p_search || '%' or e.payload::text ilike '%' || p_search || '%')
+      order by e.occurred_at desc limit least(greatest(p_limit, 1), 500)) x), '[]'));
+end $$;
+
 -- ===================================================================== grants
 revoke execute on function fn_notify_claim(int, int, notification_channel[], notification_channel[]), fn_notify_result(uuid, text, text, text, text, text),
   fn_whatsapp_status(text, text, text, timestamptz), fn_queue_digests(timestamptz), fn_digest(uuid), fn_end_due_freezes(),

@@ -9,18 +9,19 @@ import { Input, Select } from "@/components/ui/input";
 import { formatDateTime } from "@/lib/format";
 import { t } from "@/lib/i18n";
 import { useAudit } from "../../hooks/use-analytics";
+import type { AuditSource } from "../../queries/analytics";
 import { useSetParams } from "../../hooks/use-set-params";
 import { AuditDiff } from "./audit-diff";
 
 /**
- * /admin/audit (docs/04): the events stream and audit_log (fn_audit_explorer), filtered by table, actor, dates and text,
+ * /admin/audit (docs/04): the events stream, audit_log and outbound deliveries (fn_audit_explorer), filtered by table, actor, dates and text,
  * newest first, 200 at a time. Every row expands to its diff. Filters live in the URL, so a filtered view can be shared.
  */
 export function AuditExplorer() {
   const params = useSearchParams();
   const setParams = useSetParams();
   const f = {
-    source: (params.get("source") === "audit" ? "audit" : "events") as "events" | "audit",
+    source: (["audit", "deliveries"].includes(params.get("source") ?? "") ? params.get("source") : "events") as AuditSource,
     table: params.get("table") ?? "",
     actor: params.get("actor") ?? "",
     from: params.get("from") ?? "",
@@ -38,6 +39,7 @@ export function AuditExplorer() {
           <Select value={f.source} onChange={(e) => setParams({ source: e.target.value, table: null })} data-testid="audit-source">
             <option value="events">{t("audit.events")}</option>
             <option value="audit">{t("audit.auditLog")}</option>
+            <option value="deliveries">{t("audit.deliveries")}</option>
           </Select>
         </label>
         <label className="grid gap-1 text-xs">{t("audit.table")}

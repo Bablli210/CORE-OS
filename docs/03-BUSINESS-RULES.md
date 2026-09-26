@@ -110,9 +110,10 @@ new ──contacted──▶ contacted ──onboarding done──▶ onboarded 
 | Collected revenue | Σ `payments.amount_piastres` not voided, by `received_at` |
 | Collected by item type | each payment split pro-rata by the deal's line totals (a 9,400 deal = 4,000 membership + 5,400 PT → a 4,700 payment counts 2,000 membership, 2,700 PT) |
 | Sales commission (rep) | membership collected × `commission.sales_membership_pct` (+ nutrition collected × `commission.sales_nutrition_pct`, placeholder) — report only |
-| Sessions burned (coach) | `consume` ledger rows whose lot belongs to the coach, by month of the session date |
+| Sessions burned (coach) | sessions with `credit_consumed = true`, by the coach who delivered them and the Cairo month of the session date; value from the session's lot (0011 — a restored or reassigned session no longer counts twice or on the wrong coach) |
 | Delivered revenue (coach) | Σ gross per-session value of sessions burned; **net** = Σ net per-session value (after the tax snapshot) |
 | Coach commission | net delivered in the calendar month × `fn_pt_commission_pct(sessions burned in the month)`: 0–160 → 30%, 161–200 → 40%, 201+ → 50%, the reached tier applying to the whole month (`commission.pt_tiers`) — report only |
+| Booked / collected on booked / outstanding (branch) | booked = Σ `deals.total_piastres` first paid in the month; collected on booked = Σ unvoided payments on those deals (any date); outstanding = booked − collected on booked (`mv_branch_month`) |
 | Deferred liability | Σ `qty_remaining × per_session_value` over active lots (+ pro-rata of unexpired time-based entitlements, shown separately) |
 | Unpaid sessions | sessions with `unpaid = true` (delivered on zero credits, not yet settled) — a number management wants at zero |
 | No-show rate | no_show / (completed + no_show) |
@@ -124,6 +125,8 @@ new ──contacted──▶ contacted ──onboarding done──▶ onboarded 
 | Conversion (rep, source) | won / leads created in period, by rep or by source |
 | At-risk badge (client) | see `docs/06-DECISIONS.md` #15; recomputed nightly; coach and head coach notified (`client.at_risk`) once a week while the score stays ≥ `risk.at_risk_threshold` |
 | Renewal attribution | `setting:attribution.renewal_owner`: `closer` (default) credits a renewal to whoever closed it — a rep in `mv_rep_month`, a coach in `mv_coach_month.renewals_revenue`; `rep` credits every renewal to the client's rep. The coach's commission is unaffected either way (it is on sessions burned, never on sales) |
+
+**Tiles and rows (M6).** Every number on a numbers screen is a tile from `fn_dashboard_tiles(screen, month, scope)`, and every tile opens `fn_dashboard_rows(metric, month, scope)`: the rows are built with the same predicates as the view, and their count or total (`fn_metric_total`) equals the tile after a refresh. Month figures come from the materialized views (up to 5 minutes behind); tiles marked live (unpaid, at risk, overdue, open flags) are computed on read. Targets (`targets`: branch won revenue / new clients / sessions; rep won revenue; coach sessions completed) are set in `/admin/targets` through `fn_save_target` and show as progress bars on the tile and on the person's own screen.
 
 ## 9. Permissions matrix
 
@@ -208,6 +211,7 @@ The `type` column is the exact string in `notifications.type`.
 | `credit.expired` | nightly expiry | client, coach | in_app |
 | `credit.expiry_extended` | (event only; the client sees the new date in the app) | — | — |
 | `client.flagged` | unpaid session, kiosk refusal, upsell, renewal request | rep + sales manager, same second; coach too for renewal requests | in_app (Realtime) |
+| `target.saved` | a target set or cleared in `/admin/targets` | — (event only; screens read `targets`) | — |
 | `program.activated` | program set active | client | push |
 | `client.at_risk` | nightly, score ≥ `risk.at_risk_threshold`, weekly cap | coach, head coach | in_app |
 | `freeze.started` / `freeze.ended` | approval / auto-end | client | whatsapp |

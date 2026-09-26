@@ -57,8 +57,9 @@ do $$ begin
 exception when insufficient_privilege then raise notice 'PASS K5 the day is scoped like the week'; end $$;
 
 -- ---------------------------------------------------------------- weekly slots: several days at once, all or nothing, reasons named
+-- (from tomorrow, so they never add to today's sessions below whatever weekday the suite runs on)
 select login(:SARA);
-select ok(cardinality(fn_add_weekly_slots(:SARA_M, array[6,1,3], '08:00', 'client', :'client', null, 60, cairo_date(now()))) = 3, 'K6 Sat/Mon/Wed at 08:00 in one call');
+select ok(cardinality(fn_add_weekly_slots(:SARA_M, array[6,1,3], '08:00', 'client', :'client', null, 60, cairo_date(now()) + 1)) = 3, 'K6 Sat/Mon/Wed at 08:00 in one call');
 select ok((select count(*) = 3 from schedule_slots where client_id = :'client' and coach_membership_id = :SARA_M::uuid and is_active), 'K7 three weekly slots exist');
 do $$ begin
   perform fn_add_weekly_slots('a0000000-0000-0000-0000-000000000023', array[5,0], '08:00', 'client', current_setting('test.client')::uuid, null, 60, cairo_date(now()));
@@ -73,7 +74,12 @@ do $$ begin
 exception when sqlstate 'GY001' then raise notice 'PASS K10 a client with no sessions left with Sara cannot be put on her week (%)', sqlerrm; end $$;
 
 -- ---------------------------------------------------------------- the day: materialized on open, one tap per outcome
-select ok(cardinality(fn_add_weekly_slots(:SARA_M, array[extract(dow from cairo_date(now()))::int], '13:00', 'client', :'client', null, 60, cairo_date(now()))) = 1, 'K11 a slot on today''s weekday');
+-- a free hour on today's weekday (001 puts a Saturday 13:00 class on Sara's week)
+select to_char(h, 'HH24:MI') as free_hour from generate_series(timestamp '2000-01-01 13:00', timestamp '2000-01-01 21:00', interval '1 hour') h
+where not exists (select 1 from schedule_slots x where x.coach_membership_id = :SARA_M::uuid and x.is_active and x.weekday = extract(dow from cairo_date(now()))::int
+                  and x.start_time < h::time + interval '1 hour' and x.start_time + make_interval(mins => x.duration_minutes) > h::time)
+order by h limit 1 \gset
+select ok(cardinality(fn_add_weekly_slots(:SARA_M, array[extract(dow from cairo_date(now()))::int], :'free_hour', 'client', :'client', null, 60, cairo_date(now()))) = 1, 'K11 a slot on today''s weekday');
 select ok(exists (select 1 from jsonb_array_elements((fn_coach_today(:SARA_M))->'sessions') s where s->>'client_id' = :'client' and s->>'status' = 'booked' and (s->>'credits_left')::int = 8),
           'K12 Today materializes today''s session from the slot, with sessions left');
 select (fn_coach_today(:SARA_M)) is not null as again \gset

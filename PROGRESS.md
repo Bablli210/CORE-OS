@@ -4,28 +4,42 @@ Living log. Claude Code updates this at the end of every milestone step. Newest 
 
 ## Current milestone
 
-M5 — Client app: **built, awaiting review.** Do not start M6 until M5 is reviewed. (M1–M4 are covered by the same test run.)
+M6 — Analytics: **built, awaiting review.** Do not start M7 until M6 is reviewed. (M1–M5 are covered by the same test run.)
 
-Acceptance (docs/05 M5). The SQL tests are in `supabase/tests/007_client.sql` (L1–L24). The e2e tests are in `e2e/client.spec.ts` and run at 390px and 1280px:
-- [x] Hassan logs a workout with airplane mode on: the browser goes offline, he logs two back-squat sets and taps Finish, and the screen says "Saved on this phone" while nothing reaches the server. Back online, it syncs once (the workout count goes up by exactly 1) and the PR badge is on the set that beat his history, not on the lighter one (e2e; L5–L7).
-- [x] Renew flags Mahmoud (his coach) and Mona (his rep), each with a notification, and Mona gets a FLAG task (e2e; L14–L15).
-- [x] The credits screen matches `fn_credit_balances` per coach and shows the next expiry date (e2e compares with SQL). There is no extend button; "Ask Mona on WhatsApp" is the only way (e2e; L13).
-- [x] PWA installable: Chrome reports no installability errors (manifest, icons, service worker). First load of `/login` on Lighthouse's throttled 4G (150 ms RTT, 1.6 Mbps) with a 4× slower CPU: **LCP 560 ms, load 1.7 s** (e2e, 390px; see "PWA checks" below).
-- [x] Also required by the M5 prompt:
-  - After one visit, the app shell and the logger reload with no signal (service worker + IndexedDB, e2e).
-  - Offline writes are queued in IndexedDB (`idb-keyval`) and replayed with idempotency keys (ids made on the phone). Unit tests cover the queue order, network vs database failures and duplicates; L6 shows a replay is a no-op.
-  - Members see their coach's weekly slots read-only, with no booking controls (e2e).
-  - One tap "I'm here" works within the hour of a session, and the kiosk's QR code of the day checks a member in from their phone camera (e2e; L18–L22).
-  - Progress shows PRs, the streak and body weight; the profile saves (e2e; L10–L11, L17).
-- [x] `pnpm typecheck && pnpm lint && pnpm test` pass (66 unit tests). `scripts/test-db.sh` passes (seven suites; 007_client adds 24 checks). `pnpm test:e2e` passes: 93 tests on a fresh reset and seed, production build (1 skipped: the PWA check runs once, on the phone profile).
+Acceptance (docs/05 M6). The SQL tests are in `supabase/tests/008_analytics.sql` (N1–N28). The e2e tests are in `e2e/analytics.spec.ts` and run at 390px and 1280px:
+- [x] Every StatTile links to a filtered list whose count equals the tile. The e2e opens every tile on `/admin`, `/sales/numbers` (manager and rep) and `/coach/numbers`, plus the reconciliation figures and the branch-comparison cells, and compares each list's total with the tile. N1–N5 check the same for every screen in SQL.
+- [x] The heatmap shows the seed's busiest hours; clicking a cell lists its sessions. The busiest cell is the darkest step, and its list has exactly that many rows (e2e; N20).
+- [x] Targets entered in `/admin/targets` appear as progress bars on the rep's and coach's own screens: in a "Your targets" card and on the matching tile (e2e; N13–N19).
+- [x] The admin "today" strip updates within 30s of a kiosk check-in. It polls every 30s and refetches on every `events` insert over Realtime, so in practice it takes about a second (e2e).
+- [x] Booked − collected = outstanding, and deferred = the liability view (e2e compares with `mv_liability`; N6–N7).
+- [x] A coach with 33 sessions burned shows tier 30%. Seeding 165 burned sessions shows 40% applied to all 165: commission = the month's net delivered × 40%, and its rows add up (e2e on Laila; N8–N10).
+- [x] Also required by the M6 prompt:
+  - Numbers come only from `fn_dashboard_*` accessors and `events`. The new shapes are materialized views plus accessors in 0011, refreshed by `fn_refresh_views`.
+  - Charts use Recharts and the data-viz tokens only, and are RTL-safe (logical properties; the table twin under every chart).
+- [x] `pnpm typecheck && pnpm lint && pnpm test` pass (70 unit tests). `scripts/test-db.sh` passes (eight suites; 008 adds 28 checks). `pnpm test:e2e` passes: 111 tests on a fresh reset and seed, production build (1 skipped: the PWA check runs once, on the phone profile).
 
-**PWA checks:** Lighthouse itself isn't installed in this sandbox. The e2e test uses Chrome's own installability check (`Page.getInstallabilityErrors`, on a normal non-incognito profile) and times the first load under Lighthouse's throttling settings. Worth confirming with a real Lighthouse run on the deployed site.
-
-How to run: `supabase start -x studio,imgproxy,logflare,vector,supavisor && supabase db reset && pnpm seed:auth && pnpm env:local && pnpm dev`. The service worker exists only in a production build (`pnpm build && pnpm start`); `next dev` stays online-only. If client provisioning (M3) fails after a Docker restart, run `docker start supabase_edge_runtime_gymos`.
+How to run: `supabase start -x studio,imgproxy,logflare,vector,supavisor && supabase db reset && pnpm seed:auth && pnpm env:local && pnpm dev`. `seed:auth` also refreshes every dashboard view, so the numbers show straight after a reset. If client provisioning (M3) fails after a Docker restart, run `docker start supabase_edge_runtime_gymos`.
 Local logins: staff `*@gymos.local` / `gymos-dev`. Clients log in by phone with OTP `123456` (Hassan = `01110000001`, Farida = `01110000008`).
 
 ## Decisions made during the build
 
+- 2026-09-26 (M6) — **Migration named 0011_analytics_more.sql.** The prompt says `0004_analytics_more.sql`, but 0004 is taken (admin). Same approach as M2's renumbering.
+- 2026-09-26 (M6) — **Data-viz tokens.** The prompt points to "dataviz guidance in CLAUDE.md's tokens file", which didn't exist. `src/styles/tokens.css` now has a data-viz block with written guidance:
+  - `--series-1…8`: categorical, for identity (branch, coach), assigned in a fixed order. Validated for light and dark.
+  - `--seq-1…5`: sequential, for the heatmap and target tracks.
+  - `--chart-grid` and `--chart-axis`.
+  - Charts read the raw variables (`var(--series-1)`): Tailwind's `@theme inline` doesn't emit `--color-*` at runtime. The M5 trend chart had the same bug and is fixed.
+  - Some light-mode series slots are under 3:1 against white, so every chart has a table one tap away.
+- 2026-09-26 (M6) — **Burned sessions counted from sessions, not the ledger.** 0002's `mv_coach_month` counted `consume` ledger rows by the lot's current coach. A completed → cancelled change (consume + restore) still counted, and a reassigned pack moved past sessions to the new coach. 0011 counts `sessions.credit_consumed` by the delivering coach and uses the session's lot for value (N11). `mv_daily_branch` delivered revenue follows the same rule and uses Cairo dates.
+- 2026-09-26 (M6) — **Tiles and rows share one definition.**
+  - `fn_dashboard_tiles` reads the views.
+  - `fn_dashboard_rows` → `fn_metric_rows` rebuilds the same predicates live, and `fn_metric_total` computes the tile's measure (count, sum, %, median) over them.
+  - After a refresh the two agree. Between refreshes a month tile can lag its rows by up to 5 minutes; tiles marked live are computed on read.
+- 2026-09-26 (M6) — **Every view is in the 5-minute refresh** except the retention cohort, which stays nightly. The heatmap and source ROI were nightly-only, which left the heatmap empty after a reset.
+- 2026-09-26 (M6) — **`fn_lead_breakdown` kept** for the source and lost-reason lists on `/sales/numbers`. These are the leads behind the leads tile broken down, not a separate number.
+- 2026-09-26 (M6) — **`events` added to the Realtime publication** for the admin today strip. RLS (`events_read`) limits who receives rows.
+- 2026-09-26 (M6) — **Reconciliation and deferred live in one card** on `/admin`, as figures that each open their rows, rather than as more tiles.
+- 2026-09-26 (M6) — **The 006 coaching SQL test is weekday-independent now.** K6's weekly slots start tomorrow, and K11 picks a free hour. Before, it failed on Saturdays, when 001's Saturday 13:00 class and K6's Saturday slot landed on "today".
 - 2026-09-25 (M5) — **Migration 0010_client_app.sql.**
   - Client read shapes: Today, training, progress, credits.
   - `fn_update_my_profile`, self check-in, the kiosk QR code, and an `app_secrets` table for its key.
@@ -121,6 +135,11 @@ Local logins: staff `*@gymos.local` / `gymos-dev`. Clients log in by phone with 
 
 ## Deferred
 
+- M6: `/admin/branches` and `/admin/clients` (docs/04) aren't in any milestone's build list in docs/05. They are still placeholders ("Arrives in a later milestone"). The overview's branch comparison covers A vs B for now. Decide where they belong.
+- M6: the today strip's figures open the audit explorer (visits, sessions, leads for today) or `/admin/money`. It has no row lists of its own, because `fn_today_live` has no rows accessor.
+- M6: the head coach's `/coach/numbers?coach=` view works, but the Team screen doesn't link to it yet. `/admin/coaching` is read-only and doesn't link into coach screens (top management can't open the coach route group).
+- M6: no CSV export from the row lists, and no retention-cohort chart (`mv_retention_cohort` is refreshed but not shown). Neither is in the M6 list.
+- M6: the digests that reuse these accessors are M7.
 - M5: Lighthouse wasn't run (not installable here); installability and first load were measured with Chrome DevTools in e2e. Run Lighthouse on the Vercel preview.
 - M5: offline covers the client app: Today, the logger, workouts and body weight. Credits, progress and profile need signal (they say so and offer Try again). Push notifications (Web Push) are the `notify` Edge Function, M7.
 - M5: no in-app QR scanner (the phone camera opens the link). A signed-out member who scans goes to login and then back to the check-in link.
@@ -133,14 +152,13 @@ Local logins: staff `*@gymos.local` / `gymos-dev`. Clients log in by phone with 
   - exercises reorder with up/down buttons, not drag;
   - the library is the 36 seeded exercises.
 - M4: the working-hours editor edits one block per day; the database accepts several.
-- M4: the Team heatmap reads `mv_heatmap`, which refreshes nightly (heavy refresh), so it is empty on a fresh reset until the nightly job runs.
-- M4: `/coach/numbers` is still the M6 placeholder. Nutritionists have no schedule screen (no coach membership).
+- M4: Nutritionists have no schedule screen (no coach membership).
 - M3: bundles can be edited in the products editor but aren't offered in the deal builder. 0001's `fn_record_payment` doesn't expand a bundle into its items, so a sold bundle would issue nothing. Fix: a migration that expands bundles at pricing or payment time.
 - M3: cancelling a deal that has payments isn't possible (0001 refuses). Refunds (`refund` approval) have no screen yet. Voids cover a payment recorded by mistake.
 - M3: the `notify` Edge Function, which retries `provision-client` and delivers the WhatsApp welcome, is not built (the welcome sits `pending`). That is M7 (notifications).
 - M3: `/admin/money` has no CSV export and no month-over-month chart; neither is in the M3 list.
 - M2: editing a lead's editorial fields (name, email, tags, handle) has no screen yet; not in the M2 list.
-- M2: branches have no phone in the seed, so the expired-link screen can't offer the WhatsApp button yet (set `branches.phone`; the Branches admin screen is M6).
+- M2: branches have no phone in the seed, so the expired-link screen can't offer the WhatsApp button yet (set `branches.phone`; the Branches admin screen is not in any milestone yet, see M6 below).
 - M2: drag-and-drop in the pipeline is not covered by e2e (the "Move to" menu is); Arabic strings (`ar.json`) are still empty — the wizard layout uses logical properties and is RTL-ready.
 - M1: the live bell subscribes to rows addressed to the profile; client rows queued on `client_id` before provisioning show in the list but don't push live (provision-client backfills `recipient_profile_id`, M3).
 - M1: editing a person's name/phone and resending an invite are not in the People screen yet (not in the M1 list); invite again after deleting nothing — an existing email is refused with a clear message.
@@ -152,11 +170,36 @@ Local logins: staff `*@gymos.local` / `gymos-dev`. Clients log in by phone with 
   - docs/05 says the local OTP appears in Inbucket/console; it doesn't — see the test-OTP decision above.
   - CLAUDE.md folder layout puts `database.types.ts` in `lib/supabase/`; the naming rule and kickoff put it in `src/lib/`. It is in `src/lib/`.
   - Seed has 41 clients (40 + Adel Nasser for the kiosk case); CLAUDE.md says 40.
-  - M6 prompt refers to "dataviz guidance in CLAUDE.md's tokens file", which doesn't exist.
+  - M6 prompt refers to "dataviz guidance in CLAUDE.md's tokens file", which doesn't exist (tokens.css now carries it; see the M6 decision).
+  - M6 prompt names `0004_analytics_more.sql`; 0004 is taken, so it is `0011_analytics_more.sql`.
 - `scripts/test-db.sh` leaves its test data in the database; run `supabase db reset && pnpm seed:auth` afterwards to get back to the clean demo.
 
 ## Shipped
 
+- 2026-09-26 — **M6 Analytics.**
+  - `/coach/numbers`:
+    - commission tier meter with the formula;
+    - tiles: burned, commission, sessions (with target), no-show %, active clients, unpaid (live), at risk (live), retention;
+    - your targets, sessions per week;
+    - `?coach=` for the head coach.
+  - `/sales/numbers`:
+    - rep tiles: won revenue vs target, leads, conversion, response, membership collected and commission, overdue, open flags;
+    - the manager gets the branch;
+    - plus source and lost-reason lists.
+  - `/coach/team`: clickable weekday × hour heatmap (sequential tokens) and sessions per coach per week.
+  - `/sales/team`: source ROI, discounts, flags handled and median hours, extensions.
+  - `/numbers/rows`: the rows behind any tile.
+  - `/admin`:
+    - live today strip;
+    - booked − collected = outstanding, and deferred;
+    - revenue, commission accruals, clients and sessions tiles for all branches or one;
+    - targets vs actual;
+    - branch A vs B vs all;
+    - 12-week trends.
+  - `/admin/sales` and `/admin/coaching`: read-only, with a branch filter.
+  - `/admin/targets`: inline grid, including coming months.
+  - `/admin/audit`: events and audit_log explorer (filters in the URL), with a diff view.
+  - Migration 0011. Tests: 008_analytics.sql, unit tests for the metric formatting, and e2e for every M6 box.
 - 2026-09-25 — **M5 Client app.**
   - `/c` Today: next session and "I'm here", today's workout, sessions left per coach, the coach's weekly slots (read-only), the program.
   - `/c/workout` logger: day tabs, prefilled sets, last time, rest timer, IndexedDB draft, offline outbox, and a summary with PR badges after sync.

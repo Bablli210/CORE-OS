@@ -1,0 +1,79 @@
+# CI: the gates CLAUDE.md asks for before anything is declared done — typecheck, lint, unit tests, the SQL rule tests
+# and the Playwright e2e suite against a local Supabase stack with the seed (production build, 390px and 1280px).
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  SUPABASE_CLI_VERSION: 2.117.0
+  SUPABASE_SERVICES_OFF: studio,imgproxy,logflare,vector,supavisor
+
+jobs:
+  checks:
+    name: Typecheck, lint, unit tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck
+      - run: pnpm lint
+      - run: pnpm test
+
+  db:
+    name: SQL rule tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: supabase/setup-cli@v1
+        with:
+          version: ${{ env.SUPABASE_CLI_VERSION }}
+      - run: sudo apt-get update -qq && sudo apt-get install -y -qq postgresql-client
+      - run: supabase start -x "$SUPABASE_SERVICES_OFF"
+      - name: scripts/test-db.sh (fails on any FAIL or ERROR)
+        run: |
+          scripts/test-db.sh | tee db-tests.log
+          ! grep -E "FAIL|ERROR" db-tests.log
+          test "$(grep -c "PASSED" db-tests.log)" -eq "$(ls supabase/tests/*.sql | wc -l)"
+
+  e2e:
+    name: Playwright e2e
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - uses: supabase/setup-cli@v1
+        with:
+          version: ${{ env.SUPABASE_CLI_VERSION }}
+      - run: sudo apt-get update -qq && sudo apt-get install -y -qq postgresql-client
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install --with-deps chromium
+      - run: supabase start -x "$SUPABASE_SERVICES_OFF"
+      - run: pnpm env:local && pnpm seed:auth
+      - run: pnpm test:e2e
+        env:
+          CI: "true"
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-results
+          path: test-results
+          retention-days: 7

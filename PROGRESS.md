@@ -4,42 +4,64 @@ Living log. Claude Code updates this at the end of every milestone step. Newest 
 
 ## Current milestone
 
-M7 — Automations and governance: **built, awaiting review.** Do not start M8 until M7 is reviewed. (M1–M6 are covered by the same test run.)
+M8 — Mobile: **built, awaiting review.** This is the last build milestone; next is branding (docs/05 "After M8"). M1–M7 are covered by the same test run.
 
-Acceptance (docs/05 M7). The SQL tests are in `supabase/tests/009_automations.sql` (A1–A46). The e2e tests are in `e2e/automations.spec.ts`; they run the real delivery path (pg_net → `notify` → sandbox → signed `whatsapp-webhook`):
-- [x] A session booked for tomorrow gets its −24h reminder row within the hour, and it is delivered to the sandbox number. The e2e runs the hourly job twice (one row, not two), then notify, then waits for the delivery to reach `delivered`. The row shows in `/admin/audit` → Deliveries with the phone (A19).
-- [x] A client with 2 credits gets one "time to renew" message per week, not one per hour: the hourly job ran 3 times, one WhatsApp row (e2e; A20–A22). Before M7 the weekly cap was shared with the coach's and rep's notices, so a staff notice could hold back the client's message. It is now per recipient.
-- [x] Freeze: request → approve → client frozen → auto-end at the date → expiry extended by the frozen days (e2e: the rep asks on the sales client screen, the sales manager approves in the queue, then the nightly job at 03:30 Cairo ends it; every active pack moves exactly 7 days; A31–A34). Before M7 the nightly job never ended freezes; it does now.
-- [x] The nightly job runs at 03:30 Cairo and its `job.nightly` event shows counts, `freezes_ended` included (e2e reads it in `/admin/audit`; A35–A36: skipped at 02:30, runs at 03:30, once per Cairo date).
-- [x] Also required by the M7 prompt:
-  - `notify` and `whatsapp-webhook` Edge Functions, service role only, listed in docs/03 §9.
-  - Providers behind interfaces: `WhatsAppProvider` with the sandbox (log) implementation for local and a WhatsApp Cloud API one; email as log, Mailpit or Resend; push logged locally.
-  - Freeze, refund and transfer UIs (e2e for each).
-  - Daily and weekly digests (e2e: the sales manager's digest arrives in Mailpit; A24–A30).
-  - Every outbound message is idempotent by notification id (A3–A13, A14–A18; unit tests for the providers).
-  - pg_cron: see "Hosted project" below.
-- [x] `pnpm typecheck && pnpm lint && pnpm test` pass (82 unit tests, 12 of them for the providers and templates). `scripts/test-db.sh` passes (nine suites). `pnpm test:e2e` passes: 118 tests on a fresh reset and seed, production build. 8 are skipped by design: the M5 PWA check runs on the phone only, and the seven M7 one-shot flows (a payment is refunded once, a pack moves once) run on desktop only. A separate check covers the new controls at 390px.
+Acceptance (docs/05 M8). The e2e tests are in `e2e/mobile/app.spec.ts` (project `expo-390`). They drive the Expo app's web build (react-native-web: the same screens, shared hooks and RPC layer as the iOS/Android build) against the same local Supabase:
+- [x] Coach Today works in the Expo app against the same local Supabase, including attendance outcomes and walk-ins.
+  - One tap on Completed: the row changes at once, the database burns one session with this coach, and the count updates.
+  - With no signal, a No-show tap shows at once, waits on the phone ("waiting for signal" and the banner), and is sent when signal returns.
+  - A walk-in records a completed session now.
+  - Clients (list and detail) and Schedule (the week) open.
+- [x] Client workout logging works offline in the app. With the phone offline, a set is logged and Finish says "Saved on this phone", with nothing on the server. Back online, it syncs once (the workout count goes up by exactly 1, with the set's weight) and the screen says so.
+- [x] The shared package has zero React-DOM imports:
+  - `packages/api/shared.test.ts` scans every source file (also no Next, React Native or Expo imports);
+  - the package's ESLint config forbids those imports and browser globals (`window`, `document`, `navigator`, `localStorage`, `indexedDB`);
+  - its tsconfig has no DOM lib, which caught two DOM uses during the move.
+- [x] Also required by the M8 prompt:
+  - **Monorepo without breaking the web app; CI green at every commit.**
+    - The repo had no CI. The first M8 commit adds `.github/workflows/ci.yml`: typecheck, lint and unit tests; the SQL suite; the Playwright e2e against a local Supabase.
+    - The M8 code commits ran green on GitHub Actions (runs #1–#4; run #5, the Expo app commit, passed checks and SQL tests with e2e still running at the time of writing). Run #3 was first cancelled by the workflow's own concurrency setting, then re-run green; the workflow no longer cancels a commit's run.
+  - **packages/api extracted.** Every RPC query module moved with only its import paths changed. The web uses them from the package, and the Expo app reuses them as they are: no mobile-specific data layer.
+  - **Expo app for the client and coach scopes.** Push via Expo Push is stored as `channel = push` (see decisions).
+- [x] `pnpm typecheck && pnpm lint && pnpm test` pass across the workspace (web 16, api 53, i18n 3, mobile 8, Edge Functions 14 unit tests). `scripts/test-db.sh` passes (ten suites; 010_push adds 12 checks). `pnpm test:e2e` passes: 120 tests on a fresh reset and seed (118 web + 2 Expo), production builds. 8 are skipped by design, as in M7.
 
-**Hosted project: not confirmed.** The Supabase account reachable from this session has no GymOS project (it lists MBF, ai-crm and three paused projects, none of them this app), and I didn't touch any of them. Instead:
-- `scripts/verify-jobs.sh` (`pnpm verify:jobs`) checks, read-only:
-  - pg_cron and pg_net are installed;
-  - the four schedules are present and active (the three from 0002/0007, plus notify);
-  - their last 24 hours of runs;
-  - the latest `job.nightly` with its counts;
-  - the notify Vault secrets exist.
-- It passes locally: pg_cron ran `gymos-notify` and `gymos-refresh-5min` at 08:15 UTC. Pointed at the hosted project with `SUPABASE_DB_URL=… pnpm verify:jobs`, it gives the confirmation.
-- The hosted setup steps are in docs/03 §9.
+**Not verified here:** the iOS and Android builds. This sandbox has no simulator, device or EAS account.
+- Covered: the native code paths use the same screens and hooks as the tested web build, typecheck against React Native, and bundle with Metro.
+- Not covered: a device run (`pnpm --filter @gymos/mobile start`, then Expo Go or a dev build) and push, which needs `eas init` for the project id.
 
-How to run: `supabase start -x studio,imgproxy,logflare,vector,supavisor && supabase db reset && pnpm seed:auth && pnpm env:local && pnpm dev`.
-- Local delivery: WhatsApp goes to the sandbox (edge runtime logs), email to Mailpit (http://localhost:54324), push to the log.
-- pg_cron calls notify every 5 minutes; to run it now: `psql … -c "select fn_invoke_notify()"`.
-- After editing `supabase/functions/_shared`, restart the edge runtime (`docker restart supabase_edge_runtime_gymos`). The per-worker hot reload doesn't reload shared modules.
-- Changing `supabase/config.toml` needs `supabase stop && supabase start`.
+How to run:
+- Web, as before: `supabase start -x studio,imgproxy,logflare,vector,supavisor && supabase db reset && pnpm seed:auth && pnpm env:local && pnpm dev`.
+- Mobile: `pnpm --filter @gymos/mobile start`. See `apps/mobile/README.md`; on a phone, point `.env.local` at your computer's LAN address.
 
-Local logins: staff `*@gymos.local` / `gymos-dev`. Clients log in by phone with OTP `123456` (Hassan = `01110000001`, Farida = `01110000008`).
+Local logins: staff `*@gymos.local` / `gymos-dev`. Members log in by phone with OTP `123456` (Hassan = `01110000001`, Farida = `01110000008`).
 
 ## Decisions made during the build
 
+- 2026-09-26 (M8) — **CI added first.** There was no CI to keep green, so M8 starts with `.github/workflows/ci.yml`:
+  - three jobs: checks, SQL on a local Supabase via the CLI, and e2e with Chromium;
+  - one complete run per commit (no cancelling).
+- 2026-09-26 (M8) — **Layout.**
+  - `apps/web` holds the Next app, moved with `git mv`.
+  - `apps/mobile` holds Expo.
+  - `packages/api` is the shared data layer; `packages/i18n` holds `t()` and the catalogs.
+  - Supabase, the scripts, CI and the Playwright suite stay at the root, since they drive the local stack.
+  - Packages ship TypeScript source: Next compiles them (`transpilePackages`), Metro resolves them from the workspace, and there is no build step.
+- 2026-09-26 (M8) — **"Reuse the RPC layer verbatim".**
+  - Every query module moved with only its import paths changed. The one new piece is `supabase.ts`, a client registry: each app registers its client at startup (the web its cookie-session browser client, the phone supabase-js with AsyncStorage), and the queries call `createClient()` as before.
+  - Query hooks moved too, along with labels, errors, zod schemas, roles, format and phone helpers, and the session loader (the web's `getSession` body, now `loadSession(db)`).
+  - What stays in the web: the program builder's draft hook (uses `document`), the `me` context, media queries and server-only reads.
+- 2026-09-26 (M8) — **One offline implementation for both apps.**
+  - The outcome queue, outbox and cache ran on localStorage, IndexedDB and `window` events. They now go through `platform.ts`: sync storage, async key/value, connectivity.
+  - The web registers the same stores as before (localStorage, and IndexedDB `gymos-outbox`/`gymos-cache`), so anything already queued on a phone survives the upgrade.
+  - The phone registers AsyncStorage (with a synchronous mirror for the coach's queued taps) and NetInfo, with no reachability pings.
+- 2026-09-26 (M8) — **React 19.2.3 across the workspace** (was 19.1.0 on the web). Expo SDK 57 pins it, and a single React keeps the shared hooks on one instance. The web's full e2e suite passed on it before the commit.
+- 2026-09-26 (M8) — **Mobile scope.** A coach membership (coaches, and head coaches through theirs) gets the coach app; a client membership gets the client app; anyone else gets "use the web app". Schedule is read-only on the phone; slots are edited on the web grid.
+- 2026-09-26 (M8) — **Mobile tokens are generated.** `apps/mobile/src/theme/tokens.ts` is built from `apps/web/src/styles/tokens.css` (oklch converted to hex; spacing and radius to numbers). Branding still edits one file, and a unit test fails when they drift. Mobile ESLint blocks colour literals.
+- 2026-09-26 (M8) — **Push via Expo** (docs/05: "Expo Push → stored as channel = push").
+  - Migration 0013 adds `push_tokens`. The app registers on sign-in and unregisters on sign-out; a shared phone moves to the next person.
+  - `notify`'s `ExpoPush` provider sends to every active device. It is not idempotent (Expo has no key), so it is never resent after an unknown outcome, and DeviceNotRegistered revokes the token.
+  - A push row whose recipient has no device fails with the reason: the notification still shows in-app, and no stale push goes out later.
+- 2026-09-26 (M8) — **e2e for the app runs on its web build.** Playwright's second web server exports and serves the Expo web build on :8082. `expo serve` has no SPA fallback, so tests enter at `/` like a user opening the app.
 - 2026-09-26 (M7) — **Migration 0012_automations.sql.**
   - Delivery claims, results and statuses.
   - Digests.
@@ -174,6 +196,12 @@ Local logins: staff `*@gymos.local` / `gymos-dev`. Clients log in by phone with 
 
 ## Deferred
 
+- M8: the iOS and Android builds were not run (no simulator, device or EAS here). Run `pnpm --filter @gymos/mobile start` on a device, and `eas init` + `eas build` for store builds and push.
+- M8: mobile v1 is read-only for the schedule. It also has no program builder, progress charts, freeze/renew requests, notifications list, QR check-in or kiosk. These stay on the web (and the PWA). The client's Today links to the workout only.
+- M8: Expo push receipts (delivered/failed after the ticket) are not polled; the ticket result is what's recorded. Tapping a push opens the app, not the subject.
+- M8: `onboarding` queries, analytics' `use-set-params` and the program builder draft stay in the web app (web-only APIs or routes).
+- M8: `expo serve` has no SPA fallback. A deep link into the app's web build 404s; enter at `/`. The web build is for tests and previews; the product web app is `apps/web`.
+- M8: the root `e2e/` and `scripts/` are typechecked but not linted (they were linted by the web's Next config before the move).
 - M7: hosted pg_cron is not confirmed; there is no hosted GymOS project in reach. Run `SUPABASE_DB_URL=… pnpm verify:jobs` after the hosted setup in docs/03 §9.
 - M7: WhatsApp templates must be created and approved in Meta Business Manager (names in `_shared/templates.ts`) before `WHATSAPP_PROVIDER=meta`. English only; the `ar` variants come with the Arabic strings.
 - M7: push delivery (Web Push or Expo) is M8. Push rows stay pending on the hosted project until then.
@@ -222,6 +250,31 @@ Local logins: staff `*@gymos.local` / `gymos-dev`. Clients log in by phone with 
 
 ## Shipped
 
+- 2026-09-26 — **M8 Mobile.**
+  - CI on GitHub Actions.
+  - pnpm workspace:
+    - `apps/web`;
+    - `apps/mobile` (Expo SDK 57, expo-router);
+    - `packages/api` (client registry, types, every RPC query, hooks, schemas, offline logic via `platform.ts`);
+    - `packages/i18n`.
+  - Mobile coach app:
+    - sign-in;
+    - Today: outcomes, no-signal queue, walk-ins, unpaid confirmation;
+    - Clients: list, search, detail;
+    - Schedule: week view.
+  - Mobile client app:
+    - phone + OTP sign-in;
+    - Today: next session, sessions left, your week, program;
+    - Workout: logs offline;
+    - Credits.
+  - Push via Expo: `push_tokens`, the notify provider, device registration.
+  - Theme generated from the web's tokens.
+  - Migration 0013. Tests:
+    - 010_push.sql;
+    - mobile unit tests (platform adapter, scope, tokens);
+    - Expo provider tests;
+    - `e2e/mobile` on the app's web build;
+    - the zero-React-DOM test.
 - 2026-09-26 — **M7 Automations and governance.**
   - Edge Functions `notify` and `whatsapp-webhook`, with provider adapters:
     - WhatsApp: sandbox and Cloud API;

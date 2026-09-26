@@ -19,16 +19,16 @@ export function TrendChart({ points, unit, name }: { points: Point[]; unit: stri
       <div className="h-48 w-full" role="img" aria-label={t("progress.chartLabel", { name, n: points.length })}>
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={points} margin={{ top: 8, right: 8, bottom: 0, left: -16 }}>
-            <CartesianGrid stroke="var(--color-border)" strokeDasharray="0" vertical={false} />
-            <XAxis dataKey="date" tickFormatter={label} tick={{ fill: "var(--color-muted-foreground)", fontSize: 12 }} axisLine={false} tickLine={false} minTickGap={24} />
-            <YAxis tick={{ fill: "var(--color-muted-foreground)", fontSize: 12 }} axisLine={false} tickLine={false} domain={["dataMin - 5", "dataMax + 5"]} allowDecimals={false} />
+            <CartesianGrid stroke="var(--border)" strokeDasharray="0" vertical={false} />
+            <XAxis dataKey="date" tickFormatter={label} tick={{ fill: "var(--muted-foreground)", fontSize: 12 }} axisLine={false} tickLine={false} minTickGap={24} />
+            <YAxis tick={{ fill: "var(--muted-foreground)", fontSize: 12 }} axisLine={false} tickLine={false} domain={["dataMin - 5", "dataMax + 5"]} allowDecimals={false} />
             <Tooltip
-              cursor={{ stroke: "var(--color-muted-foreground)", strokeWidth: 1 }}
-              contentStyle={{ background: "var(--color-popover)", border: "1px solid var(--color-border)", borderRadius: 8, color: "var(--color-popover-foreground)" }}
+              cursor={{ stroke: "var(--muted-foreground)", strokeWidth: 1 }}
+              contentStyle={{ background: "var(--popover)", border: "1px solid var(--border)", borderRadius: 8, color: "var(--popover-foreground)" }}
               labelFormatter={(d) => label(String(d))}
               formatter={(v) => [`${v} ${unit}`, name]}
             />
-            <Line type="monotone" dataKey="value" stroke="var(--color-chart-1)" strokeWidth={2} dot={{ r: 4, strokeWidth: 2, fill: "var(--color-background)" }} activeDot={{ r: 5 }} isAnimationActive={false} />
+            <Line type="monotone" dataKey="value" stroke="var(--chart-1)" strokeWidth={2} dot={{ r: 4, strokeWidth: 2, fill: "var(--background)" }} activeDot={{ r: 5 }} isAnimationActive={false} />
           </LineChart>
         </ResponsiveContainer>
       </div>

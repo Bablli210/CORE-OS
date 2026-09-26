@@ -15,7 +15,7 @@ export type Weekly = Fns["fn_dashboard_weekly"]["Returns"][number];
 export type RepExtra = Fns["fn_dashboard_rep_extra"]["Returns"][number];
 export type SourceRoi = Fns["fn_dashboard_sources"]["Returns"][number];
 export type TodayLive = { visits: number; sessions_completed: number; sessions_booked_today: number; unpaid_sessions_open: number; leads: number; collected: number };
-export type AuditRow = { id: number; occurred_at: string; kind: string; action: string | null; row_id: string | null; branch_id: string | null; actor: string | null; old_row: Record<string, unknown> | null; new_row: Record<string, unknown> | null };
+export type AuditRow = { id: number; occurred_at: string; kind: string; action: string | null; row_id: string | null; branch_id: string | null; actor: string | null; actor_id: string | null; old_row: Record<string, unknown> | null; new_row: Record<string, unknown> | null };
 export type Audit = { tables: string[]; rows: AuditRow[] };
 
 export const analyticsKeys = {
@@ -49,8 +49,8 @@ export const fetchWeekly = async (): Promise<Weekly[]> => unwrap(await db().rpc(
 export const fetchRepExtra = async (month: string): Promise<RepExtra[]> => unwrap(await db().rpc("fn_dashboard_rep_extra", { p_month: month }));
 export const fetchSources = async (month: string): Promise<SourceRoi[]> => unwrap(await db().rpc("fn_dashboard_sources", { p_month: month }));
 export const fetchToday = async (): Promise<TodayLive> => unwrap(await db().rpc("fn_today_live"));
-export const fetchAudit = async (f: { source: "events" | "audit"; table?: string; from?: string; to?: string; search?: string }): Promise<Audit> =>
-  unwrap(await db().rpc("fn_audit_explorer", { p_source: f.source, p_table: f.table || undefined, p_from: f.from || undefined, p_to: f.to || undefined, p_search: f.search || undefined, p_limit: 200 }));
+export const fetchAudit = async (f: { source: "events" | "audit"; table?: string; actor?: string; from?: string; to?: string; search?: string }): Promise<Audit> =>
+  unwrap(await db().rpc("fn_audit_explorer", { p_source: f.source, p_table: f.table || undefined, p_actor: f.actor || undefined, p_from: f.from || undefined, p_to: f.to || undefined, p_search: f.search || undefined, p_limit: 200 }));
 
 /** Where a tile clicks through to: the rows behind it, with the same month and scope. */
 export function rowsHref(metric: string, month: string, scope: string | null, extra?: Record<string, number>): string {

@@ -26,8 +26,8 @@ function WeekStrip({ coach }: { coach: string }) {
   );
 }
 
-/** Schedules side by side and the coaches' month (docs/04 Team): load vs capacity, sessions, no-shows, net delivered, tier. */
-export function CoachesTable({ coaches }: { coaches: Team["coaches"] }) {
+/** readOnly (top management on /admin/coaching): no link into the coach screens. Schedules side by side and the coaches' month (docs/04 Team): load vs capacity, sessions, no-shows, net delivered, tier. */
+export function CoachesTable({ coaches, readOnly = false }: { coaches: Team["coaches"]; readOnly?: boolean }) {
   return (
     <ul className="grid gap-2">
       {coaches.map((c) => (
@@ -46,7 +46,7 @@ export function CoachesTable({ coaches }: { coaches: Team["coaches"] }) {
           </dl>
           <div className="grid gap-2">
             <WeekStrip coach={c.membership_id} />
-            <Link href={`/coach/schedule?coach=${c.membership_id}`} className={buttonVariants({ variant: "outline", size: "sm" })} aria-label={t("coachTeam.openWeekOf", { name: c.name })}>{t("coachTeam.openWeek")}</Link>
+            {readOnly ? null : <Link href={`/coach/schedule?coach=${c.membership_id}`} className={buttonVariants({ variant: "outline", size: "sm" })} aria-label={t("coachTeam.openWeekOf", { name: c.name })}>{t("coachTeam.openWeek")}</Link>}
           </div>
         </li>
       ))}

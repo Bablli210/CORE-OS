@@ -12,3 +12,4 @@ export const useCoachWeeks = (branch: string | null) => useQuery({ queryKey: q.a
 export const useWeekly = () => useQuery({ queryKey: q.analyticsKeys.weekly, queryFn: q.fetchWeekly });
 export const useRepExtra = (month: string) => useQuery({ queryKey: q.analyticsKeys.repExtra(month), queryFn: () => q.fetchRepExtra(month) });
 export const useSources = (month: string) => useQuery({ queryKey: q.analyticsKeys.sources(month), queryFn: () => q.fetchSources(month) });
+export const useAudit = (f: Parameters<typeof q.fetchAudit>[0]) => useQuery({ queryKey: q.analyticsKeys.audit(JSON.stringify(f)), queryFn: () => q.fetchAudit(f) });

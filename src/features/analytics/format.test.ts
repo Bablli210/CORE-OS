@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatMetric, progressPct, rowsUnit } from "./format";
+import { axisTick, formatMetric, progressPct, rowsUnit } from "./format";
 
 describe("metric formatting", () => {
   it("formats each unit", () => {
@@ -26,5 +26,13 @@ describe("metric formatting", () => {
     expect(rowsUnit("rep.conversion")).toBe("pct");
     expect(rowsUnit("sales.response")).toBe("minutes");
     expect(rowsUnit("coach.burned")).toBe("count");
+  });
+});
+
+describe("axisTick", () => {
+  it("shortens money to EGP thousands and counts to compact", () => {
+    expect(axisTick("money", 3_800_000)).toBe("38K");
+    expect(axisTick("count", 180)).toBe("180");
+    expect(axisTick("pct", 12)).toBe("12%");
   });
 });

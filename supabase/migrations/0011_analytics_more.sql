@@ -519,7 +519,7 @@ begin
     return jsonb_build_object(
       'tables', (select coalesce(jsonb_agg(distinct table_name), '[]') from audit_log),
       'rows', coalesce((select jsonb_agg(x order by x.occurred_at desc) from (
-        select a.id, a.occurred_at, a.table_name as kind, a.action, a.row_id, a.branch_id, (select full_name from profiles where id = a.actor_profile_id) actor, a.old_row, a.new_row
+        select a.id, a.occurred_at, a.table_name as kind, a.action, a.row_id, a.branch_id, (select full_name from profiles where id = a.actor_profile_id) actor, a.actor_profile_id actor_id, a.old_row, a.new_row
         from audit_log a
         where (p_table is null or a.table_name = p_table) and (p_actor is null or a.actor_profile_id = p_actor)
           and (p_from is null or cairo_date(a.occurred_at) >= p_from) and (p_to is null or cairo_date(a.occurred_at) <= p_to)
@@ -529,7 +529,7 @@ begin
   return jsonb_build_object(
     'tables', (select coalesce(jsonb_agg(distinct split_part(type, '.', 1)), '[]') from events),
     'rows', coalesce((select jsonb_agg(x order by x.occurred_at desc) from (
-      select e.id, e.occurred_at, e.type as kind, e.subject_table as action, e.subject_id as row_id, e.branch_id, (select full_name from profiles where id = e.actor_profile_id) actor, null::jsonb old_row, e.payload new_row
+      select e.id, e.occurred_at, e.type as kind, e.subject_table as action, e.subject_id as row_id, e.branch_id, (select full_name from profiles where id = e.actor_profile_id) actor, e.actor_profile_id actor_id, null::jsonb old_row, e.payload new_row
       from events e
       where (p_table is null or split_part(e.type, '.', 1) = p_table) and (p_actor is null or e.actor_profile_id = p_actor)
         and (p_from is null or cairo_date(e.occurred_at) >= p_from) and (p_to is null or cairo_date(e.occurred_at) <= p_to)

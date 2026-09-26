@@ -20,6 +20,13 @@ export function formatMetric(unit: Unit, value: number | null | undefined, opts:
   }
 }
 
+/** A chart axis tick: short (38K, not EGP 38,000), the unit named once in the chart's title. */
+export function axisTick(unit: Unit, value: number): string {
+  if (unit === "money") return compact.format(value / 100);
+  if (unit === "pct") return `${value}%`;
+  return compact.format(value);
+}
+
 /** Share of a target reached, 0–100+ (whole percent), or null without a target. */
 export function progressPct(actual: number | null | undefined, target: number | null | undefined): number | null {
   if (!target || target <= 0) return null;

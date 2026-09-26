@@ -2,7 +2,7 @@
 
 import { CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { t } from "@/lib/i18n";
-import { formatMetric } from "../format";
+import { axisTick, formatMetric } from "../format";
 import type { Unit } from "../queries/analytics";
 
 export type Series = { key: string; name: string; slot: number };
@@ -22,18 +22,18 @@ export function MultiLineChart({ data, series, unit, title, xKey = "week_start" 
       <div className="h-56 w-full" role="img" aria-label={t("chart.label", { title, n: series.length })}>
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={data} margin={{ top: 8, right: 12, bottom: 0, left: 0 }}>
-            <CartesianGrid stroke="var(--color-chart-grid)" vertical={false} />
-            <XAxis dataKey={xKey} tickFormatter={dateLabel} tick={{ fill: "var(--color-chart-axis)", fontSize: 12 }} axisLine={false} tickLine={false} minTickGap={16} reversed={false} />
-            <YAxis width={56} tick={{ fill: "var(--color-chart-axis)", fontSize: 12 }} axisLine={false} tickLine={false} tickFormatter={(v) => formatMetric(unit, Number(v), { compact: true })} allowDecimals={false} />
+            <CartesianGrid stroke="var(--chart-grid)" vertical={false} />
+            <XAxis dataKey={xKey} tickFormatter={dateLabel} tick={{ fill: "var(--chart-axis)", fontSize: 12 }} axisLine={false} tickLine={false} minTickGap={16} reversed={false} />
+            <YAxis width={44} tick={{ fill: "var(--chart-axis)", fontSize: 12 }} axisLine={false} tickLine={false} tickFormatter={(v) => axisTick(unit, Number(v))} allowDecimals={false} />
             <Tooltip
-              contentStyle={{ background: "var(--color-popover)", border: "1px solid var(--color-border)", borderRadius: 8, color: "var(--color-popover-foreground)" }}
+              contentStyle={{ background: "var(--popover)", border: "1px solid var(--border)", borderRadius: 8, color: "var(--popover-foreground)" }}
               labelFormatter={(d) => t("chart.weekOf", { date: dateLabel(String(d)) })}
               formatter={(v, name) => [formatMetric(unit, Number(v)), name]}
             />
-            <Legend wrapperStyle={{ fontSize: 12, color: "var(--color-muted-foreground)" }} iconType="plainline" />
+            <Legend wrapperStyle={{ fontSize: 12, color: "var(--muted-foreground)" }} iconType="plainline" />
             {series.map((s) => (
-              <Line key={s.key} type="monotone" dataKey={s.key} name={s.name} stroke={`var(--color-series-${s.slot})`} strokeWidth={2}
-                dot={{ r: 3, strokeWidth: 2, fill: "var(--color-background)" }} activeDot={{ r: 5 }} isAnimationActive={false} />
+              <Line key={s.key} type="monotone" dataKey={s.key} name={s.name} stroke={`var(--series-${s.slot})`} strokeWidth={2}
+                dot={{ r: 3, strokeWidth: 2, fill: "var(--background)" }} activeDot={{ r: 5 }} isAnimationActive={false} />
             ))}
           </LineChart>
         </ResponsiveContainer>

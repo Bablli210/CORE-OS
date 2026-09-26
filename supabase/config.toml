@@ -494,8 +494,29 @@ inspector_port = 8083
 # The Deno major version to use.
 deno_version = 2
 
-# [edge_runtime.secrets]
-# secret_key = "env(SECRET_VALUE)"
+# GymOS (local only): delivery providers for the notify / whatsapp-webhook functions. Nothing leaves the machine:
+# WhatsApp goes to the sandbox (logs + a signed delivery report back to whatsapp-webhook), email to Mailpit
+# (http://localhost:54324), push to the log. The hosted project sets real values with `supabase secrets set`.
+[edge_runtime.secrets]
+NOTIFY_SECRET = "local-notify-secret"
+APP_URL = "http://localhost:3000"
+WHATSAPP_PROVIDER = "sandbox"
+WHATSAPP_SANDBOX_NUMBERS = "+2011*,+2010*"
+WHATSAPP_APP_SECRET = "local-whatsapp-app-secret"
+WHATSAPP_VERIFY_TOKEN = "local-whatsapp-verify-token"
+WHATSAPP_WEBHOOK_URL = "http://supabase_kong_gymos:8000/functions/v1/whatsapp-webhook"
+EMAIL_PROVIDER = "mailpit"
+EMAIL_FROM = "GymOS <digest@gymos.local>"
+MAILPIT_URL = "http://supabase_inbucket_gymos:8025"
+PUSH_PROVIDER = "log"
+
+# notify is called by pg_cron with a shared secret and whatsapp-webhook by the provider with a signature; neither
+# carries a Supabase JWT, and each checks its own credential.
+[functions.notify]
+verify_jwt = false
+
+[functions.whatsapp-webhook]
+verify_jwt = false
 
 [analytics]
 enabled = true

@@ -1870,6 +1870,68 @@ export type Database = {
           },
         ]
       }
+      notification_deliveries: {
+        Row: {
+          attempts: number
+          channel: Database["public"]["Enums"]["notification_channel"]
+          claimed_at: string | null
+          delivered_at: string | null
+          last_error: string | null
+          lease_until: string | null
+          next_attempt_at: string | null
+          notification_id: string
+          provider: string | null
+          provider_message_id: string | null
+          read_at: string | null
+          sent_at: string | null
+          state: string
+          to_address: string | null
+          updated_at: string
+        }
+        Insert: {
+          attempts?: number
+          channel: Database["public"]["Enums"]["notification_channel"]
+          claimed_at?: string | null
+          delivered_at?: string | null
+          last_error?: string | null
+          lease_until?: string | null
+          next_attempt_at?: string | null
+          notification_id: string
+          provider?: string | null
+          provider_message_id?: string | null
+          read_at?: string | null
+          sent_at?: string | null
+          state?: string
+          to_address?: string | null
+          updated_at?: string
+        }
+        Update: {
+          attempts?: number
+          channel?: Database["public"]["Enums"]["notification_channel"]
+          claimed_at?: string | null
+          delivered_at?: string | null
+          last_error?: string | null
+          lease_until?: string | null
+          next_attempt_at?: string | null
+          notification_id?: string
+          provider?: string | null
+          provider_message_id?: string | null
+          read_at?: string | null
+          sent_at?: string | null
+          state?: string
+          to_address?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notification_deliveries_notification_id_fkey"
+            columns: ["notification_id"]
+            isOneToOne: true
+            referencedRelation: "notifications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notifications: {
         Row: {
           body: string | null
@@ -3867,6 +3929,7 @@ export type Database = {
       fn_client_credits: { Args: never; Returns: Json }
       fn_client_home: { Args: never; Returns: Json }
       fn_client_progress: { Args: { p_exercise?: string }; Returns: Json }
+      fn_client_requests: { Args: { p_client_id: string }; Returns: Json }
       fn_client_training: { Args: never; Returns: Json }
       fn_coach_client: { Args: { p_client: string }; Returns: Json }
       fn_coach_clients: {
@@ -4285,6 +4348,7 @@ export type Database = {
         Args: { p_approval_id: string; p_approve: boolean; p_note?: string }
         Returns: undefined
       }
+      fn_digest: { Args: { p_notification_id: string }; Returns: Json }
       fn_e1rm: { Args: { p_reps: number; p_weight: number }; Returns: number }
       fn_emit_event: {
         Args: {
@@ -4296,6 +4360,7 @@ export type Database = {
         }
         Returns: number
       }
+      fn_end_due_freezes: { Args: never; Returns: number }
       fn_end_freeze: { Args: { p_freeze_id: string }; Returns: undefined }
       fn_end_schedule_slot: {
         Args: { p_ends_on?: string; p_slot_id: string }
@@ -4321,6 +4386,7 @@ export type Database = {
         Returns: string
       }
       fn_hourly_notifications: { Args: never; Returns: number }
+      fn_invoke_notify: { Args: never; Returns: number }
       fn_is_sales_of_branch: { Args: { p_branch_id: string }; Returns: boolean }
       fn_issue_credits: {
         Args: {
@@ -4418,6 +4484,10 @@ export type Database = {
         }
         Returns: number
       }
+      fn_money_requests: {
+        Args: { p_branch_id?: string; p_month: string }
+        Returns: Json
+      }
       fn_money_summary: {
         Args: { p_branch_id?: string; p_month: string }
         Returns: Json
@@ -4428,6 +4498,7 @@ export type Database = {
         Returns: string
       }
       fn_nightly: { Args: never; Returns: Json }
+      fn_nightly_if_due: { Args: { p_now?: string }; Returns: Json }
       fn_normalize_phone: { Args: { p: string }; Returns: string }
       fn_notify: {
         Args: {
@@ -4440,6 +4511,15 @@ export type Database = {
         }
         Returns: string
       }
+      fn_notify_claim: {
+        Args: {
+          p_channels?: Database["public"]["Enums"]["notification_channel"][]
+          p_lease_seconds?: number
+          p_limit?: number
+          p_reclaim?: Database["public"]["Enums"]["notification_channel"][]
+        }
+        Returns: Json
+      }
       fn_notify_client: {
         Args: {
           p_body?: string
@@ -4450,6 +4530,17 @@ export type Database = {
           p_type: string
         }
         Returns: string
+      }
+      fn_notify_result: {
+        Args: {
+          p_error?: string
+          p_id: string
+          p_outcome: string
+          p_provider?: string
+          p_provider_message_id?: string
+          p_to?: string
+        }
+        Returns: boolean
       }
       fn_notify_role: {
         Args: {
@@ -4503,6 +4594,7 @@ export type Database = {
       fn_program_templates: { Args: never; Returns: Json }
       fn_pt_commission_pct: { Args: { p_sessions: number }; Returns: number }
       fn_pt_tier_meter: { Args: { p_sessions: number }; Returns: Json }
+      fn_queue_digests: { Args: { p_now?: string }; Returns: number }
       fn_rank_coaches: {
         Args: { p_client_id?: string; p_lead_id?: string }
         Returns: {
@@ -4557,6 +4649,14 @@ export type Database = {
       }
       fn_request_payment_void: {
         Args: { p_payment_id: string; p_reason: string }
+        Returns: string
+      }
+      fn_request_refund: {
+        Args: { p_payment_id: string; p_reason: string }
+        Returns: string
+      }
+      fn_request_transfer: {
+        Args: { p_lot_id: string; p_reason: string; p_to_client_id: string }
         Returns: string
       }
       fn_require_client: {
@@ -4909,6 +5009,15 @@ export type Database = {
         Returns: string
       }
       fn_weekday_name: { Args: { d: number }; Returns: string }
+      fn_whatsapp_status: {
+        Args: {
+          p_at?: string
+          p_error?: string
+          p_provider_message_id: string
+          p_status: string
+        }
+        Returns: boolean
+      }
       fn_within_opening_hours: {
         Args: { p_branch_id: string; p_t: string }
         Returns: string

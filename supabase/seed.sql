@@ -305,3 +305,8 @@ do $$ begin perform fn_compute_risk_scores(); perform fn_mark_lapsed(); end $$;
 
 drop function seed_client(int, uuid, uuid, uuid, text, text, int, int, int);
 drop function seed_user(uuid, text, text, text, text);
+
+-- local notify wiring (M7): pg_cron → pg_net → the notify Edge Function through the local gateway, with the shared
+-- secret from supabase/config.toml [edge_runtime.secrets]. The hosted project sets its own values (docs/03 §9).
+select vault.create_secret('http://supabase_kong_gymos:8000/functions/v1/notify', 'notify_url', 'notify Edge Function URL (local)');
+select vault.create_secret('local-notify-secret', 'notify_secret', 'shared secret for the notify Edge Function (local)');

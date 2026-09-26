@@ -20,7 +20,7 @@ Acceptance (docs/05 M8). The e2e tests are in `e2e/mobile/app.spec.ts` (project 
 - [x] Also required by the M8 prompt:
   - **Monorepo without breaking the web app; CI green at every commit.**
     - The repo had no CI. The first M8 commit adds `.github/workflows/ci.yml`: typecheck, lint and unit tests; the SQL suite; the Playwright e2e against a local Supabase.
-    - The M8 code commits ran green on GitHub Actions (runs #1–#4; run #5, the Expo app commit, passed checks and SQL tests with e2e still running at the time of writing). Run #3 was first cancelled by the workflow's own concurrency setting, then re-run green; the workflow no longer cancels a commit's run.
+    - Runs #1–#4 ran green on GitHub Actions. Run #5 (the Expo app commit) went red: in CI the app's web build never saw the browser go offline, so the offline workout test failed. Run #6 (the PROGRESS commit) went red on the same test. The next commit, the web connectivity fix (see decisions), must go green. Run #3 was first cancelled by the workflow's own concurrency setting, then re-run green; the workflow no longer cancels a commit's run.
   - **packages/api extracted.** Every RPC query module moved with only its import paths changed. The web uses them from the package, and the Expo app reuses them as they are: no mobile-specific data layer.
   - **Expo app for the client and coach scopes.** Push via Expo Push is stored as `channel = push` (see decisions).
 - [x] `pnpm typecheck && pnpm lint && pnpm test` pass across the workspace (web 16, api 53, i18n 3, mobile 8, Edge Functions 14 unit tests). `scripts/test-db.sh` passes (ten suites; 010_push adds 12 checks). `pnpm test:e2e` passes: 120 tests on a fresh reset and seed (118 web + 2 Expo), production builds. 8 are skipped by design, as in M7.
@@ -61,6 +61,7 @@ Local logins: staff `*@gymos.local` / `gymos-dev`. Members log in by phone with 
   - Migration 0013 adds `push_tokens`. The app registers on sign-in and unregisters on sign-out; a shared phone moves to the next person.
   - `notify`'s `ExpoPush` provider sends to every active device. It is not idempotent (Expo has no key), so it is never resent after an unknown outcome, and DeviceNotRegistered revokes the token.
   - A push row whose recipient has no device fails with the reason: the notification still shows in-app, and no stale push goes out later.
+- 2026-09-26 (M8) — **Connectivity on the app's web build comes from the browser's online/offline events, not NetInfo.** NetInfo's web module listens only to `navigator.connection` "change" when that API exists, and ignores online/offline. On GitHub's runner, going offline did not reach the app, and the offline workout test failed in run #5. iOS/Android still use NetInfo. `browserNetInfo` in `apps/mobile/src/lib/platform-core.ts` is unit-tested.
 - 2026-09-26 (M8) — **e2e for the app runs on its web build.** Playwright's second web server exports and serves the Expo web build on :8082. `expo serve` has no SPA fallback, so tests enter at `/` like a user opening the app.
 - 2026-09-26 (M7) — **Migration 0012_automations.sql.**
   - Delivery claims, results and statuses.

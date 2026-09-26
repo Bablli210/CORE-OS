@@ -14,6 +14,32 @@ export type NetInfoLike = { addEventListener(listener: (state: NetState) => void
 
 const SYNC = "gymos.sync:";
 
+type BrowserLike = {
+  navigator: { onLine: boolean };
+  addEventListener(type: "online" | "offline", listener: () => void): void;
+  removeEventListener(type: "online" | "offline", listener: () => void): void;
+};
+
+/**
+ * Connectivity for the app's web build. NetInfo's web module listens to `navigator.connection` "change" whenever that
+ * API exists and then ignores the online/offline events, which not every browser fires together (headless Chromium
+ * going offline fires only online/offline). The browser's own flag and events are the reliable signal on web.
+ */
+export function browserNetInfo(win: BrowserLike): NetInfoLike {
+  return {
+    addEventListener(listener) {
+      const emit = () => listener({ isConnected: win.navigator.onLine });
+      win.addEventListener("online", emit);
+      win.addEventListener("offline", emit);
+      emit(); // like NetInfo: the current state at once
+      return () => {
+        win.removeEventListener("online", emit);
+        win.removeEventListener("offline", emit);
+      };
+    },
+  };
+}
+
 /**
  * The phone's side of @gymos/api/platform:
  * - storage: a synchronous mirror of AsyncStorage keys under `gymos.sync:` (the coach's queued taps). hydrate() loads

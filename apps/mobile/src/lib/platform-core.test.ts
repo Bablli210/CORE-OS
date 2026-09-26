@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createNativePlatform, type AsyncStorageLike, type NetState } from "./platform-core";
+import { browserNetInfo, createNativePlatform, type AsyncStorageLike, type NetState } from "./platform-core";
 
 function fakeStorage(seed: Record<string, string> = {}): AsyncStorageLike & { data: Map<string, string> } {
   const data = new Map(Object.entries(seed));
@@ -56,5 +56,27 @@ describe("the phone's platform", () => {
     net.emit({ isConnected: null });
     expect(p.connectivity.isOnline()).toBe(true);
     expect(seen).toEqual([false, true]);
+  });
+});
+
+describe("the web build's connectivity", () => {
+  it("follows the browser's online flag and events, and stops on unsubscribe", () => {
+    const handlers = new Map<string, Set<() => void>>();
+    const win = {
+      navigator: { onLine: true },
+      addEventListener: (t: string, l: () => void) => void (handlers.get(t) ?? handlers.set(t, new Set()).get(t)!).add(l),
+      removeEventListener: (t: string, l: () => void) => void handlers.get(t)?.delete(l),
+    };
+    const fire = (t: "online" | "offline") => ((win.navigator.onLine = t === "online"), handlers.get(t)?.forEach((l) => l()));
+    const p = createNativePlatform(fakeStorage(), browserNetInfo(win));
+    const seen: boolean[] = [];
+    const off = p.connectivity!.subscribe((up) => seen.push(up));
+    expect(p.connectivity!.isOnline()).toBe(true);
+    fire("offline");
+    expect(p.connectivity!.isOnline()).toBe(false);
+    fire("online");
+    off();
+    fire("offline");
+    expect(seen).toEqual([true, false, true]);
   });
 });

@@ -102,8 +102,15 @@ test("the heatmap shows the busiest hours and a cell lists its sessions", async 
 
 test.describe("targets", () => {
   const month = sql("select to_char(cairo_date(now()), 'YYYY-MM')");
+  const mine = `period = '${month}' and scope_id in ('${REP_M}', '${COACH_M}')`;
+  let saved = "[]";
+  // put back the seed's targets for Mona and Mahmoud afterwards, so the demo keeps them
+  test.beforeAll(() => {
+    saved = sql(`select coalesce(json_agg(t), '[]') from targets t where ${mine}`);
+  });
   test.afterAll(() => {
-    sql(`delete from targets where period = '${month}' and scope_id in ('${REP_M}', '${COACH_M}')`);
+    sql(`delete from targets where ${mine}`);
+    sql(`insert into targets select * from json_populate_recordset(null::targets, '${saved}')`);
   });
 
   test("targets entered in /admin/targets appear as progress bars on the rep's and coach's own screens", async ({ page }) => {

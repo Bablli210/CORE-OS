@@ -681,7 +681,7 @@
   "numbers.overdue": "Overdue follow-ups",
   "numbers.perWeek": "Sessions per week",
   "numbers.pickMonth": "Month",
-  "numbers.refresh": "Month figures refresh every 15 minutes; tiles marked live are current.",
+  "numbers.refresh": "Month figures refresh every 5 minutes; tiles marked live are current.",
   "numbers.response": "Median response",
   "numbers.sessionsCompleted": "Sessions completed",
   "numbers.title": "My numbers",

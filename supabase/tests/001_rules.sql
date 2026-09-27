@@ -7,7 +7,8 @@
 -- Covered: lead capture + dedupe, inbound queue, round robin, reassignment reason, anonymous onboarding wizard,
 -- coach suggestion for a lead, deal with PT recorded under a coach, auto-approval vs discount approval, item freezing,
 -- payment gates (min first payment, overpayment), lead conversion, pro-rata credits bound to the coach, entitlements,
--- automatic coach assignment + welcome call, weekly schedule slots (overlap, credits required), materialization,
+-- automatic coach assignment + welcome call, weekly schedule slots (shared hours, blocked hours, one client in one place,
+-- credits required), materialization,
 -- attendance (completed burns with that coach only, no-show recorded without deduction, cancel restores, waiver),
 -- unpaid session → instant sales flag → settled by the next pack, late-edit approval routed to head coach,
 -- head-coach reassignment moves packs and closes slots, RLS isolation for 6 roles, PR trigger, check-in rules
@@ -174,10 +175,25 @@ select login(:COACH_SARA);
 select fn_upsert_schedule_slot(:COACH_SARA_M, 6, '08:00', 'client', :'client1') as slot_sat \gset
 select fn_upsert_schedule_slot(:COACH_SARA_M, 1, '08:00', 'client', :'client1') as slot_mon \gset
 select ok((select count(*) = 2 from schedule_slots where client_id = :'client1' and is_active), '8b two weekly slots created');
+-- shared hours (docs/06 #20): the coach may put a class or another client in an hour that has one; only a Blocked hour
+-- blocks, and the same client is never in two places at once
+select fn_upsert_schedule_slot(:COACH_SARA_M, 6, '08:30', 'class', null, 'Mobility class') as slot_shared \gset
+select ok((select is_active from schedule_slots where id = :'slot_shared'), '8c a class may share the hour with a client (the coach decides)');
+select fn_end_schedule_slot(:'slot_shared', current_date);
 do $$ begin
-  perform fn_upsert_schedule_slot('a0000000-0000-0000-0000-000000000023', 6, '08:30', 'class', null, 'Mobility class');
-  raise exception 'FAIL 8c overlapping slot allowed';
-exception when check_violation then raise notice 'PASS 8c overlapping slot rejected'; end $$;
+  perform fn_upsert_schedule_slot('a0000000-0000-0000-0000-000000000023', 6, '08:30', 'blocked', null, 'Admin hour');
+  raise exception 'FAIL 8c2 a blocked hour went over a client slot';
+exception when check_violation then
+  if sqlerrm = 'a blocked hour cannot overlap another slot on that day' then raise notice 'PASS 8c2 a blocked hour over a client slot is refused';
+  else raise exception 'FAIL 8c2 wrong message: %', sqlerrm; end if;
+end $$;
+do $$ begin
+  perform fn_upsert_schedule_slot('a0000000-0000-0000-0000-000000000023', 6, '08:30', 'client', q1('select id from clients where full_name = ''Test Lead Full'''));
+  raise exception 'FAIL 8c3 the same client in two overlapping slots';
+exception when check_violation then
+  if sqlerrm = 'client already has a slot at that time' then raise notice 'PASS 8c3 the same client in two overlapping slots is refused';
+  else raise exception 'FAIL 8c3 wrong message: %', sqlerrm; end if;
+end $$;
 select fn_upsert_schedule_slot(:COACH_SARA_M, 6, '13:00', 'class', null, 'Mobility class') as slot_class \gset
 -- next Saturday, materialized
 select (current_date + ((6 - extract(dow from current_date)::int + 7) % 7 + 7)) as next_sat \gset

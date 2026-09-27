@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { addDays, cairoInstant, cairoMinutes, cairoToday, dateInWeek, freeGaps, fromMinutes, gridHours, isIsoDate, laneLayout, prefWeekdays, toMinutes, weekStart, weekdayOf } from "./week";
+import { addDays, cairoInstant, cairoMinutes, cairoToday, cellStart, dateInWeek, freeGaps, fromMinutes, gridHours, isIsoDate, laneLayout, prefWeekdays, sharedHour, toMinutes, weekStart, weekdayOf } from "./week";
 
 describe("week math", () => {
   it("the gym week starts on Saturday", () => {
@@ -49,6 +49,20 @@ describe("free gaps and grid", () => {
     expect(gaps).toEqual([{ start: 360, end: 420 }, { start: 540, end: 600 }, { start: 660, end: 840 }]);
   });
 
+  it("counts an hour shared by two clients once (docs/06 #20)", () => {
+    const busy = [{ start: 480, end: 540 }, { start: 480, end: 540 }, { start: 510, end: 540 }];
+    expect(freeGaps([{ start: 420, end: 600 }], busy)).toEqual([{ start: 420, end: 480 }, { start: 540, end: 600 }]);
+  });
+
+  it("starts a tap on a partly used hour in its free part", () => {
+    expect(cellStart([], 8)).toBe(480);
+    expect(cellStart([{ start: 480, end: 510 }], 8)).toBe(510); // 08:00–08:30 used → 08:30
+    expect(cellStart([{ start: 480, end: 495 }, { start: 490, end: 525 }], 8)).toBe(525); // chained → 08:45
+    expect(cellStart([{ start: 510, end: 540 }], 8)).toBe(480); // 08:30 used, 08:00 free → 08:00
+    expect(cellStart([{ start: 480, end: 540 }], 8)).toBe(480); // fully used: the block takes the tap
+    expect(cellStart([{ start: 450, end: 500 }], 8)).toBe(500); // a slot from the hour before runs into this one
+  });
+
   it("drops gaps shorter than the minimum", () => {
     expect(freeGaps([{ start: 360, end: 400 }], [{ start: 370, end: 390 }])).toEqual([]);
   });
@@ -61,6 +75,35 @@ describe("free gaps and grid", () => {
   it("reads preferred days from onboarding", () => {
     expect(prefWeekdays(["sat", "mon", "wed"])).toEqual([6, 1, 3]);
     expect(prefWeekdays("nope")).toEqual([]);
+  });
+});
+
+describe("sharedHour (Add another client at this time)", () => {
+  const slot = (id: string, weekday: number, start_time: string, over: { duration_minutes?: number; kind?: string; ends_on?: string | null } = {}) => ({
+    id,
+    weekday,
+    start_time,
+    duration_minutes: over.duration_minutes ?? 60,
+    kind: over.kind ?? "client",
+    ends_on: over.ends_on ?? null,
+  });
+  it("lists the tapped slot first, then every client or class overlapping it that day", () => {
+    const nour = slot("nour", 0, "08:00");
+    const slots = [
+      slot("aya", 0, "08:30", { duration_minutes: 30 }),
+      nour,
+      slot("yoga", 0, "07:30", { kind: "class" }),
+      slot("before", 0, "07:00"), // ends as Nour starts
+      slot("after", 0, "09:00"), // starts as Nour ends
+      slot("monday", 1, "08:00"),
+      slot("held", 0, "08:00", { kind: "blocked" }),
+      slot("ended", 0, "08:00", { ends_on: "2026-09-20" }),
+    ];
+    expect(sharedHour(slots, nour, "2026-09-27").map((s) => s.id)).toEqual(["nour", "yoga", "aya"]);
+  });
+  it("keeps a slot that ends on or after the new slot's first date", () => {
+    const nour = slot("nour", 0, "08:00");
+    expect(sharedHour([nour, slot("last", 0, "08:00", { ends_on: "2026-09-27" })], nour, "2026-09-27").map((s) => s.id)).toEqual(["nour", "last"]);
   });
 });
 
@@ -84,6 +127,14 @@ describe("laneLayout", () => {
     expect(l.get("long")).toEqual({ lane: 0, lanes: 2 });
     expect(l.get("first")).toEqual({ lane: 1, lanes: 2 });
     expect(l.get("second")).toEqual({ lane: 1, lanes: 2 });
+  });
+  it("puts three clients in one hour in three lanes", () => {
+    const l = laneLayout([
+      { id: "a", start: 480, end: 540 },
+      { id: "b", start: 480, end: 540 },
+      { id: "c", start: 480, end: 540 },
+    ]);
+    expect([...l.values()]).toEqual([{ lane: 0, lanes: 3 }, { lane: 1, lanes: 3 }, { lane: 2, lanes: 3 }]);
   });
   it("treats touching blocks (one ends as the next starts) as separate", () => {
     const l = laneLayout([

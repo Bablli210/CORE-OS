@@ -83,7 +83,16 @@ function unwrap<T>({ data, error }: { data: unknown; error: unknown }): T {
 
 export const fetchWeek = async (coach: string, start: string): Promise<CoachWeek> => unwrap(await db().rpc("fn_coach_week", { p_coach: coach, p_week_start: start }));
 export const fetchSchedulable = async (coach: string): Promise<SchedulableClient[]> => unwrap(await db().rpc("fn_schedulable_clients", { p_coach: coach }));
-export const fetchDay = async (coach: string, date: string): Promise<CoachDay> => unwrap(await db().rpc("fn_coach_today", { p_coach: coach, p_date: date }));
+/**
+ * The day, sessions in a fixed order: by time, then client name, then id. Clients sharing an hour (docs/06 #20) come back
+ * from the database in no fixed order, and a row that changes (an outcome) could swap places under the coach's thumb.
+ */
+export const fetchDay = async (coach: string, date: string): Promise<CoachDay> => {
+  const d = unwrap<CoachDay>(await db().rpc("fn_coach_today", { p_coach: coach, p_date: date }));
+  return { ...d, sessions: [...d.sessions].sort(bySessionOrder) };
+};
+export const bySessionOrder = (a: DaySession, b: DaySession): number =>
+  Date.parse(a.starts_at) - Date.parse(b.starts_at) || a.client_name.localeCompare(b.client_name) || a.id.localeCompare(b.id);
 
 export type NewSlots = { coach: string; weekdays: number[]; start: string; kind: SlotKind; clientId?: string | null; label?: string | null; duration: number; startsOn: string };
 export const addWeeklySlots = async (s: NewSlots): Promise<string[]> =>

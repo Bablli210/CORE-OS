@@ -27,6 +27,7 @@ Items marked **fill in later** ship with a placeholder value that is easy to cha
 | 17 | Timezone and week | Africa/Cairo; week starts Saturday. | All analytics use Cairo dates; `week_start_sat`. | `analytics.week_start = "saturday"` |
 | 18 | Data retention | Never delete or archive client data. | No anonymization job, no archived status. Lost leads and lapsed clients are kept in full. | — |
 | 19 | Opening hours | 06:00 to midnight, both branches. (Read as 12 am; if noon was meant, change `close` to `12:00`.) | `branches.opening_hours = {"open":"06:00","close":"24:00"}`; `fn_within_opening_hours` pushes a first-contact deadline that lands before 06:00 to 06:00. Per-branch override on the branch row. | `branches.opening_hours` (per branch, not a global setting) |
+| 20 | Several clients in the same hour? (2026-09-27) | The owner: *"a coach can have 2 or more clients book the same session and hour, it is totally up to him/her"*. Allowed, with no cap; classes may share an hour with clients too. Each client keeps their own session. Only a Blocked hour and the same client twice are refused. Details under "Shared hours" below. | `0014_shared_hours.sql` redefines `fn_upsert_schedule_slot` and `fn_add_session`. The week grid draws shared blocks side by side, and a slot offers "Add another client at this time". | — (the coach decides; no setting) |
 
 ## Other settings (not tied to a decision above)
 
@@ -66,6 +67,39 @@ Confirmed: PT commission tiers are counted per calendar month; opening hours 06:
 - **Overlapping week blocks sit side by side** (`laneLayout` in `packages/api/sessions/week.ts`); two clients booked in the same hour no longer draw on top of each other.
 - **Front desk gets its own home** on `/sales` (check in · walk-in · payment) instead of the rep's Today.
 - **Coach nav:** My week is a bottom tab (was reachable only from Today on a phone).
+- No dependency added.
+
+## Shared hours (2026-09-27)
+
+The gym's owner, 2026-09-27, verbatim: *"a coach can have 2 or more clients book the same session and hour, it is totally up to him/her"*.
+
+"Book" here means the coach puts the clients on their week. Clients still don't book themselves (decision 3; docs/01 non-goals).
+
+- **Allowed:**
+  - A coach may put two or more clients in the same hour on their weekly schedule, and in one-off sessions. There is no cap: it is the coach's choice.
+  - Classes may share an hour with clients as well, because the coach decides. Only Blocked hours block.
+- **Each client still has their own session:**
+  - their own outcome (Completed / No-show / Cancelled);
+  - one of their own sessions with that coach used on Completed;
+  - their own reminders;
+  - their own unpaid flag.
+
+  Coach commission keeps counting each completed session, as before. Utilization (sessions ÷ working hours) counts each one too, so it can pass 100%.
+- **Still refused**, each with a message that names the day and says what to do:
+  - (a) anything over a Blocked hour of that coach (`overlaps a blocked hour on that day`), and a Blocked hour over existing slots or over a booked one-off of that coach on a date it runs (`a blocked hour cannot overlap another slot on that day`). A one-off is refused inside a Blocked hour on that date, unless the Blocked hour is skipped that date.
+  - (b) the same client in two overlapping slots or sessions, with any coach: `client already has a slot at that time` for slots, `client already has a session at that time` for one-offs. A one-off also checks the client's weekly slots on that date whose session is not created yet, and a weekly slot also checks the client's booked one-offs on the dates it runs (`client already has a session at that time`). A per-client lock keeps two coaches from adding the same client at the same moment.
+  - (c) a client with no sessions left with that coach (unchanged).
+- **How:**
+  - `supabase/migrations/0014_shared_hours.sql` redefines `fn_upsert_schedule_slot` and `fn_add_session` with the same signatures, grants and `SECURITY DEFINER`. Times are compared as minutes of the day, so a slot that runs to midnight is checked correctly.
+  - `fn_materialize_sessions` (unique per slot and time), `fn_start_walkin_session`, the day/week read shapes and the hourly reminders needed no change: they already work per session.
+  - Tests: `supabase/tests/011_shared_hours.sql`, 001 §8c, 006 K8.
+- **Screens:**
+  - My week draws blocks that share a time side by side (`laneLayout`), each as tall as its slot. A tap on the free part of a partly used hour starts there (`cellStart`).
+  - A tap on a client's or a class's slot offers **Add another client at this time** (on a class: **Add a client at this time**). It opens the sheet at that day, start and length, kind Client.
+  - Today shows each client in a shared hour as their own row, with their own buttons, in a fixed order (time, then client name). The order is set in the shared `fetchDay` (`packages/api/sessions/coach.ts`), so the Expo Today gets it too: before, clients at the same time came back in no fixed order and could swap places after an outcome, under the coach's thumb.
+  - My week, sharing: the sheet picks only that day (not the client's preferred days), leaves the clients already in the hour out of the picker, and names everyone in the hour (`sharedHour`). With three or more blocks side by side on the desktop week, blocks show initials; the name stays in the hover title and the accessible label.
+  - The Expo app's read-only week lists slots one by one and needed no change.
+- Before this rule, any two slots of a coach that overlapped on the same weekday were refused, and so was a one-off at a time the coach already had a session.
 - No dependency added.
 
 ## Dependencies chosen (and why)

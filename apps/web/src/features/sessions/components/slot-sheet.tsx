@@ -9,22 +9,27 @@ import { t, type MessageKey } from "@gymos/i18n";
 import { cn } from "@/lib/utils";
 import { coachingErrorKey, failedWeekday } from "@gymos/api/sessions/errors";
 import { useCoachMutation } from "../hooks/use-coach";
-import { addWeeklySlots, type SchedulableClient, type SlotKind } from "@gymos/api/sessions/coach";
-import { fromMinutes, prefWeekdays } from "@gymos/api/sessions/week";
+import { addWeeklySlots, type SchedulableClient, type Slot, type SlotKind } from "@gymos/api/sessions/coach";
+import { prefWeekdays } from "@gymos/api/sessions/week";
 import { DayChips } from "./day-chips";
+import { slotTitle } from "./week-grid";
 
 const KINDS: SlotKind[] = ["client", "class", "blocked"];
 const DURATIONS = [30, 45, 60, 75, 90, 120];
 
 /**
- * Tap a free cell → this sheet. Client (only clients with sessions left with this coach; a client preselected from their page
+ * Tap an hour cell → this sheet. Client (only clients with sessions left with this coach; a client preselected from their page
  * is always offered), class or blocked; the days default to the tapped day plus the days the client asked for at onboarding,
- * so "08:00 Sat/Mon/Wed" is one tap on the cell and one on Save.
+ * so "08:00 Sat/Mon/Wed" is one tap on the cell and one on Save. "Add another client at this time" on a slot opens it at that
+ * slot's day, start and length (`sharing`): several clients may share an hour (docs/06 #20). Then only that day is picked,
+ * and the clients already in the hour are not offered (they can't be there twice).
  */
 export function SlotSheet({
   coach,
   weekday,
-  hour,
+  start: initialStart,
+  duration: initialDuration,
+  sharing,
   startsOn,
   slotMinutes,
   clients,
@@ -34,7 +39,12 @@ export function SlotSheet({
 }: {
   coach: string;
   weekday: number;
-  hour: number;
+  /** "08:00" */
+  start: string;
+  /** Minutes; the coach's default slot length when not given (or not one of the offered lengths). */
+  duration?: number;
+  /** The slots this one will share the hour with (the tapped one first), when opened from "Add another client at this time". */
+  sharing?: Slot[];
   startsOn: string;
   slotMinutes: number;
   clients: SchedulableClient[];
@@ -42,14 +52,17 @@ export function SlotSheet({
   onClose: () => void;
   onDone: (count: number) => void;
 }) {
-  const offered = clients.filter((c) => c.credits_left > 0 || c.client_id === presetClientId);
-  const daysFor = (clientId: string) => Array.from(new Set([weekday, ...prefWeekdays(clients.find((c) => c.client_id === clientId)?.pref_days)]));
+  const inHour = new Set(sharing?.map((s) => s.client_id));
+  const offered = clients.filter((c) => (c.credits_left > 0 || c.client_id === presetClientId) && !inHour.has(c.client_id));
+  // sharing an hour is about that one day: the client's preferred days are not added
+  const daysFor = (clientId: string) =>
+    sharing ? [weekday] : Array.from(new Set([weekday, ...prefWeekdays(clients.find((c) => c.client_id === clientId)?.pref_days)]));
   const initialClient = presetClientId && offered.some((c) => c.client_id === presetClientId) ? presetClientId : "";
   const [kind, setKind] = useState<SlotKind>("client");
   const [clientId, setClientId] = useState(initialClient);
   const [days, setDays] = useState<number[]>(initialClient ? daysFor(initialClient) : [weekday]);
-  const [start, setStart] = useState(fromMinutes(hour * 60));
-  const [duration, setDuration] = useState(slotMinutes);
+  const [start, setStart] = useState(initialStart);
+  const [duration, setDuration] = useState(initialDuration && DURATIONS.includes(initialDuration) ? initialDuration : slotMinutes);
   const [label, setLabel] = useState("");
   const add = useCoachMutation(() => addWeeklySlots({ coach, weekdays: days, start, kind, clientId: kind === "client" ? clientId : null, label: kind === "client" ? null : label, duration, startsOn }));
   const failedDay = add.isError ? failedWeekday(add.error) : null;
@@ -64,6 +77,12 @@ export function SlotSheet({
           if (ready) add.mutate(undefined, { onSuccess: (ids) => onDone(ids.length) });
         }}
       >
+        {sharing?.length ? (
+          <p className="rounded-md border border-info/40 bg-info/10 p-3 text-sm" data-testid="sharing-hint">
+            {t("schedule.sharing", { day: t(`weekday.${weekday}` as MessageKey), time: sharing[0].start_time, what: sharing.map(slotTitle).join(", ") })}{" "}
+            {t("schedule.addAnotherHint")}
+          </p>
+        ) : null}
         <div role="radiogroup" aria-label={t("schedule.kind")} className="grid grid-cols-3 gap-1 rounded-lg bg-muted p-1">
           {KINDS.map((k) => (
             <button

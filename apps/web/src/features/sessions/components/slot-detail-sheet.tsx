@@ -1,5 +1,6 @@
 "use client";
 
+import { UserPlus } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -13,7 +14,10 @@ import { changeSlot, endSlot, skipSlot, type Slot } from "@gymos/api/sessions/co
 import { WEEK_ORDER } from "@gymos/api/sessions/week";
 import { slotTitle } from "./week-grid";
 
-/** Tap a slot → move or change it, skip one date, or end it. Past sessions are never touched by these. */
+/**
+ * Tap a slot → add another client at the same time (several clients may share an hour, docs/06 #20; not on a Blocked hour),
+ * move or change it, skip one date, or end it. Past sessions are never touched by these.
+ */
 export function SlotDetailSheet({
   coach,
   slot,
@@ -22,6 +26,7 @@ export function SlotDetailSheet({
   canEdit,
   onClose,
   onDone,
+  onAddHere,
 }: {
   coach: string;
   slot: Slot;
@@ -31,6 +36,8 @@ export function SlotDetailSheet({
   canEdit: boolean;
   onClose: () => void;
   onDone: (message: string) => void;
+  /** Opens the slot sheet at this slot's day, start and length, kind Client. */
+  onAddHere: (slot: Slot) => void;
 }) {
   const [weekday, setWeekday] = useState(slot.weekday);
   const [start, setStart] = useState(slot.start_time);
@@ -51,6 +58,14 @@ export function SlotDetailSheet({
           {t("schedule.every", { day: t(`weekday.${slot.weekday}` as MessageKey), time: slot.start_time, n: slot.duration_minutes })}
           {slot.kind === "client" && slot.credits_left !== null ? ` · ${t("schedule.left", { n: slot.credits_left })}` : ""}
         </p>
+        {canEdit && slot.kind !== "blocked" ? (
+          <div className="grid gap-1.5">
+            <Button size="block" onClick={() => onAddHere(slot)}>
+              <UserPlus aria-hidden /> {t(slot.kind === "client" ? "schedule.addAnother" : "schedule.addClientHere")}
+            </Button>
+            <p className="text-xs text-muted-foreground">{t("schedule.addAnotherHint")}</p>
+          </div>
+        ) : null}
         {slot.client_id ? (
           <Link href={`/coach/clients/${slot.client_id}`} className={buttonVariants({ variant: "outline" })}>{t("schedule.openClient")}</Link>
         ) : null}

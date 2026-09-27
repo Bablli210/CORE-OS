@@ -8,10 +8,14 @@ import { SessionRow } from "./session-row";
 
 type Item =
   | { kind: "session"; at: number; session: DaySession }
-  | { kind: "block"; at: number; label: string; time: string; blockKind: string }
+  | { kind: "block"; at: number; id: string; label: string; time: string; blockKind: string }
   | { kind: "gap"; at: number; end: number };
 
-/** The day as a timeline: sessions, classes and blocked hours, and the free gaps inside working hours. */
+const RANK = { session: 0, block: 1, gap: 2 } as const;
+/** Stable order at the same minute: clients sharing an hour (docs/06 #20) by name, then classes and blocked hours, then gaps. */
+const tieKey = (it: Item) => (it.kind === "session" ? `${it.session.client_name}\u0000${it.session.id}` : it.kind === "block" ? it.id : "");
+
+/** The day as a timeline: sessions (one row each, also when clients share an hour), classes and blocked hours, and the free gaps inside working hours. */
 export function DayTimeline({ day, canRecord, queuedIds, onOutcome }: { day: CoachDay; canRecord: boolean; queuedIds: Set<string>; onOutcome: (s: DaySession, o: Outcome) => void }) {
   const busy = [
     ...day.sessions.filter((s) => s.status !== "cancelled").map((s) => ({ start: cairoMinutes(s.starts_at), end: cairoMinutes(s.starts_at) + s.duration_minutes })),
@@ -23,12 +27,13 @@ export function DayTimeline({ day, canRecord, queuedIds, onOutcome }: { day: Coa
     ...day.blocks.map((b) => ({
       kind: "block" as const,
       at: cairoMinutes(b.starts_at),
+      id: b.slot_id,
       label: b.label || t(`schedule.kind.${b.kind}` as MessageKey),
       time: `${formatTime(b.starts_at)} · ${t("schedule.minutes", { n: b.duration_minutes })}`,
       blockKind: b.kind,
     })),
     ...freeGaps(working, busy, 60).map((g) => ({ kind: "gap" as const, at: g.start, end: g.end })),
-  ].sort((a, b) => a.at - b.at || (a.kind === "gap" ? 1 : -1));
+  ].sort((a, b) => a.at - b.at || RANK[a.kind] - RANK[b.kind] || tieKey(a).localeCompare(tieKey(b)));
 
   return (
     <ol className="grid gap-2" aria-label={t("today.timeline")}>
@@ -36,7 +41,7 @@ export function DayTimeline({ day, canRecord, queuedIds, onOutcome }: { day: Coa
         it.kind === "session" ? (
           <SessionRow key={it.session.id} session={it.session} canRecord={canRecord} queued={queuedIds.has(it.session.id)} onOutcome={onOutcome} />
         ) : it.kind === "block" ? (
-          <li key={`b-${it.at}-${it.label}`} className="grid grid-cols-[3.5rem_minmax(0,1fr)] gap-x-3 rounded-lg border border-dashed bg-muted/50 p-3 text-sm md:px-4">
+          <li key={`b-${it.id}`} className="grid grid-cols-[3.5rem_minmax(0,1fr)] gap-x-3 rounded-lg border border-dashed bg-muted/50 p-3 text-sm md:px-4">
             <span className="tabular-nums text-muted-foreground">{fromMinutes(it.at)}</span>
             <span><span className="font-medium">{it.label}</span> <span className="text-muted-foreground">{it.time}</span></span>
           </li>

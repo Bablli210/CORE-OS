@@ -67,6 +67,37 @@ export function freeGaps(working: Interval[], busy: Interval[], minLength = 30):
   return gaps.filter((g) => g.end - g.start >= minLength);
 }
 
+/**
+ * Where a tap on an hour cell of the week grid starts a new slot. Usually the hour itself; when slots already cover the start
+ * of that hour and end inside it (08:00–08:30), the first free minute after them, so tapping the free part of a partly used
+ * hour starts there. A fully covered hour keeps the hour (its blocks take the taps; "Add another client at this time" is on them).
+ */
+export function cellStart(busy: Interval[], hour: number): number {
+  const from = hour * 60;
+  let cursor = from;
+  for (const b of [...busy].sort((a, b) => a.start - b.start)) {
+    if (b.start <= cursor && b.end > cursor) cursor = b.end;
+  }
+  return cursor < from + 60 ? cursor : from;
+}
+
+type WeekSlot = { id: string; weekday: number; start_time: string; duration_minutes: number; kind: string; ends_on: string | null };
+
+/**
+ * "Add another client at this time" (docs/06 #20): the slots a new slot at `slot`'s day, start and length shares the hour
+ * with — same weekday, overlapping in time, not Blocked, still running on or after `from` (the new slot's first date).
+ * The tapped slot comes first, then the others by start time.
+ */
+export function sharedHour<T extends WeekSlot>(slots: T[], slot: T, from: string): T[] {
+  const start = toMinutes(slot.start_time);
+  const end = start + slot.duration_minutes;
+  const others = slots
+    .filter((s) => s.id !== slot.id && s.weekday === slot.weekday && s.kind !== "blocked" && (s.ends_on === null || s.ends_on >= from))
+    .filter((s) => toMinutes(s.start_time) < end && toMinutes(s.start_time) + s.duration_minutes > start)
+    .sort((a, b) => toMinutes(a.start_time) - toMinutes(b.start_time));
+  return [slot, ...others];
+}
+
 /** Hour rows the week grid shows: working hours and every slot, at least 06:00–22:00, whole hours. */
 export function gridHours(ranges: Interval[]): number[] {
   const start = Math.min(6 * 60, ...ranges.map((r) => r.start));
@@ -99,7 +130,7 @@ export function cairoInstant(date: string, time: string): string {
 }
 
 /**
- * Side-by-side lanes for blocks that overlap in time (two clients booked in the same hour), so the week grid draws them
+ * Side-by-side lanes for blocks that overlap in time (two or more clients in the same hour: the coach's choice, docs/06 #20), so the week grid draws them
  * next to each other instead of on top of each other. Blocks that overlap directly or through a chain share one
  * cluster; each gets the first free lane, and every block in a cluster is split into the cluster's lane count.
  */

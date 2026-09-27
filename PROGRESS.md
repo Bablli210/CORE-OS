@@ -2,6 +2,35 @@
 
 Living log. Claude Code updates this at the end of every milestone step. Newest at the top.
 
+## Rule change — shared hours (2026-09-27): built, awaiting review
+
+The owner: *"a coach can have 2 or more clients book the same session and hour, it is totally up to him/her"*. Recorded as docs/06 decision 20, then carried into docs/01–05.
+
+What shipped:
+- **Database** (`0014_shared_hours.sql`). `fn_upsert_schedule_slot` and `fn_add_session` no longer refuse a coach's overlapping clients; the signatures, grants and SECURITY DEFINER are unchanged. Still refused:
+  - anything over a Blocked hour, and a Blocked hour over existing slots or over the coach's booked one-offs;
+  - the same client in two overlapping slots or sessions, with any coach (a weekly slot is also checked against the client's booked one-offs, and a one-off against their weekly slots);
+  - a client with no sessions left with that coach.
+  - Both functions take a per-client lock first, so two coaches adding the same client at once cannot both pass.
+- **Checked, unchanged:** materialization (one session per slot), walk-ins, the day and week read shapes, reminders and commission already work per session.
+- **My week:**
+  - A slot now offers **Add another client at this time** (on a class: **Add a client at this time**). It opens the sheet at that day, start and length, with only that day picked, names everyone already in the hour, and leaves them out of the picker.
+  - Blocks are as tall as their slot, so the free part of a partly used hour can be tapped, and the new slot starts there. Three or more side by side on the desktop week show initials; the name is in the hover title and the accessible label.
+  - Refusals in the add sheet name the day; every refusal says what to do, in wording that also fits the head coach editing another coach's week.
+  - The head coach gets the same on any coach's week.
+- **Today:** clients sharing an hour are one row each, with their own buttons, in a fixed order (time, then client name). The order is set in the shared `fetchDay`, so the Expo Today has it too; before, rows at the same time could swap places after an outcome.
+- **Tests:**
+  - `supabase/tests/011_shared_hours.sql` (S0–S27; S25 is a weekly slot over the client's booked one-off, S27 a Blocked hour over the coach's booked one-off);
+  - 001 §8c and 006 K8 rewritten for the new rule (8c2 and 8c3 check the exact message);
+  - unit tests for the error mapping, `cellStart`, `sharedHour` and the order `fetchDay` returns;
+  - `e2e/coaching.spec.ts`: a second client beside Nour (only that day picked, Nour not offered), the same client twice, a Blocked hour, the head coach's view (the sheet names both clients in the hour), and two rows at 13:00 on Today;
+  - the Expo fixture now puts its two sessions at the same time.
+
+Checks:
+- `pnpm typecheck && pnpm lint && pnpm test` pass: web 17, api 66, i18n 3, mobile 9, functions 14.
+- `scripts/test-db.sh` passes 11/11 suites, 437 checks.
+- `pnpm test:e2e` on a fresh reset and seed: 122 passed, 8 skipped by design, no retries.
+
 ## Current milestone
 
 UX pass (asked for after M8, before branding): **built, awaiting review.** "Everything clear, sections mapped out and not on top of each other, easy to navigate, easy onboarding — it's for everyday use." Branding is still next (docs/05).
@@ -78,6 +107,9 @@ Local logins: staff `*@gymos.local` / `gymos-dev`. Members log in by phone with 
 
 ## Decisions made during the build
 
+- 2026-09-27 (rule change) — **Shared hours** (docs/06 #20). A coach may put two or more clients, and classes, in the same hour; only a Blocked hour blocks. A one-off also checks the client's weekly slots that have no session yet.
+  - The two Blocked refusals have separate messages, so a coach adding a Blocked hour over clients is not told "that hour is blocked".
+  - Utilization counts each session, so it can pass 100%.
 - 2026-09-26 (M8) — **CI added first.** There was no CI to keep green, so M8 starts with `.github/workflows/ci.yml`:
   - three jobs: checks, SQL on a local Supabase via the CLI, and e2e with Chromium;
   - one complete run per commit (no cancelling).

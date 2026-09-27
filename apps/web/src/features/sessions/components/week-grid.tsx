@@ -4,13 +4,15 @@ import { Plus } from "lucide-react";
 import { t, type MessageKey } from "@gymos/i18n";
 import { cn } from "@/lib/utils";
 import type { CoachWeek, Slot } from "@gymos/api/sessions/coach";
-import { dateInWeek, fromMinutes, gridHours, laneLayout, toMinutes } from "@gymos/api/sessions/week";
+import { cellStart, dateInWeek, fromMinutes, gridHours, laneLayout, toMinutes } from "@gymos/api/sessions/week";
 
 const ROW = 3; // rem per hour
 
 /**
  * docs/04 WeekGrid: days as columns × hours as rows, slots as blocks, working hours shaded, free cells tappable.
- * `days` is the whole week on desktop and the selected day on a phone.
+ * `days` is the whole week on desktop and the selected day on a phone. Several clients may share an hour (docs/06 #20): their
+ * blocks sit side by side (initials only when three or more share a desktop column), each block is as tall as its slot, and a
+ * tap on the free part of a partly used hour starts there.
  */
 export function WeekGrid({
   week,
@@ -20,7 +22,8 @@ export function WeekGrid({
 }: {
   week: CoachWeek;
   days: number[];
-  onFreeCell: (weekday: number, hour: number) => void;
+  /** A tap on an hour cell: the weekday and the start in minutes (the hour, or the free part of a partly used hour). */
+  onFreeCell: (weekday: number, startMinutes: number) => void;
   onSlot: (slot: Slot) => void;
 }) {
   const ranges = [
@@ -29,10 +32,9 @@ export function WeekGrid({
   ];
   const hours = gridHours(ranges);
   const first = hours[0] * 60;
+  const busy = new Map(days.map((d) => [d, week.slots.filter((s) => s.weekday === d).map((s) => ({ id: s.id, start: toMinutes(s.start_time), end: toMinutes(s.start_time) + s.duration_minutes }))]));
   // blocks that share a time on the same day sit side by side
-  const lanes = new Map(
-    days.flatMap((d) => [...laneLayout(week.slots.filter((s) => s.weekday === d).map((s) => ({ id: s.id, start: toMinutes(s.start_time), end: toMinutes(s.start_time) + s.duration_minutes })))]),
-  );
+  const lanes = new Map(days.flatMap((d) => [...laneLayout(busy.get(d) ?? [])]));
   const working = (weekday: number, hour: number) =>
     week.availability.some((a) => a.weekday === weekday && toMinutes(a.start_time) <= hour * 60 && toMinutes(a.end_time) >= hour * 60 + 60);
 
@@ -57,13 +59,14 @@ export function WeekGrid({
       ))}
       {days.flatMap((d, i) =>
         hours.map((h, r) => {
-          const cellLabel = t("schedule.freeCell", { day: t(`weekday.${d}` as MessageKey), time: fromMinutes(h * 60) });
+          const at = cellStart(busy.get(d) ?? [], h);
+          const cellLabel = t("schedule.freeCell", { day: t(`weekday.${d}` as MessageKey), time: fromMinutes(at) });
           return week.can_edit ? (
             <button
               key={`${d}-${h}`}
               type="button"
               aria-label={cellLabel}
-              onClick={() => onFreeCell(d, h)}
+              onClick={() => onFreeCell(d, at)}
               className={cn(
                 "group grid place-items-center border-b border-s focus-visible:z-30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring",
                 working(d, h) ? "bg-background hover:bg-accent" : "bg-muted/60 hover:bg-accent",
@@ -85,6 +88,17 @@ export function WeekGrid({
           const skipped = s.skipped.includes(date);
           const notYet = s.starts_on > date || (s.ends_on !== null && s.ends_on < date);
           const { lane, lanes: of } = lanes.get(s.id) ?? { lane: 0, lanes: 1 };
+          // a block shorter than 45 minutes has room for one line: the details follow the name
+          const short = s.duration_minutes < 45;
+          // three or more side by side in a desktop column leave ~40px each: initials only (the title and label keep the name)
+          const tight = days.length > 1 && of >= 3;
+          const details = (
+            <>
+              {s.start_time}
+              {s.kind === "client" && s.credits_left !== null ? <span className={cn(s.credits_left <= 0 && "font-medium text-destructive")}> · {t("schedule.left", { n: s.credits_left })}</span> : null}
+              {skipped ? ` · ${t("schedule.skipped")}` : ""}
+            </>
+          );
           return (
             <button
               key={s.id}
@@ -94,7 +108,8 @@ export function WeekGrid({
               title={`${slotTitle(s)} · ${s.start_time}`}
               aria-label={t("schedule.slotLabel", { day: t(`weekday.${s.weekday}` as MessageKey), time: s.start_time, what: slotTitle(s) })}
               className={cn(
-                "z-10 m-0.5 flex flex-col items-start overflow-hidden rounded-md border px-2 py-1 text-start text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                "z-10 m-0.5 flex flex-col items-start self-start overflow-hidden rounded-md border px-2 text-start text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                short ? "justify-center py-0" : "py-1",
                 s.kind === "client" ? "border-primary/40 bg-primary/10" : s.kind === "class" ? "border-info/40 bg-info/10" : "border-border bg-muted",
                 (skipped || notYet) && "opacity-50",
               )}
@@ -102,21 +117,39 @@ export function WeekGrid({
                 gridColumn: days.indexOf(s.weekday) + 2,
                 gridRow: `${Math.floor(start / 60) + 2} / span ${Math.max(1, Math.ceil((start % 60 + s.duration_minutes) / 60))}`,
                 marginTop: `${((start % 60) / 60) * ROW}rem`,
+                // as tall as the slot (at least half an hour), so the free part of a partly used hour stays tappable
+                height: `calc(${(Math.max(30, s.duration_minutes) / 60) * ROW}rem - 0.25rem)`,
                 ...(of > 1 ? { justifySelf: "start", width: `calc(${100 / of}% - 0.25rem)`, marginInlineStart: `calc(${(lane * 100) / of}% + 0.125rem)` } : {}),
               }}
             >
-              <span className={cn("w-full truncate font-medium", skipped && "line-through")}>{slotTitle(s)}</span>
-              <span className="w-full truncate text-muted-foreground">
-                {s.start_time}
-                {s.kind === "client" && s.credits_left !== null ? <span className={cn(s.credits_left <= 0 && "font-medium text-destructive")}> · {t("schedule.left", { n: s.credits_left })}</span> : null}
-                {skipped ? ` · ${t("schedule.skipped")}` : ""}
-              </span>
+              {tight ? (
+                <span className={cn("w-full truncate font-medium", skipped && "line-through", s.kind === "client" && s.credits_left !== null && s.credits_left <= 0 && "text-destructive")}>
+                  {initials(slotTitle(s))}
+                </span>
+              ) : (
+                <>
+                  <span className={cn("w-full truncate font-medium", skipped && "line-through")}>
+                    {slotTitle(s)}
+                    {short ? <span className="font-normal text-muted-foreground"> · {details}</span> : null}
+                  </span>
+                  {short ? null : <span className="w-full truncate text-muted-foreground">{details}</span>}
+                </>
+              )}
             </button>
           );
         })}
     </div>
   );
 }
+
+/** "Mostafa Kamal" → "MK": what fits in a narrow block. */
+const initials = (name: string) =>
+  name
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((w) => w[0])
+    .join("")
+    .slice(0, 2);
 
 export function slotTitle(s: Pick<Slot, "kind" | "client_name" | "label">): string {
   if (s.kind === "client") return s.client_name ?? t("schedule.kind.client");

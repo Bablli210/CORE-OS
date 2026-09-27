@@ -17,8 +17,10 @@ export function coachingErrorKey(error: unknown): MessageKey {
   if (isNetworkError(error)) return "error.retryHint";
   if (e?.code === "42501") return "error.notAllowed";
   if (e?.code === "GY001" || m.includes("no credits with this coach")) return "schedule.error.noCredits";
-  if (m.includes("overlaps another slot")) return "schedule.error.overlap";
-  if (m.includes("already has a session at that time")) return "schedule.error.busy";
+  // shared hours (docs/06 #20): only a Blocked hour and the same client twice are refused
+  if (m.includes("overlaps a blocked hour")) return "schedule.error.blocked";
+  if (m.includes("blocked hour cannot overlap")) return "schedule.error.blockedOver";
+  if (m.includes("client already has a slot at that time") || m.includes("client already has a session at that time")) return "schedule.error.clientBusy";
   if (m.includes("working hours overlap")) return "hours.error.overlap";
   if (m.includes("end after its start")) return "hours.error.order";
   if (m.includes("pick at least one day")) return "schedule.error.noDay";
@@ -34,7 +36,7 @@ export function coachingErrorKey(error: unknown): MessageKey {
   return "error.generic";
 }
 
-/** "Sun" when the database named the day that failed ("Sun: overlaps another slot on that day"). */
+/** The weekday the database named when one day of several failed ("Sun: overlaps a blocked hour on that day", DETAIL = 0). */
 export function failedWeekday(error: unknown): number | null {
   const detail = (error as PostgrestError | null)?.details;
   const n = detail != null && /^\d$/.test(String(detail)) ? Number(detail) : null;

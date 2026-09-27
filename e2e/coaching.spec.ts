@@ -4,6 +4,7 @@ import { cairoDate, cairoWeekday, COACH_IDS, loginClient, loginStaff, sellPtPack
 const SARA_PROFILE = "00000000-0000-0000-0000-000000000023";
 const AYA = { id: "00000000-0000-0000-0002-000000000020", phone: "01110000020" };
 const MARIAM = "00000000-0000-0000-0002-000000000002"; // Sara's client, pack used up in the seed
+const NOUR = "Nour Ehab"; // Sara's client on Sun/Tue/Thu at 08:00 in the seed
 
 /** On a phone the week shows one day: pick its tab first (desktop shows all seven). */
 async function showDay(page: Page, weekday: string) {
@@ -16,21 +17,33 @@ async function openCell(page: Page, weekday: string, time: string) {
   return page.getByRole("dialog", { name: "Add to the week" });
 }
 const row = (page: Page, name: string) => page.getByTestId("session-row").filter({ hasText: name });
+/** A slot block on the week grid by its accessible name ("Nour Ehab, Sunday 08:00"). */
+const slotAt = (page: Page, what: string, weekday: string, time: string) => page.getByRole("button", { name: `${what}, ${weekday} ${time}`, exact: true });
+/** Ends a test's slots (ends_on today, or its start date when it starts later in Cairo than the database's today). */
+const endSlots = (where: string) => sql(`update schedule_slots set is_active = false, ends_on = greatest(starts_on, current_date) where ${where} and is_active`);
 
 test.describe.serial("M4: the week, the day, the head coach", () => {
   let name = "";
   let clientId = "";
+  let shareName = "";
+  let shareId = "";
+  let blockLabel = "";
 
   test.beforeAll(({}, info) => {
     name = `Coach Test ${info.project.name} ${Date.now() % 100000}`;
     clientId = sellPtPack(name, COACH_IDS.sara);
+    shareName = `Share Test ${info.project.name} ${Date.now() % 100000}`;
+    shareId = sellPtPack(shareName, COACH_IDS.sara);
+    blockLabel = `E2E hold ${info.project.name}`;
   });
   test.afterAll(() => {
-    // leave Sara's 08:00 / 13:00 free for the other viewport's run even if a step failed
-    if (clientId) sql(`update schedule_slots set is_active = false, ends_on = current_date where client_id = '${clientId}' and is_active`);
+    // leave Sara's week as the seed has it for the other viewport's run even if a step failed
+    if (clientId) endSlots(`client_id = '${clientId}'`);
+    if (shareId) endSlots(`client_id = '${shareId}'`);
+    endSlots(`coach_membership_id = '${COACH_IDS.sara}' and label = '${blockLabel}'`);
   });
 
-  test("Sara puts the new client on 08:00 Sat/Mon/Wed in two taps; overlaps and clients without credits are refused with the reason", async ({ page }) => {
+  test("Sara puts the new client on 08:00 Sat/Mon/Wed in two taps; a client without credits is refused with the reason", async ({ page }) => {
     await loginStaff(page, STAFF.sara);
     await page.goto(`/coach/clients/${clientId}`);
     await page.getByRole("link", { name: "Add to my week" }).click();
@@ -47,29 +60,91 @@ test.describe.serial("M4: the week, the day, the head coach", () => {
     await expect(page.getByTestId("slot").filter({ hasText: name }).first()).toContainText("08:00");
     expect(sql(`select count(*) from schedule_slots where client_id = '${clientId}' and is_active and start_time = '08:00' and weekday in (6,1,3)`)).toBe("3");
 
-    // Sunday 08:00–09:00 is Nour's: a slot at 08:30 is refused, the day named, nothing kept
-    const overlap = await openCell(page, "Sunday", "09:00");
-    await overlap.getByLabel("Starts at").fill("08:30");
-    await overlap.getByRole("button", { name: /^Add/ }).click();
-    await expect(overlap.getByRole("alert")).toContainText("Sunday: that hour overlaps another slot");
-    await overlap.getByRole("button", { name: "Close" }).click();
-    expect(sql(`select count(*) from schedule_slots where client_id = '${clientId}' and is_active`)).toBe("3");
-
     // Mariam has no sessions left with Sara: refused with the reason
     await page.goto(`/coach/schedule?client=${MARIAM}`);
     const noCredits = await openCell(page, "Friday", "13:00");
     await noCredits.getByRole("button", { name: /^Add/ }).click();
-    await expect(noCredits.getByRole("alert")).toContainText("this client has no sessions left with you");
+    await expect(noCredits.getByRole("alert")).toContainText("this client has no sessions left with this coach");
     expect(sql(`select count(*) from schedule_slots where client_id = '${MARIAM}' and weekday = 5`)).toBe("0");
   });
 
-  test("Ahmed sees the slot on Sara's week from Team", async ({ page }) => {
+  test("shared hours (docs/06 #20): a second client in Nour's Sunday 08:00 is accepted and sits beside her; the same client twice and anything over a Blocked hour are refused with the reason", async ({ page }) => {
+    await loginStaff(page, STAFF.sara);
+    await page.goto(`/coach/schedule?client=${clientId}`);
+    await showDay(page, "Sunday");
+    // Nour's hour is taken by her block: tap it, then "Add another client at this time"
+    await slotAt(page, NOUR, "Sunday", "08:00").click();
+    await page.getByRole("dialog", { name: NOUR }).getByRole("button", { name: "Add another client at this time" }).click();
+    const sheet = page.getByRole("dialog", { name: "Add to the week" });
+    await expect(sheet.getByTestId("sharing-hint")).toContainText(`Shares Sunday 08:00 with ${NOUR}.`);
+    await expect(sheet.getByRole("radio", { name: "Client" })).toHaveAttribute("aria-checked", "true");
+    await expect(sheet.getByLabel("Client")).toHaveValue(clientId);
+    await expect(sheet.getByLabel("Starts at")).toHaveValue("08:00");
+
+    // sharing is about that one day: the client's preferred days are not added, and Nour (already in the hour) is not offered
+    await expect(sheet.getByRole("button", { name: "Sunday" })).toHaveAttribute("aria-pressed", "true");
+    for (const d of ["Saturday", "Monday", "Wednesday"]) await expect(sheet.getByRole("button", { name: d })).toHaveAttribute("aria-pressed", "false");
+    await expect(sheet.getByLabel("Client").locator("option", { hasText: NOUR })).toHaveCount(0);
+
+    // adding Saturday, where 08:00 is already theirs: refused, the day named, nothing kept
+    await sheet.getByRole("button", { name: "Saturday" }).click();
+    await sheet.getByRole("button", { name: "Add on 2 days" }).click();
+    await expect(sheet.getByRole("alert")).toContainText("Saturday: this client already has a session at that time, with this coach or another.");
+    expect(sql(`select count(*) from schedule_slots where client_id = '${clientId}' and weekday = 0 and is_active`)).toBe("0");
+
+    // Sunday only: accepted, and the two clients sit side by side in the same hour
+    await sheet.getByRole("button", { name: "Saturday" }).click();
+    await sheet.getByRole("button", { name: "Add to the week" }).click();
+    await expect(page.getByRole("status").filter({ hasText: "Added 1 weekly slot(s)." })).toBeVisible();
+    expect(sql(`select count(*) from schedule_slots where coach_membership_id = '${COACH_IDS.sara}' and weekday = 0 and start_time = '08:00' and kind = 'client' and is_active`)).toBe("2");
+    await showDay(page, "Sunday");
+    const [nour, mine] = [await slotAt(page, NOUR, "Sunday", "08:00").boundingBox(), await slotAt(page, name, "Sunday", "08:00").boundingBox()];
+    expect(nour && mine).toBeTruthy();
+    expect(Math.abs(nour!.y - mine!.y)).toBeLessThan(2);
+    expect(nour!.x + nour!.width <= mine!.x + 1 || mine!.x + mine!.width <= nour!.x + 1).toBe(true);
+
+    // a Blocked hour blocks: Sara blocks Friday 10:00, then a client slot at 10:30 is refused with the reason
+    await page.goto("/coach/schedule");
+    const hold = await openCell(page, "Friday", "10:00");
+    await hold.getByRole("radio", { name: "Blocked" }).click();
+    await hold.getByLabel("Label").fill(blockLabel);
+    await hold.getByRole("button", { name: "Add to the week" }).click();
+    await expect(page.getByRole("status").filter({ hasText: "Added 1 weekly slot(s)." })).toBeVisible();
+    const over = await openCell(page, "Friday", "11:00");
+    await over.getByLabel("Client").selectOption(clientId);
+    await over.getByLabel("Starts at").fill("10:30");
+    await over.getByRole("button", { name: /^Add/ }).click();
+    await expect(over.getByRole("alert")).toHaveText("Friday: that hour is blocked. Pick another time or end the blocked hour.");
+    await over.getByRole("button", { name: "Close" }).click();
+    expect(sql(`select count(*) from schedule_slots where client_id = '${clientId}' and weekday = 5`)).toBe("0");
+
+    // and a Blocked hour cannot go over clients: Sunday 08:30 over Nour and the new client
+    const blockOver = await openCell(page, "Sunday", "09:00");
+    await blockOver.getByRole("radio", { name: "Blocked" }).click();
+    await blockOver.getByLabel("Starts at").fill("08:30");
+    await blockOver.getByRole("button", { name: /^Add/ }).click();
+    await expect(blockOver.getByRole("alert")).toContainText("Sunday: a blocked hour can't go over a client or a class.");
+    await blockOver.getByRole("button", { name: "Close" }).click();
+    expect(sql(`select count(*) from schedule_slots where coach_membership_id = '${COACH_IDS.sara}' and kind = 'blocked' and weekday = 0 and is_active`)).toBe("0");
+    endSlots(`coach_membership_id = '${COACH_IDS.sara}' and label = '${blockLabel}'`);
+  });
+
+  test("Ahmed sees the slot on Sara's week from Team, the shared hour side by side, and can add another client there", async ({ page }) => {
     await loginStaff(page, STAFF.headCoach);
     await page.goto("/coach/team");
     await page.getByRole("link", { name: "Open Sara Fathy's week" }).click();
     await expect(page.getByRole("heading", { name: "Sara Fathy's week" })).toBeVisible();
     await showDay(page, "Saturday");
     await expect(page.getByTestId("slot").filter({ hasText: name }).first()).toBeVisible();
+    await showDay(page, "Sunday");
+    await expect(slotAt(page, NOUR, "Sunday", "08:00")).toBeVisible();
+    await slotAt(page, name, "Sunday", "08:00").click();
+    await page.getByRole("dialog", { name }).getByRole("button", { name: "Add another client at this time" }).click();
+    // the sheet names everyone already in the hour (the tapped slot first) and does not offer them again
+    const sheet = page.getByRole("dialog", { name: "Add to the week" });
+    await expect(sheet.getByTestId("sharing-hint")).toContainText(`Shares Sunday 08:00 with ${name}, ${NOUR}.`);
+    await expect(sheet.getByLabel("Client").locator("option", { hasText: name })).toHaveCount(0);
+    await expect(sheet.getByLabel("Client").locator("option", { hasText: NOUR })).toHaveCount(0);
   });
 
   test("Today: Completed burns one with Sara, Cancelled restores it, a no-show without signal is queued, then syncs; adherence drops", async ({ page, context }) => {
@@ -84,12 +159,24 @@ test.describe.serial("M4: the week, the day, the head coach", () => {
     await sheet.getByRole("button", { name: "Add to the week" }).click();
     await expect(page.getByRole("status").filter({ hasText: "Added 1 weekly slot(s)." })).toBeVisible();
 
+    // a second client in the same hour (docs/06 #20), put there through the same RPC
+    sqlAs(SARA_PROFILE, `select fn_add_weekly_slots('${COACH_IDS.sara}', array[extract(dow from (now() at time zone 'Africa/Cairo'))::int], '13:00', 'client', '${shareId}', null, 60, '${cairoDate()}');`);
+
     await page.goto("/coach");
-    // (on a Sat/Mon/Wed the 08:00 slot has a session today too: this test works on the 13:00 one)
+    // (on a Sat/Mon/Wed or a Sunday the 08:00 slot has a session today too: this test works on the 13:00 one)
     const r = row(page, name).filter({ hasText: "13:00" });
+    const other = row(page, shareName).filter({ hasText: "13:00" });
     await expect(r.getByTestId("credits-left")).toHaveText("8 left");
+    await expect(other.getByTestId("credits-left")).toHaveText("8 left");
     await r.getByRole("button", { name: "Completed" }).click();
     await expect(r).toHaveAttribute("data-status", "completed");
+    await expect(r.getByTestId("credits-left")).toHaveText("7 left");
+    // two rows at 13:00, each with its own buttons: the other client is untouched
+    await expect(other).toHaveAttribute("data-status", "booked");
+    await expect(other.getByTestId("credits-left")).toHaveText("8 left");
+    await other.getByRole("button", { name: "Completed" }).click();
+    await expect(other).toHaveAttribute("data-status", "completed");
+    await expect.poll(() => sql(`select coalesce(sum(qty_remaining), 0) from credit_lots where client_id = '${shareId}' and status = 'active'`)).toBe("7");
     await expect(r.getByTestId("credits-left")).toHaveText("7 left");
     await expect.poll(() => sql(`select coalesce(sum(qty_remaining), 0) from credit_lots where client_id = '${clientId}' and status = 'active'`)).toBe("7");
 

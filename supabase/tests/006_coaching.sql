@@ -61,11 +61,17 @@ exception when insufficient_privilege then raise notice 'PASS K5 the day is scop
 select login(:SARA);
 select ok(cardinality(fn_add_weekly_slots(:SARA_M, array[6,1,3], '08:00', 'client', :'client', null, 60, cairo_date(now()) + 1)) = 3, 'K6 Sat/Mon/Wed at 08:00 in one call');
 select ok((select count(*) = 3 from schedule_slots where client_id = :'client' and coach_membership_id = :SARA_M::uuid and is_active), 'K7 three weekly slots exist');
+-- shared hours (docs/06 #20): Sunday 08:00 is Nour's, and Sara may put this client in the same hour (from tomorrow, as above)
+select cardinality(fn_add_weekly_slots(:SARA_M, array[0], '08:00', 'client', :'client', null, 60, cairo_date(now()) + 1)) as shared \gset
+select ok(:shared = 1 and (select count(*) = 2 from schedule_slots where coach_membership_id = :SARA_M::uuid and weekday = 0 and start_time = '08:00' and kind = 'client' and is_active),
+          'K8 Sunday 08:00 is Nour''s: a second client in the same hour is accepted');
+-- the same client twice at the same time is refused, the day named, all or nothing
 do $$ begin
-  perform fn_add_weekly_slots('a0000000-0000-0000-0000-000000000023', array[5,0], '08:00', 'client', current_setting('test.client')::uuid, null, 60, cairo_date(now()));
-  raise exception 'FAIL K8 overlapping slot accepted';
+  perform fn_add_weekly_slots('a0000000-0000-0000-0000-000000000023', array[5,6], '08:30', 'client', current_setting('test.client')::uuid, null, 60, cairo_date(now()));
+  raise exception 'FAIL K8b the same client in two overlapping slots accepted';
 exception when check_violation then
-  if sqlerrm like 'Sun: overlaps%' then raise notice 'PASS K8 Sunday 08:00 overlaps Nour — refused with the day named'; else raise exception 'FAIL K8 wrong message: %', sqlerrm; end if;
+  if sqlerrm = 'Sat: client already has a slot at that time' then raise notice 'PASS K8b Saturday 08:30 overlaps this client''s own 08:00 — refused with the day named';
+  else raise exception 'FAIL K8b wrong message: %', sqlerrm; end if;
 end $$;
 select ok(not exists (select 1 from schedule_slots where client_id = :'client' and weekday = 5), 'K9 all or nothing: the Friday slot of the refused call was not kept');
 do $$ begin

@@ -39,10 +39,11 @@ test.describe("coach app", () => {
   let lots = "";
   test.beforeAll(() => {
     lots = sql(`select coalesce(string_agg(id || ':' || qty_remaining || ':' || status, ','), '') from credit_lots where coach_membership_id = '${COACH_M}' and client_id in ('${HABIBA}', '${MOATAZ}')`);
-    // two booked sessions for coach1.b that started a few minutes ago, so outcomes can be recorded
+    // two booked sessions for coach1.b that started a few minutes ago, so outcomes can be recorded; both clients in the
+    // same hour (docs/06 #20: the coach's choice), so Today shows two rows at one time, each with its own buttons
     fixture = sql(`with s as (insert into sessions(client_id, coach_membership_id, branch_id, scheduled_at, status)
         select c, '${COACH_M}', m.branch_id, t, 'booked' from memberships m,
-        (values ('${HABIBA}'::uuid, date_trunc('minute', now()) - interval '10 minutes'), ('${MOATAZ}'::uuid, date_trunc('minute', now()) - interval '5 minutes')) v(c, t)
+        (values ('${HABIBA}'::uuid, date_trunc('minute', now()) - interval '10 minutes'), ('${MOATAZ}'::uuid, date_trunc('minute', now()) - interval '10 minutes')) v(c, t)
         where m.id = '${COACH_M}' returning id) select string_agg(id::text, ',') from s`).split(",");
   });
   test.afterAll(() => {

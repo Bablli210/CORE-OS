@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils";
 import { useIsDesktop, useOwnCoachMembership, useSchedulable, useWeek } from "../hooks/use-coach";
 import type { Slot } from "@gymos/api/sessions/coach";
 import { formatDate } from "@gymos/api/format";
-import { addDays, cairoToday, dateInWeek, isIsoDate, WEEK_ORDER, weekdayOf, weekStart } from "@gymos/api/sessions/week";
+import { addDays, cairoToday, dateInWeek, fromMinutes, isIsoDate, sharedHour, WEEK_ORDER, weekdayOf, weekStart } from "@gymos/api/sessions/week";
 import { HoursSheet } from "./hours-sheet";
 import { SlotDetailSheet } from "./slot-detail-sheet";
 import { SlotSheet } from "./slot-sheet";
@@ -34,7 +34,9 @@ export function ScheduleScreen() {
   const desktop = useIsDesktop();
   const week = useWeek(coach, start);
   const clients = useSchedulable(coach);
-  const [cell, setCell] = useState<{ weekday: number; hour: number } | null>(null);
+  // the slot sheet: a tapped hour, or "Add another client at this time" on a slot (same day, start and length; `sharing` is
+  // every slot already in that hour, the tapped one first)
+  const [cell, setCell] = useState<{ weekday: number; start: string; duration?: number; sharing?: Slot[] } | null>(null);
   const [slot, setSlot] = useState<Slot | null>(null);
   const [hoursOpen, setHoursOpen] = useState(false);
   const [message, setMessage] = useState("");
@@ -57,6 +59,7 @@ export function ScheduleScreen() {
     );
   }
   const w = week.data;
+  const startsOn = start > today ? start : today;
   const viewingOther = !!params.get("coach") && params.get("coach") !== own;
 
   return (
@@ -120,7 +123,7 @@ export function ScheduleScreen() {
       ) : (
         <>
           {w.slots.length === 0 ? <p className="mb-3 text-sm text-muted-foreground">{t("schedule.empty")}</p> : null}
-          <WeekGrid week={w} days={desktop ? [...WEEK_ORDER] : [day]} onFreeCell={(weekday, hour) => setCell({ weekday, hour })} onSlot={setSlot} />
+          <WeekGrid week={w} days={desktop ? [...WEEK_ORDER] : [day]} onFreeCell={(weekday, at) => setCell({ weekday, start: fromMinutes(at) })} onSlot={setSlot} />
           <p className="mt-2 text-xs text-muted-foreground">{t("schedule.legend")}</p>
         </>
       )}
@@ -129,8 +132,10 @@ export function ScheduleScreen() {
         <SlotSheet
           coach={coach}
           weekday={cell.weekday}
-          hour={cell.hour}
-          startsOn={start > today ? start : today}
+          start={cell.start}
+          duration={cell.duration}
+          sharing={cell.sharing}
+          startsOn={startsOn}
           slotMinutes={w.slot_minutes}
           clients={clients.data ?? []}
           presetClientId={presetClient}
@@ -147,6 +152,7 @@ export function ScheduleScreen() {
           canEdit={w.can_edit}
           onClose={() => setSlot(null)}
           onDone={(m) => { setSlot(null); setMessage(m); }}
+          onAddHere={(s) => { setSlot(null); setCell({ weekday: s.weekday, start: s.start_time, duration: s.duration_minutes, sharing: sharedHour(w.slots, s, startsOn) }); }}
         />
       ) : null}
       {hoursOpen && w ? <HoursSheet coach={coach} hours={w.availability} onClose={() => setHoursOpen(false)} onDone={() => { setHoursOpen(false); setMessage(t("hours.saved")); }} /> : null}

@@ -2,6 +2,22 @@
 
 Living log. Claude Code updates this at the end of every milestone step. Newest at the top.
 
+## Go-live, step 3 — demo is live (2026-09-30)
+
+- **Web app:** https://gymos-alpha-two.vercel.app. Vercel project `gymos` (`prj_xitoOZvQRX7nnmHlxiue1nKSQgqj`, team Bablli_Claude, region fra1), created once the owner reconnected the Vercel connector with team access.
+  - Settings: root `apps/web`, Next.js, Node 22.
+  - Env: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `NEXT_PUBLIC_APP_URL`. `SUPABASE_SERVICE_ROLE_KEY` is not set, so inviting staff by email is off until it is added.
+  - Vercel login protection covers previews only; production is open.
+  - Deployed from `claude/beautiful-hamilton-y82wr6`. A push to that branch deploys a preview only; to update production, redeploy it to production from the Vercel dashboard, or set this branch as the production branch in Settings → Git.
+- **Checked on the live site**, through `pg_net` from the database because this container can't reach vercel.app:
+  - `/login` returns 200.
+  - With a real session cookie, each of these returns 200 on its home page: top management (/admin "Overview"), the sales manager, a rep, the front desk (/sales, "Today" and "Front desk"), the head coach and a coach (/coach "Today").
+  - The screens fetch their data in the browser. Under the app's RLS, a coach sees 7 clients and 5 sessions today.
+- **Jobs:** refresh (every 5 min), hourly notifications and notify all run on the hosted project; the nightly job runs at 03:30 Cairo.
+- **Still open (optional for the demo):**
+  - Dashboard → Auth: turn sign-ups off; set the Site URL to the app URL; phone provider + test OTPs to show the member app.
+  - A sign-up only reaches the no-access page.
+
 ## Go-live, step 2 — hosted demo database (2026-09-30): live, web app waiting on Vercel
 
 - **Supabase project** `eurrkikapbuuxnvmkvxu` ("Projects_2", eu-west-1, the owner's second account, Free plan). It was empty before this.

@@ -196,6 +196,11 @@ Edge Functions that run with the service role (bypass RLS), and why:
   4. In SQL: `select vault.create_secret('https://<ref>.supabase.co/functions/v1/notify', 'notify_url'); select vault.create_secret('<same NOTIFY_SECRET>', 'notify_secret');`
   5. Point the Meta app's webhook at `/functions/v1/whatsapp-webhook`.
   6. Run `scripts/verify-jobs.sh`.
+- Hosted **demo** (decision #21), before real use. Same steps 1–4 with `WHATSAPP_PROVIDER=sandbox`, `EMAIL_PROVIDER=log`, `PUSH_PROVIDER=none` (or skip notify entirely: `fn_invoke_notify` only logs a notice while the Vault secrets are missing), then:
+  1. Run `supabase/seed.sql`, then `supabase/demo/hosted-demo-auth.sql` with `__DEMO_PASSWORD__` replaced. Staff sign in as `role.branch@gymos.local` (the list is in `seed.sql`) with that password.
+  2. Dashboard → Authentication: turn off "Allow new users to sign up"; set Site URL and redirect URLs to the Vercel URL; under Phone, enable the provider (any SMS provider values) and add test OTPs for the member phones you will show, without the plus sign, e.g. `201110000002=123456` (Mariam Adel, Branch A).
+  3. Vercel: root directory `apps/web`, framework Next.js, env `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `NEXT_PUBLIC_APP_URL`.
+  4. Going from demo to real use: a fresh project (or `supabase db reset --linked`) without the seed; invite staff from People.
 - Server action `inviteStaff` (`src/features/admin/actions.ts`, M1; docs/05 M1 asks for "admin API via a server action"): uses the service role **only** for the Auth admin API (`inviteUserByEmail`, and `deleteUser` to roll back a failed invite), after checking `is_top_management()` with the caller's own session. The profile and role are written through `fn_create_staff_profile` / `fn_save_membership` as the caller. The client is built in `src/lib/supabase/admin.ts` (server-only, exposes `auth.admin` only).
 Nothing else may use the service role.
 

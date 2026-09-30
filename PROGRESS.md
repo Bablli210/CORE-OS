@@ -2,6 +2,20 @@
 
 Living log. Claude Code updates this at the end of every milestone step. Newest at the top.
 
+## Go-live, step 1 — hosted demo (2026-09-29): prepared, waiting on accounts
+
+The owner wants the system live to walk each department through it in person. Decided (docs/06 #21): go live first as a **hosted demo** loaded with the seed data, in a new Supabase organization of its own; real staff and clients follow on a clean database.
+
+What shipped:
+- `supabase/demo/hosted-demo-auth.sql`: makes the seeded users sign in on a hosted project from SQL alone (no admin API). One shared demo password for staff (replace `__DEMO_PASSWORD__`), emails and phones confirmed, `auth.identities` rows. It refuses to run while the placeholder is unreplaced, or when any auth user is not a seeded demo user. Tested on the local stack after a fresh reset: 15 staff and 41 member logins; four staff roles sign in with the password; Mariam Adel signs in by phone code; a second run changes nothing; with a non-demo user present it refuses.
+- docs/03 §9: the hosted demo runbook (seed, auth script, dashboard auth settings and test OTPs, Vercel settings, and how to move from demo to real use).
+
+Waiting on:
+- A Supabase organization for GymOS. The account's Free plan allows 2 active projects and both are in use, so the new organization needs Pro (or a paused project).
+- A Vercel project. The connected Vercel account has no permission to create projects in the "Bablli_Claude" team (403). The owner creates `gymos` (root `apps/web`, Next.js, repo `Bablli210/CORE-OS`, branch `claude/beautiful-hamilton-y82wr6`) or grants the permission.
+
+Checks: `scripts/test-db.sh` passes 11/11 suites; no app code changed.
+
 ## Rule change — shared hours (2026-09-27): built, awaiting review
 
 The owner: *"a coach can have 2 or more clients book the same session and hour, it is totally up to him/her"*. Recorded as docs/06 decision 20, then carried into docs/01–05.

@@ -2,6 +2,21 @@
 
 Living log. Claude Code updates this at the end of every milestone step. Newest at the top.
 
+## Go-live, step 2 — hosted demo database (2026-09-30): live, web app waiting on Vercel
+
+- **Supabase project** `eurrkikapbuuxnvmkvxu` ("Projects_2", eu-west-1, the owner's second account, Free plan). It was empty before this.
+- **How it was loaded.** This container can't reach Supabase's API, and the MCP tools take SQL only. So the database fetched each file from the public repo at commit `31e1036` with `pg_net` and ran it only if its md5 matched the local file. Files loaded:
+  - migrations 0001–0014 (the migration history shows them under those names, with MCP timestamps as versions);
+  - `seed.sql`;
+  - `supabase/demo/hosted-demo-auth.sql`.
+- Before that, the same migrations were split into chunks and rebuilt on the local stack; `scripts/test-db.sh` passed 11/11 there.
+- **Result:** 2 branches, 41 clients, 59 roles, 364 sessions, 15 staff logins and 41 member logins.
+- **Sign-in check:** the database called its own auth endpoint with `pg_net`. Password sign-in returns a session for top management, the sales manager, a rep, a head coach, a coach and the front desk.
+- The demo password is not in the repo; the owner has it.
+- **Web app still to deploy.** The Vercel connection gets 403 "no permission to create a project" in team "Bablli_Claude", from both `create_project` and `create_deployment`. The owner creates the project; the settings are in docs/03 §9 "Hosted demo" step 3.
+- **Dashboard settings still to do** (docs/03 §9 "Hosted demo" step 2): turn sign-ups off, Site URL, and the phone provider with test OTPs.
+- `notify` is not deployed. The jobs run; `fn_invoke_notify` only logs that notify isn't configured, and in-app notifications work.
+
 ## Go-live, step 1 — hosted demo (2026-09-29): prepared, waiting on accounts
 
 The owner wants the system live to walk each department through it in person. Decided (docs/06 #21): go live first as a **hosted demo** loaded with the seed data, in a new Supabase organization of its own; real staff and clients follow on a clean database.

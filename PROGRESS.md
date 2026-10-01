@@ -2,7 +2,7 @@
 
 Living log. Claude Code updates this at the end of every milestone step. Newest at the top.
 
-## Plain wording for the first-contact deadline (2026-10-01): built, live
+## Plain wording for the first-contact deadline (2026-10-01): built; badges live, 0015–0016 not yet on the hosted database
 
 The owner asked what "SLA missed" meant. Recorded as docs/06 decision 22.
 

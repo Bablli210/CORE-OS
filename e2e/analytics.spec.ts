@@ -53,9 +53,13 @@ test.describe("tiles click through to rows that equal them", () => {
     }
     // the first one by clicking, as a person would
     await page.goto("/admin");
-    await page.getByTestId("stat-tile").filter({ has: page.getByText("Sessions completed", { exact: true }) }).click();
+    const sessionsTile = page.getByTestId("stat-tile").filter({ has: page.getByText("Sessions completed", { exact: true }) });
+    const completed = Number(await sessionsTile.getAttribute("data-value"));
+    await sessionsTile.click();
     await expect(page.getByRole("heading", { name: "Sessions completed" })).toBeVisible();
-    await expect(page.getByTestId("metric-row").first()).toBeVisible();
+    // early on the 1st of a month nothing may be completed yet: then the list is empty, not missing
+    if (completed > 0) await expect(page.getByTestId("metric-row").first()).toBeVisible();
+    else await expect(page.getByTestId("rows-total")).toHaveAttribute("data-total", "0");
   });
 
   test("sales manager and rep: every /sales/numbers tile", async ({ page }) => {

@@ -82,13 +82,14 @@ select ok(cardinality(tile_mismatches('coach', :'month', :LAILA_M)) = 0, 'N10 th
 -- ---------------------------------------------------------------- a session undone no longer counts (0002 counted consume rows)
 select login(:AHMED);
 reset role;
-select id as undo from sessions where client_id = '00000000-0000-0000-0002-000000000001' and credit_consumed and to_char(cairo_date(scheduled_at), 'YYYY-MM') = :'month' order by scheduled_at desc limit 1 \gset
-select credits_burned as before from mv_coach_month where membership_id = :MAHMOUD_M::uuid and month = :'month' \gset
+-- Hassan's latest burned session and its month (on the 1st of a month he may have none yet in the current one)
+select id as undo, to_char(cairo_date(scheduled_at), 'YYYY-MM') as umonth from sessions where client_id = '00000000-0000-0000-0002-000000000001' and credit_consumed order by scheduled_at desc limit 1 \gset
+select credits_burned as before from mv_coach_month where membership_id = :MAHMOUD_M::uuid and month = :'umonth' \gset
 set role authenticated; select login(:AHMED);
 select fn_record_attendance(:'undo', 'cancelled');
 reset role;
 select fn_refresh_views(false);
-select ok((select credits_burned = :before - 1 from mv_coach_month where membership_id = :MAHMOUD_M::uuid and month = :'month'), 'N11 completed → cancelled: the restored credit leaves the burned count');
+select ok((select credits_burned = :before - 1 from mv_coach_month where membership_id = :MAHMOUD_M::uuid and month = :'umonth'), 'N11 completed → cancelled: the restored credit leaves the burned count');
 select ok((select count(*) from credit_ledger where session_id = :'undo' and entry_type = 'consume') >= 1, 'N12 (the consume ledger row is still there: the ledger stays append-only)');
 
 -- ---------------------------------------------------------------- targets

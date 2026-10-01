@@ -7,5 +7,5 @@ supabase db reset --local >/dev/null
 DB_URL=$(supabase status -o env 2>/dev/null | grep '^DB_URL' | cut -d= -f2- | tr -d '"')
 for f in supabase/tests/*.sql; do
   echo "== $f"
-  psql "$DB_URL" -v ON_ERROR_STOP=1 -q -f "$f" 2>&1 | grep -E "PASS|FAIL|ERROR|PASSED" | sed 's/.*NOTICE:  //'
+  psql "$DB_URL" -v ON_ERROR_STOP=1 -q -f "$f" 2>&1 | grep -E "PASS|FAIL|ERROR|error|PASSED" | sed 's/.*NOTICE:  //'
 done

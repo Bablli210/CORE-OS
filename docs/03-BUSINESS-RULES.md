@@ -223,7 +223,7 @@ The `type` column is the exact string in `notifications.type`.
 | `lead.created` | inbound lead, unassigned | sales manager | in_app |
 | `lead.assigned` / `lead.reassigned` | assignment / reassignment | new rep / old rep | in_app |
 | `lead.onboarded` | wizard completed | owner rep | in_app |
-| `lead.sla_breach` | hourly job, no first contact past the deadline | rep + sales manager | in_app |
+| `lead.sla_breach` | hourly job, no first contact past the deadline (shown as "Contact overdue: <name>", decision #22) | rep + sales manager | in_app |
 | `deal.needs_approval` | `fn_submit_deal` needing approval | sales manager | in_app |
 | `approval.requested` | freeze, refund, transfer, expiry extension | sales manager | in_app |
 | `approval.requested` | attendance edit | head coach | in_app |

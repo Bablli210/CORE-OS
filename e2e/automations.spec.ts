@@ -147,9 +147,12 @@ test.describe("refunds and transfers", () => {
     await expect(item).toHaveCount(0);
     expect(sql(`select voided_at is not null from payments where id = '${pay}'`)).toBe("t");
 
+    // a decided request is listed under the month it was asked in (today), which differs from the payment's month
+    // when the payment was received in an earlier month
+    const asked = sql(`select to_char(now() at time zone 'Africa/Cairo', 'YYYY-MM')`);
     await loginStaff(page, STAFF.ceo);
     await page.goto("/admin/money?tab=payments");
-    await page.getByLabel("Month").selectOption(month);
+    await page.getByLabel("Month").selectOption(asked);
     await expect(page.getByTestId("money-request").filter({ hasText: "Salma" }).first()).toHaveAttribute("data-status", "approved");
   });
 

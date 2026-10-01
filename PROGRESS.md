@@ -2,6 +2,31 @@
 
 Living log. Claude Code updates this at the end of every milestone step. Newest at the top.
 
+## Plain wording for the first-contact deadline (2026-10-01): built, live
+
+The owner asked what "SLA missed" meant. Recorded as docs/06 decision 22.
+
+What changed:
+- **Badges:** "Contact within 1h 20m", "Contact overdue by 3h" and "Contacted late". Before, the overdue badge read "SLA missed by 3h".
+- **Notifications** (`0015_plain_lead_wording.sql`):
+  - an overdue lead now notifies "Contact overdue: <name>" / "Nobody has contacted this lead yet";
+  - a new assignment says "Contact them within <N> hours", with N taken from the setting;
+  - existing notification rows were reworded the same way.
+- The rule, the setting and the internal names are unchanged.
+
+Found and fixed on the way: date-dependent failures that only show on the 1st of a month (CI would have gone red from today).
+- **`0016_daily_month_window.sql`.** `mv_daily_branch` stopped at today, while the rows behind a tile cover the whole month. A session dated later in the month that already had an outcome was in the rows but not on the tile. The view now runs to month end, and the 12-week trend stops at the current week.
+- **`008_analytics.sql` N11** now uses the month of the client's latest burned session. On the 1st, the client may have none yet in the current month.
+- **e2e:**
+  - the /admin "Sessions completed" click-through accepts an empty month;
+  - the refund test reads the decided request under the month it was asked in.
+- **`scripts/test-db.sh`** now also shows psql's lowercase `error:` lines. A `\gset` failure used to be invisible in its output.
+
+Checks:
+- `scripts/test-db.sh`: 12/12 suites, 452 checks (new: `012_plain_wording.sql`).
+- typecheck, lint and unit tests pass.
+- `pnpm test:e2e` on a fresh reset: 122 passed, 8 skipped by design.
+
 ## Go-live, step 3 — demo is live (2026-09-30)
 
 - **Web app:** https://gymos-alpha-two.vercel.app. Vercel project `gymos` (`prj_xitoOZvQRX7nnmHlxiue1nKSQgqj`, team Bablli_Claude, region fra1), created once the owner reconnected the Vercel connector with team access.

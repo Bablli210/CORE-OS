@@ -1431,7 +1431,7 @@
   "shell.mainNav": "Main navigation",
   "shell.signOut": "Sign out",
   "shell.switchRole": "Switch role or branch",
-  "sla.breached": "SLA missed by {time}",
+  "sla.breached": "Contact overdue by {time}",
   "sla.due": "Contact within {time}",
   "sla.late": "Contacted late",
   "source.event": "Event",
